@@ -9,12 +9,12 @@ let currentTasks = [];
 const board = document.getElementById('board');
 const weekLabel = document.getElementById('week-label');
 
-const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 export function getDays() {
   const today = new Date();
-  today.setHours(0,0,0,0);
+  today.setHours(0, 0, 0, 0);
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date(today);
     d.setDate(today.getDate() + i + weekOffset * 7);
@@ -24,99 +24,133 @@ export function getDays() {
 
 export function renderBoard(tasks) {
   currentTasks = tasks;
-  const days = getDays();
+  const days     = getDays();
   const todayKey = toDateKey(new Date());
+  const dayKeys  = days.map(toDateKey);
+  // col indices: 0 = no-date, 1–7 = day columns
+  const allKeys  = ['no-date', ...dayKeys];
 
-  weekLabel.textContent = `${MONTHS[days[0].getMonth()]} ${days[0].getDate()} – ${MONTHS[days[6].getMonth()]} ${days[6].getDate()}, ${days[6].getFullYear()}`;
+  weekLabel.textContent =
+    `${MONTHS[days[0].getMonth()]} ${days[0].getDate()} – ` +
+    `${MONTHS[days[6].getMonth()]} ${days[6].getDate()}, ${days[6].getFullYear()}`;
 
-  const dayKeys = days.map(toDateKey);
-  const cols = ['no-date', ...dayKeys];
-  const tasksByCol = {};
-  cols.forEach(k => tasksByCol[k] = []);
+  // Separate spanning vs single-day tasks
+  const spanTasks   = [];  // visible on 2+ board columns this week
+  const singleTasks = {};  // keyed by column
+  allKeys.forEach(k => (singleTasks[k] = []));
 
-  // A task with a span appears in every column its date range covers
   tasks.forEach(t => {
     const keys = taskDisplayKeys(t);
     if (keys[0] === 'no-date') {
-      tasksByCol['no-date'].push(t);
+      singleTasks['no-date'].push(t);
+      return;
+    }
+    // Which of this week's columns does the task touch?
+    const visibleKeys = keys.filter(k => allKeys.includes(k));
+    if (visibleKeys.length > 1) {
+      spanTasks.push({ task: t, visibleKeys });
+    } else if (visibleKeys.length === 1) {
+      singleTasks[visibleKeys[0]].push(t);
     } else {
-      keys.forEach(k => {
-        if (tasksByCol[k]) tasksByCol[k].push(t);
-      });
+      // Task exists but falls outside the visible week — skip
     }
   });
 
+  // ── Build board ────────────────────────────────────────────────────────────
   board.innerHTML = '';
-  board.appendChild(buildColumn('no-date', null, tasksByCol['no-date'] || [], todayKey));
-  days.forEach(day => {
-    const key = toDateKey(day);
-    board.appendChild(buildColumn(key, day, tasksByCol[key] || [], todayKey));
+
+  // CSS grid: 8 columns (no-date + 7 days), rows grow with content
+  // Row 1: headers
+  // Row 2: span-row (spanning cards live here)
+  // Row 3+: per-column bodies + add buttons (each col is an independent flex stack)
+
+  // Column headers
+  const headerRow = document.createElement('div');
+  headerRow.className = 'board-header-row';
+  [null, ...days].forEach((day, i) => {
+    const hdr = document.createElement('div');
+    hdr.className = 'column-header';
+    if (i === 0) {
+      hdr.innerHTML = `<div class="col-day">No Date</div><div class="col-date">—</div>`;
+    } else {
+      const key = toDateKey(day);
+      const isToday = key === todayKey;
+      hdr.innerHTML =
+        `<div class="col-day">${DAYS[day.getDay()]}</div>` +
+        `<div class="col-date${isToday ? ' today' : ''}">${MONTHS[day.getMonth()]} ${day.getDate()}</div>`;
+    }
+    headerRow.appendChild(hdr);
   });
+  board.appendChild(headerRow);
+
+  // Span row — grid row where multi-day cards live
+  const spanRow = document.createElement('div');
+  spanRow.className = 'board-span-row';
+  // Render multi-day cards
+  spanTasks.forEach(({ task, visibleKeys }) => {
+    const startIdx = allKeys.indexOf(visibleKeys[0]);   // 1-based grid col
+    const endIdx   = allKeys.indexOf(visibleKeys[visibleKeys.length - 1]);
+    const card = buildSpanCard(task, visibleKeys.length);
+    card.style.gridColumn = `${startIdx + 1} / ${endIdx + 2}`;
+    spanRow.appendChild(card);
+  });
+  board.appendChild(spanRow);
+
+  // Per-column bodies
+  const bodyRow = document.createElement('div');
+  bodyRow.className = 'board-body-row';
+  allKeys.forEach((key, i) => {
+    const col = document.createElement('div');
+    col.className = 'column-body-wrap' + (key === 'no-date' ? ' no-date' : '');
+    col.dataset.colKey = key;
+
+    const body = document.createElement('div');
+    body.className = 'column-body';
+    col.appendChild(body);
+
+    (singleTasks[key] || []).sort((a, b) => (a.order || 0) - (b.order || 0)).forEach(task => {
+      body.appendChild(buildTaskCard(task));
+    });
+
+    const addArea = document.createElement('div');
+    addArea.className = 'column-add';
+    const addBtn = document.createElement('button');
+    addBtn.className = 'add-task-btn';
+    addBtn.textContent = '+ Add task';
+    addArea.appendChild(addBtn);
+    col.appendChild(addArea);
+
+    addBtn.addEventListener('click', () => showInlineAdd(col, addArea, key, addBtn));
+    bodyRow.appendChild(col);
+  });
+  board.appendChild(bodyRow);
 
   bindDragAndDrop();
 }
 
-function buildColumn(key, day, tasks, todayKey) {
-  const col = document.createElement('div');
-  col.className = 'column' + (key === 'no-date' ? ' no-date' : '');
-  col.dataset.colKey = key;
+// ── Card builders ─────────────────────────────────────────────────────────────
 
-  const header = document.createElement('div');
-  header.className = 'column-header';
-  if (key === 'no-date') {
-    header.innerHTML = `<div class="col-day">No Date</div><div class="col-date">—</div><div class="col-count">${tasks.length} task${tasks.length !== 1 ? 's' : ''}</div>`;
-  } else {
-    const isToday = key === todayKey;
-    header.innerHTML = `<div class="col-day">${DAYS[day.getDay()]}</div><div class="col-date${isToday ? ' today' : ''}">${MONTHS[day.getMonth()]} ${day.getDate()}</div><div class="col-count">${tasks.length} task${tasks.length !== 1 ? 's' : ''}</div>`;
-  }
-  col.appendChild(header);
-
-  const body = document.createElement('div');
-  body.className = 'column-body';
-  col.appendChild(body);
-
-  tasks.sort((a,b) => (a.order||0) - (b.order||0)).forEach(task => {
-    body.appendChild(buildTaskCard(task, key));
-  });
-
-  const addArea = document.createElement('div');
-  addArea.className = 'column-add';
-  const addBtn = document.createElement('button');
-  addBtn.className = 'add-task-btn';
-  addBtn.textContent = '+ Add task';
-  addArea.appendChild(addBtn);
-  col.appendChild(addArea);
-
-  addBtn.addEventListener('click', () => showInlineAdd(col, addArea, key, addBtn));
-  return col;
-}
-
-function buildTaskCard(task, colKey) {
-  const card = document.createElement('div');
-  card.className = 'task-card' + (task.completed ? ' completed' : '');
-  card.dataset.taskId = task.id;
-  card.draggable = true;
-
+function metaHtml(task) {
   const subtasksDone  = (task.subtasks || []).filter(s => s.completed).length;
   const subtasksTotal = (task.subtasks || []).length;
   const progressHtml  = subtasksTotal > 0
     ? `<span class="subtask-progress${subtasksDone === subtasksTotal ? ' done' : ''}">${subtasksDone}/${subtasksTotal}</span>`
     : '';
-
   const tagsHtml = (task.tags || []).map(t => `<span class="tag-chip">${escHtml(t)}</span>`).join('');
-
-  // Due date badge — shown on card when set
   let dueDateHtml = '';
   if (task.dueDate) {
     const d = task.dueDate.toDate ? task.dueDate.toDate() : new Date(task.dueDate);
-    const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    dueDateHtml = `<span class="due-date-badge" title="Due date">📅 ${MONTHS_SHORT[d.getMonth()]} ${d.getDate()}</span>`;
+    dueDateHtml = `<span class="due-date-badge" title="Due date">📅 ${MONTHS[d.getMonth()]} ${d.getDate()}</span>`;
   }
+  return `${tagsHtml}${dueDateHtml}${progressHtml}`;
+}
 
-  // Span indicator — shown on cards that span multiple days
-  const keys = taskDisplayKeys(task);
-  const isSpan = keys.length > 1;
-  const spanHtml = isSpan ? `<span class="span-badge" title="Spans ${keys.length} days">↔ ${keys.length}d</span>` : '';
+/** Single-day card (unchanged visual) */
+function buildTaskCard(task) {
+  const card = document.createElement('div');
+  card.className = 'task-card' + (task.completed ? ' completed' : '');
+  card.dataset.taskId = task.id;
+  card.draggable = true;
 
   card.innerHTML = `
     <div class="task-top">
@@ -125,20 +159,43 @@ function buildTaskCard(task, colKey) {
     </div>
     <div class="task-meta">
       <span class="priority-badge ${task.priority || 'medium'}">${task.priority || 'medium'}</span>
-      ${tagsHtml}
-      ${dueDateHtml}
-      ${spanHtml}
-      ${progressHtml}
+      ${metaHtml(task)}
     </div>`;
 
   card.querySelector('[data-check]').addEventListener('click', e => {
     e.stopPropagation();
     toggleComplete(task.id, !task.completed);
   });
-
   card.addEventListener('click', () => openModal(task));
   return card;
 }
+
+/** Spanning card — wide pill that stretches across columns */
+function buildSpanCard(task, spanDays) {
+  const card = document.createElement('div');
+  card.className = 'task-card span-card' + (task.completed ? ' completed' : '');
+  card.dataset.taskId = task.id;
+
+  const priorityClass = task.priority || 'medium';
+
+  card.innerHTML = `
+    <div class="span-card-inner">
+      <button class="task-check${task.completed ? ' checked' : ''}" aria-label="${task.completed ? 'Mark incomplete' : 'Mark complete'}" data-check></button>
+      <span class="task-title">${escHtml(task.title)}</span>
+      <span class="priority-badge ${priorityClass}">${priorityClass}</span>
+      ${metaHtml(task)}
+      <span class="span-days-badge">${spanDays}d</span>
+    </div>`;
+
+  card.querySelector('[data-check]').addEventListener('click', e => {
+    e.stopPropagation();
+    toggleComplete(task.id, !task.completed);
+  });
+  card.addEventListener('click', () => openModal(task));
+  return card;
+}
+
+// ── Inline add ────────────────────────────────────────────────────────────────
 
 function showInlineAdd(col, addArea, colKey, addBtn) {
   addBtn.style.display = 'none';
@@ -164,17 +221,13 @@ function showInlineAdd(col, addArea, colKey, addBtn) {
     if (colKey !== 'no-date') {
       doOnFrom = Timestamp.fromDate(dateKeyToDate(colKey));
     }
-    const colTasks = currentTasks.filter(t => {
-      const keys = taskDisplayKeys(t);
-      return keys.includes(colKey);
-    });
+    const colTasks = currentTasks.filter(t => taskDisplayKeys(t).includes(colKey));
     const maxOrder = Math.max(0, ...colTasks.map(t => t.order || 0));
     await addTask({ title, doOnFrom, doOnTo: doOnFrom, order: maxOrder + 1000 });
     cancel();
   };
 
   const cancel = () => { form.remove(); addBtn.style.display = ''; };
-
   confirmBtn.addEventListener('click', submit);
   input.addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); submit(); }
@@ -185,11 +238,12 @@ function showInlineAdd(col, addArea, colKey, addBtn) {
   });
 }
 
-// Drag and drop — dragging updates doOnFrom/doOnTo to a single day
+// ── Drag & drop (single-day cards only) ───────────────────────────────────────
+
 let dragId = null;
 
 function bindDragAndDrop() {
-  document.querySelectorAll('.task-card').forEach(card => {
+  document.querySelectorAll('.task-card:not(.span-card)').forEach(card => {
     card.addEventListener('dragstart', e => {
       dragId = card.dataset.taskId;
       card.classList.add('dragging');
@@ -213,7 +267,7 @@ function bindDragAndDrop() {
       body.classList.remove('drag-over');
       if (!dragId) return;
 
-      const colKey = body.closest('.column').dataset.colKey;
+      const colKey = body.closest('.column-body-wrap').dataset.colKey;
       const cards  = [...body.querySelectorAll('.task-card:not(.dragging)')];
       const dropIndex = cards.findIndex(c => {
         const rect = c.getBoundingClientRect();
@@ -222,7 +276,7 @@ function bindDragAndDrop() {
 
       const colTasks = currentTasks
         .filter(t => taskDisplayKeys(t).includes(colKey) && t.id !== dragId)
-        .sort((a,b) => (a.order||0) - (b.order||0));
+        .sort((a, b) => (a.order || 0) - (b.order || 0));
 
       let newOrder;
       if (dropIndex === -1 || dropIndex >= colTasks.length) {
@@ -230,7 +284,7 @@ function bindDragAndDrop() {
       } else if (dropIndex === 0) {
         newOrder = (colTasks[0]?.order || 1000) / 2;
       } else {
-        newOrder = ((colTasks[dropIndex-1]?.order || 0) + (colTasks[dropIndex]?.order || 0)) / 2;
+        newOrder = ((colTasks[dropIndex - 1]?.order || 0) + (colTasks[dropIndex]?.order || 0)) / 2;
       }
 
       const { Timestamp: T } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
@@ -247,7 +301,9 @@ function bindDragAndDrop() {
 }
 
 function escHtml(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 export function prevWeek()  { weekOffset--; }
