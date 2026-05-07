@@ -22,22 +22,23 @@ const emptyState = document.getElementById('templates-empty');
 
 let pendingSubtasks = [];
 
-// Wire new template buttons
 document.getElementById('new-template-btn').addEventListener('click', () => openTemplateModal(null));
 document.getElementById('empty-new-template-btn').addEventListener('click', () => openTemplateModal(null));
 
-// Subscribe to templates and render list
 export function initTemplatesPage() {
   subscribeTemplates(renderTemplatesList);
 }
 
 function renderTemplatesList(templates) {
   templatesList.innerHTML = '';
+
+  // Use display style directly — avoids conflict with flex parent overriding hidden attr
   if (!templates.length) {
-    emptyState.hidden = false;
+    emptyState.style.display = 'flex';
     return;
   }
-  emptyState.hidden = true;
+  emptyState.style.display = 'none';
+
   templates.forEach(tmpl => {
     const card = document.createElement('div');
     card.className = 'template-card';
