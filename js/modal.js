@@ -2,42 +2,61 @@ import { saveTask, deleteTask, addTask } from './store.js';
 import { createSubtask } from './models.js';
 import { Timestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-const overlay = document.getElementById('modal-overlay');
-const form = document.getElementById('task-form');
-const titleInput = document.getElementById('edit-title');
-const priorityInput = document.getElementById('edit-priority');
+const overlay      = document.getElementById('modal-overlay');
+const form         = document.getElementById('task-form');
+const titleInput   = document.getElementById('edit-title');
+const priorityInput= document.getElementById('edit-priority');
+const doOnFromInput= document.getElementById('edit-do-on-from');
+const doOnToInput  = document.getElementById('edit-do-on-to');
 const dueDateInput = document.getElementById('edit-due-date');
-const tagsInput = document.getElementById('edit-tags');
-const subtaskList = document.getElementById('subtask-list');
+const tagsInput    = document.getElementById('edit-tags');
+const subtaskList  = document.getElementById('subtask-list');
 const newSubtaskInput = document.getElementById('new-subtask-input');
-const addSubtaskBtn = document.getElementById('add-subtask-btn');
-const deleteBtn = document.getElementById('delete-task-btn');
-const cancelBtn = document.getElementById('modal-cancel');
-const closeBtn = document.getElementById('modal-close');
-const modalTitle = document.getElementById('modal-title');
+const addSubtaskBtn   = document.getElementById('add-subtask-btn');
+const deleteBtn    = document.getElementById('delete-task-btn');
+const cancelBtn    = document.getElementById('modal-cancel');
+const closeBtn     = document.getElementById('modal-close');
 
-let currentTask = null;
-let pendingSubtasks = [];
+let currentTask    = null;
+let pendingSubtasks= [];
+
+function tsToInputVal(ts) {
+  if (!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  if (isNaN(d)) return '';
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function inputToTs(val) {
+  if (!val) return null;
+  const [y,m,d] = val.split('-').map(Number);
+  return Timestamp.fromDate(new Date(y, m-1, d));
+}
 
 export function openModal(task) {
   currentTask = task;
   pendingSubtasks = JSON.parse(JSON.stringify(task.subtasks || []));
 
-  modalTitle.textContent = 'Edit Task';
-  titleInput.value = task.title || '';
+  titleInput.value    = task.title || '';
   priorityInput.value = task.priority || 'medium';
+  doOnFromInput.value = tsToInputVal(task.doOnFrom);
+  doOnToInput.value   = tsToInputVal(task.doOnTo || task.doOnFrom); // default To = From
+  dueDateInput.value  = tsToInputVal(task.dueDate);
+  tagsInput.value     = (task.tags || []).join(', ');
 
-  if (task.dueDate) {
-    const d = task.dueDate.toDate ? task.dueDate.toDate() : new Date(task.dueDate);
-    dueDateInput.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  } else {
-    dueDateInput.value = '';
-  }
+  // Keep doOnTo >= doOnFrom
+  doOnFromInput.addEventListener('change', enforceSpanOrder, { once: false });
 
-  tagsInput.value = (task.tags || []).join(', ');
   renderSubtasks();
   overlay.hidden = false;
   titleInput.focus();
+}
+
+function enforceSpanOrder() {
+  if (doOnFromInput.value && doOnToInput.value && doOnToInput.value < doOnFromInput.value) {
+    doOnToInput.value = doOnFromInput.value;
+  }
+  doOnToInput.min = doOnFromInput.value || '';
 }
 
 function renderSubtasks() {
@@ -80,6 +99,7 @@ function closeModal() {
   pendingSubtasks = [];
   form.reset();
   subtaskList.innerHTML = '';
+  doOnToInput.min = '';
 }
 
 cancelBtn.addEventListener('click', closeModal);
@@ -99,20 +119,17 @@ form.addEventListener('submit', async e => {
   const title = titleInput.value.trim();
   if (!title) { titleInput.focus(); return; }
 
-  const tags = tagsInput.value.split(',').map(t => t.trim()).filter(Boolean);
-
-  let dueDate = null;
-  if (dueDateInput.value) {
-    const [y,m,d] = dueDateInput.value.split('-').map(Number);
-    dueDate = Timestamp.fromDate(new Date(y, m-1, d));
-  }
+  const doOnFrom = inputToTs(doOnFromInput.value);
+  const doOnTo   = inputToTs(doOnToInput.value) || doOnFrom;
 
   const fields = {
     title,
-    priority: priorityInput.value,
-    dueDate,
-    tags,
-    subtasks: pendingSubtasks
+    priority:  priorityInput.value,
+    doOnFrom,
+    doOnTo,
+    dueDate:   inputToTs(dueDateInput.value),
+    tags:      tagsInput.value.split(',').map(t => t.trim()).filter(Boolean),
+    subtasks:  pendingSubtasks
   };
 
   if (currentTask?.id) {

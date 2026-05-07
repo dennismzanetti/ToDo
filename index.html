@@ -56,7 +56,7 @@
       <button class="primary-btn" id="new-template-btn">+ New template</button>
     </div>
     <div id="templates-list" class="templates-list"></div>
-    <div class="empty-state" id="templates-empty" hidden>
+    <div class="empty-state" id="templates-empty">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 12h6M12 9v6"/></svg>
       <h3>No templates yet</h3>
       <p>Create a template to automatically add recurring tasks to your board each week.</p>
@@ -75,10 +75,28 @@
       </div>
       <form id="task-form" class="task-form" novalidate>
         <input type="hidden" id="edit-task-id" />
+
         <label class="form-field">
           <span>Title <span class="required">*</span></span>
           <input type="text" id="edit-title" placeholder="Task title" required />
         </label>
+
+        <!-- Do On span -->
+        <div class="form-field">
+          <span class="field-label">Do On <span class="hint">(controls which day(s) appear on board)</span></span>
+          <div class="date-span-row">
+            <div class="date-span-field">
+              <label class="span-label" for="edit-do-on-from">From</label>
+              <input type="date" id="edit-do-on-from" />
+            </div>
+            <div class="date-span-sep">→</div>
+            <div class="date-span-field">
+              <label class="span-label" for="edit-do-on-to">To</label>
+              <input type="date" id="edit-do-on-to" />
+            </div>
+          </div>
+        </div>
+
         <div class="form-row">
           <label class="form-field">
             <span>Priority</span>
@@ -89,14 +107,16 @@
             </select>
           </label>
           <label class="form-field">
-            <span>Due date</span>
+            <span>Due Date <span class="hint">(deadline shown on card)</span></span>
             <input type="date" id="edit-due-date" />
           </label>
         </div>
+
         <label class="form-field">
           <span>Tags <span class="hint">(comma separated)</span></span>
           <input type="text" id="edit-tags" placeholder="e.g. work, urgent" />
         </label>
+
         <div class="form-field">
           <span class="field-label">Subtasks</span>
           <div id="subtask-list" class="subtask-list"></div>
@@ -105,6 +125,7 @@
             <button type="button" class="secondary-btn" id="add-subtask-btn">Add</button>
           </div>
         </div>
+
         <div class="modal-actions">
           <button type="button" class="danger-btn" id="delete-task-btn">Delete task</button>
           <div class="modal-actions-right">
