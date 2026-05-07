@@ -1,40 +1,53 @@
 import { db } from './firebase.js';
 import {
-  collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy
+  collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy, getDocs, where
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-import { createTask } from './models.js';
+import { createTask, createTemplate } from './models.js';
 
 const tasksRef = collection(db, 'tasks');
+const templatesRef = collection(db, 'templates');
 
 let _tasks = [];
-let _listeners = [];
+let _templates = [];
+let _taskListeners = [];
+let _templateListeners = [];
 
 export function subscribe(fn) {
-  _listeners.push(fn);
-  return () => { _listeners = _listeners.filter(l => l !== fn); };
+  _taskListeners.push(fn);
+  return () => { _taskListeners = _taskListeners.filter(l => l !== fn); };
 }
 
-function notify() {
-  _listeners.forEach(fn => fn([..._tasks]));
+export function subscribeTemplates(fn) {
+  _templateListeners.push(fn);
+  return () => { _templateListeners = _templateListeners.filter(l => l !== fn); };
 }
+
+function notifyTasks() { _taskListeners.forEach(fn => fn([..._tasks])); }
+function notifyTemplates() { _templateListeners.forEach(fn => fn([..._templates])); }
+
+export function getTasks() { return [..._tasks]; }
+export function getTemplates() { return [..._templates]; }
 
 export function initStore() {
   const q = query(tasksRef, orderBy('order'));
-  onSnapshot(q, (snap) => {
+  onSnapshot(q, snap => {
     _tasks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    notify();
+    notifyTasks();
+  });
+  onSnapshot(templatesRef, snap => {
+    _templates = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    notifyTemplates();
   });
 }
 
+// Tasks
 export async function addTask(fields) {
-  const task = createTask(fields);
-  await addDoc(tasksRef, task);
+  await addDoc(tasksRef, createTask(fields));
 }
 
 export async function saveTask(id, fields) {
-  const ref = doc(db, 'tasks', id);
   const { Timestamp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
-  await updateDoc(ref, { ...fields, updatedAt: Timestamp.now() });
+  await updateDoc(doc(db, 'tasks', id), { ...fields, updatedAt: Timestamp.now() });
 }
 
 export async function deleteTask(id) {
@@ -51,4 +64,18 @@ export async function reorderTask(id, newOrder, newDueDate) {
   const update = { order: newOrder, updatedAt: Timestamp.now() };
   if (newDueDate !== undefined) update.dueDate = newDueDate;
   await updateDoc(doc(db, 'tasks', id), update);
+}
+
+// Templates
+export async function addTemplate(fields) {
+  await addDoc(templatesRef, createTemplate(fields));
+}
+
+export async function saveTemplate(id, fields) {
+  const { Timestamp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+  await updateDoc(doc(db, 'templates', id), { ...fields, updatedAt: Timestamp.now() });
+}
+
+export async function deleteTemplate(id) {
+  await deleteDoc(doc(db, 'templates', id));
 }
