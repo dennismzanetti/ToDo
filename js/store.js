@@ -1,6 +1,6 @@
 import { db } from './firebase.js';
 import {
-  collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy, getDocs, where
+  collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { createTask, createTemplate } from './models.js';
 
@@ -73,9 +73,20 @@ export async function addTemplate(fields) {
 
 export async function saveTemplate(id, fields) {
   const { Timestamp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
-  await updateDoc(doc(db, 'templates', id), { ...fields, updatedAt: Timestamp.now() });
+  // Note: fields must NOT overwrite appliedDates — strip it out if accidentally included
+  const { appliedDates: _ignored, ...safeFields } = fields;
+  await updateDoc(doc(db, 'templates', id), { ...safeFields, updatedAt: Timestamp.now() });
 }
 
 export async function deleteTemplate(id) {
   await deleteDoc(doc(db, 'templates', id));
+}
+
+/**
+ * Persists the full updated appliedDates array to the template document.
+ * Called exclusively by the templates engine after creating tasks.
+ */
+export async function markTemplateApplied(id, appliedDates) {
+  const { Timestamp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+  await updateDoc(doc(db, 'templates', id), { appliedDates, updatedAt: Timestamp.now() });
 }

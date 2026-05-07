@@ -1,34 +1,29 @@
 /**
  * Templates engine — auto-applies templates to the next 7 days on app load.
- * Skips any day that already has a task from the same template (matched by templateId + dateKey).
+ *
+ * Duplicate prevention strategy:
+ *   - Each template document stores an `appliedDates` array (e.g. ["2026-05-07", "2026-05-08"]).
+ *   - Once a date is recorded in appliedDates, the engine NEVER creates a task for that
+ *     template+date again — even if the task was moved, deleted, or completed.
+ *   - This means moving a templated task to another day will NOT cause a re-creation.
  */
-import { addTask, getTasks, getTemplates } from './store.js';
+import { addTask, getTemplates, markTemplateApplied } from './store.js';
 import { templateMatchesDate, toDateKey } from './models.js';
 import { Timestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 export async function applyTemplates() {
-  const tasks = getTasks();
   const templates = getTemplates();
   if (!templates.length) return;
-
-  // Build a Set of "templateId|dateKey" for fast duplicate lookup
-  const existing = new Set(
-    tasks
-      .filter(t => t.templateId)
-      .map(t => {
-        const dk = t.dueDate
-          ? toDateKey(t.dueDate.toDate ? t.dueDate.toDate() : new Date(t.dueDate))
-          : 'no-date';
-        return `${t.templateId}|${dk}`;
-      })
-  );
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const promises = [];
-
   for (const tmpl of templates) {
+    // appliedDates is the canonical record of what has already been created
+    const appliedDates = new Set(tmpl.appliedDates || []);
+    const newDates = [];
+    const taskPromises = [];
+
     for (let i = 0; i < 7; i++) {
       const day = new Date(today);
       day.setDate(today.getDate() + i);
@@ -36,10 +31,9 @@ export async function applyTemplates() {
       if (!templateMatchesDate(tmpl, day)) continue;
 
       const dk = toDateKey(day);
-      const key = `${tmpl.id}|${dk}`;
-      if (existing.has(key)) continue;
+      if (appliedDates.has(dk)) continue; // already created once — skip forever
 
-      promises.push(
+      taskPromises.push(
         addTask({
           title: tmpl.title,
           priority: tmpl.priority,
@@ -51,10 +45,16 @@ export async function applyTemplates() {
         })
       );
 
-      // Mark as existing immediately to avoid duplicate adds in same batch
-      existing.add(key);
+      newDates.push(dk);
+      appliedDates.add(dk); // prevent duplicates within the same run
+    }
+
+    if (taskPromises.length) {
+      // Create tasks and persist the new applied dates atomically
+      await Promise.all([
+        ...taskPromises,
+        markTemplateApplied(tmpl.id, [...(tmpl.appliedDates || []), ...newDates])
+      ]);
     }
   }
-
-  await Promise.all(promises);
 }
