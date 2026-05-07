@@ -3,146 +3,91 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>To-Do List App</title>
+  <title>To-Do List</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./css/styles.css" />
 </head>
 <body>
-  <a class="skip-link" href="#main-content">Skip to content</a>
+  <a class="skip-link" href="#board">Skip to content</a>
 
-  <div class="app-shell">
-    <aside class="sidebar">
-      <div class="brand">
-        <svg viewBox="0 0 64 64" aria-label="To-Do List logo" role="img" class="logo">
-          <rect x="10" y="8" width="44" height="48" rx="12" stroke="currentColor" stroke-width="4" fill="none"></rect>
-          <path d="M20 24h24M20 34h24M20 44h14" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
-          <path d="M15 24l3 3 6-7" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
-        </svg>
-        <div>
-          <h1>To-Do List</h1>
-          <p>Firebase starter</p>
-        </div>
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 64 64" aria-label="To-Do List" role="img" class="logo" width="36" height="36">
+        <rect x="10" y="8" width="44" height="48" rx="10" stroke="currentColor" stroke-width="4" fill="none"/>
+        <path d="M20 24h24M20 34h24M20 44h14" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+        <path d="M15 24l3 3 6-7" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="brand-name">To-Do List</span>
+    </div>
+    <div class="week-nav">
+      <button class="icon-btn" id="prev-week" aria-label="Previous week">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span class="week-label" id="week-label"></span>
+      <button class="icon-btn" id="next-week" aria-label="Next week">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <button class="today-btn" id="today-btn">Today</button>
+    </div>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+  </header>
+
+  <main id="board" class="board"></main>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-title">Edit Task</h2>
+        <button class="icon-btn" id="modal-close" aria-label="Close modal">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
-
-      <nav aria-label="Primary navigation" class="nav">
-        <a class="nav-link active" href="#dashboard" data-route="dashboard">Dashboard</a>
-        <a class="nav-link" href="#tasks" data-route="tasks">Tasks</a>
-        <a class="nav-link" href="#projects" data-route="projects">Projects</a>
-        <a class="nav-link" href="#settings" data-route="settings">Settings</a>
-      </nav>
-
-      <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch to dark mode">Theme</button>
-    </aside>
-
-    <main id="main-content" class="main-content">
-      <header class="topbar">
-        <div>
-          <p class="eyebrow">Starter application</p>
-          <h2 id="page-title">Dashboard</h2>
+      <form id="task-form" class="task-form" novalidate>
+        <input type="hidden" id="edit-task-id" />
+        <label class="form-field">
+          <span>Title <span class="required">*</span></span>
+          <input type="text" id="edit-title" placeholder="Task title" required />
+        </label>
+        <div class="form-row">
+          <label class="form-field">
+            <span>Priority</span>
+            <select id="edit-priority">
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </label>
+          <label class="form-field">
+            <span>Due date</span>
+            <input type="date" id="edit-due-date" />
+          </label>
         </div>
-        <button type="button" class="primary-button">New task</button>
-      </header>
-
-      <section class="page active" id="dashboard" data-page>
-        <div class="grid cards-3">
-          <article class="card stat-card">
-            <p class="label">Total tasks</p>
-            <h3>0</h3>
-            <p class="muted">Connected to Firebase.</p>
-          </article>
-          <article class="card stat-card">
-            <p class="label">Completed</p>
-            <h3>0</h3>
-            <p class="muted">Summary widget placeholder.</p>
-          </article>
-          <article class="card stat-card">
-            <p class="label">Projects</p>
-            <h3>0</h3>
-            <p class="muted">Project count placeholder.</p>
-          </article>
+        <label class="form-field">
+          <span>Tags <span class="hint">(comma separated)</span></span>
+          <input type="text" id="edit-tags" placeholder="e.g. work, urgent" />
+        </label>
+        <div class="form-field">
+          <span class="field-label">Subtasks</span>
+          <div id="subtask-list" class="subtask-list"></div>
+          <div class="subtask-add-row">
+            <input type="text" id="new-subtask-input" placeholder="Add a subtask..." />
+            <button type="button" class="secondary-btn" id="add-subtask-btn">Add</button>
+          </div>
         </div>
-
-        <div class="grid content-grid">
-          <article class="card">
-            <div class="card-header">
-              <h3>Recent tasks</h3>
-              <span class="badge">Empty state</span>
-            </div>
-            <div class="empty-state">
-              <p>No tasks yet. This section will render Firestore task documents.</p>
-            </div>
-          </article>
-
-          <article class="card">
-            <div class="card-header">
-              <h3>Database status</h3>
-            </div>
-            <ul class="status-list" role="list">
-              <li>Firebase app bootstrap included</li>
-              <li>Firestore connection scaffolded</li>
-              <li>Collections planned: tasks, projects, users</li>
-            </ul>
-          </article>
+        <div class="modal-actions">
+          <button type="button" class="danger-btn" id="delete-task-btn">Delete task</button>
+          <div class="modal-actions-right">
+            <button type="button" class="secondary-btn" id="modal-cancel">Cancel</button>
+            <button type="submit" class="primary-btn">Save</button>
+          </div>
         </div>
-      </section>
-
-      <section class="page" id="tasks" data-page>
-        <article class="card page-card">
-          <div class="card-header">
-            <h3>Tasks</h3>
-            <button type="button" class="secondary-button">Add task</button>
-          </div>
-          <form class="task-form">
-            <label>
-              <span>Task title</span>
-              <input type="text" placeholder="Enter task title" />
-            </label>
-            <label>
-              <span>Description</span>
-              <textarea placeholder="Enter task description"></textarea>
-            </label>
-            <label>
-              <span>Status</span>
-              <select>
-                <option>Open</option>
-                <option>In Progress</option>
-                <option>Done</option>
-              </select>
-            </label>
-            <button type="button" class="primary-button">Save task</button>
-          </form>
-        </article>
-      </section>
-
-      <section class="page" id="projects" data-page>
-        <article class="card page-card">
-          <div class="card-header">
-            <h3>Projects</h3>
-          </div>
-          <p class="muted">Project organization page placeholder. Future features can group tasks by project, due date, or priority.</p>
-        </article>
-      </section>
-
-      <section class="page" id="settings" data-page>
-        <article class="card page-card">
-          <div class="card-header">
-            <h3>Settings</h3>
-          </div>
-          <div class="settings-grid">
-            <div>
-              <p class="label">Firebase</p>
-              <p class="muted">Project: <code>todo-cbf89</code>. Config is live in <code>js/firebase-config.js</code>.</p>
-            </div>
-            <div>
-              <p class="label">GitHub</p>
-              <p class="muted">Repository: <code>dennismzanetti/ToDo</code></p>
-            </div>
-          </div>
-        </article>
-      </section>
-    </main>
+      </form>
+    </div>
   </div>
 
   <script type="module" src="./js/app.js"></script>

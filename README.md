@@ -1,49 +1,42 @@
 # To-Do List App
 
-A starter to-do list web app built as a static HTML/CSS/JavaScript project with Firebase Firestore.
+A single-user to-do list web app with a 7-day board view, Firebase Firestore backend, drag-and-drop, inline add, and a full edit modal.
 
-## Pages
-- **Dashboard** — task summary stats and recent tasks
-- **Tasks** — add and manage tasks
-- **Projects** — group tasks by project
-- **Settings** — app configuration info
+## Live
+https://dennismzanetti.github.io/ToDo/
 
-## Firebase
-- Project: `todo-cbf89`
-- Firestore collections: `tasks`, `projects`, `users`
-- SDK version: Firebase JS SDK 12.13.0
-- Analytics enabled via `measurementId: G-K6LJZBTR3R`
+## Features
+- 7-day board view (today + 6 days) + No Date column
+- Previous/Next week navigation
+- Quick inline task add (click "+ Add task" in any column)
+- Full edit modal: title, priority, due date, tags, subtasks
+- Drag and drop to reorder or move tasks between days
+- Complete tasks (crossed out in place)
+- Delete tasks
+- Light / dark mode toggle
+- Firebase Firestore real-time sync
 
-## Planned Firestore schema
+## Data Model — tasks collection
 
-### tasks
-- title: string
-- description: string
-- status: string (Open | In Progress | Done)
-- projectId: string
-- dueDate: timestamp | null
-- createdAt: timestamp
-- updatedAt: timestamp
+| Field | Type | Notes |
+|---|---|---|
+| title | string | Required |
+| priority | 'low' \| 'medium' \| 'high' | Default: medium |
+| dueDate | Timestamp \| null | null → No Date column |
+| completed | boolean | Crossed out in place |
+| tags | string[] | Free-form labels |
+| subtasks | {id, title, completed}[] | Checklist items |
+| order | number | Sort position within column |
+| createdAt | Timestamp | Auto-set |
+| updatedAt | Timestamp | Auto-set on save |
 
-### projects
-- name: string
-- color: string
-- createdAt: timestamp
+## Stack
+- Vanilla HTML / CSS / JavaScript (ES modules)
+- Firebase JS SDK 10.12.2 (Firestore)
+- GitHub Pages hosting
 
-### users
-- email: string
-- displayName: string
-- createdAt: timestamp
-
-## Structure
-```
-ToDo/
-├── todo-list.html
-├── README.md
-├── css/
-│   └── styles.css
-└── js/
-    ├── app.js
-    ├── firebase.js
-    └── firebase-config.js
-```
+## Planned
+- Firebase Authentication (multi-user login)
+- Filter/search tasks
+- Priority sort
+- Task due date reminders

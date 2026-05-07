@@ -1,38 +1,40 @@
-import { db, collections } from './firebase.js';
+import { initStore, subscribe } from './store.js';
+import { renderBoard, prevWeek, nextWeek, resetWeek, getDays } from './board.js';
+import { toDateKey } from './models.js';
 
-const routes = document.querySelectorAll('[data-route]');
-const pages = document.querySelectorAll('[data-page]');
-const pageTitle = document.getElementById('page-title');
+// Theme
+const root = document.documentElement;
 const themeToggle = document.querySelector('[data-theme-toggle]');
-
-const setActivePage = (routeName) => {
-  routes.forEach((route) => route.classList.toggle('active', route.dataset.route === routeName));
-  pages.forEach((page) => page.classList.toggle('active', page.id === routeName));
-  if (pageTitle) pageTitle.textContent = routeName.charAt(0).toUpperCase() + routeName.slice(1);
-};
-
-const syncRoute = () => {
-  const routeName = window.location.hash.replace('#', '') || 'dashboard';
-  setActivePage(routeName);
-};
-
-window.addEventListener('hashchange', syncRoute);
-syncRoute();
-
-let currentTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-document.documentElement.setAttribute('data-theme', currentTheme);
-
-const renderThemeLabel = () => {
-  themeToggle.textContent = currentTheme === 'dark' ? 'Light mode' : 'Dark mode';
-  themeToggle.setAttribute('aria-label', `Switch to ${currentTheme === 'dark' ? 'light' : 'dark'} mode`);
-};
-
-renderThemeLabel();
+let theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+root.setAttribute('data-theme', theme);
 
 themeToggle.addEventListener('click', () => {
-  currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', currentTheme);
-  renderThemeLabel();
+  theme = theme === 'dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', theme);
 });
 
-console.log('Firebase ready:', !!db, Object.keys(collections));
+// Week navigation
+document.getElementById('prev-week').addEventListener('click', () => {
+  prevWeek();
+  renderBoard(lastTasks);
+});
+
+document.getElementById('next-week').addEventListener('click', () => {
+  nextWeek();
+  renderBoard(lastTasks);
+});
+
+document.getElementById('today-btn').addEventListener('click', () => {
+  resetWeek();
+  renderBoard(lastTasks);
+});
+
+// Store
+let lastTasks = [];
+
+subscribe(tasks => {
+  lastTasks = tasks;
+  renderBoard(tasks);
+});
+
+initStore();
