@@ -198,30 +198,35 @@ img,svg{display:block;max-width:100%}
 .span-label{font-size:var(--text-xs);color:var(--color-text-faint);font-weight:500}
 .date-span-sep{color:var(--color-text-faint);font-size:var(--text-sm);padding-top:var(--space-4);flex-shrink:0}
 
-/* ── Due Date: input + clear button row ── */
+/* ── Due Date: input + clear button, no-wrap ── */
 .date-clear-row{
   display:flex;
   align-items:center;
   gap:var(--space-2);
+  min-width:0;        /* shrink inside grid cell */
+  overflow:hidden;    /* never overflow the grid cell */
 }
+/* Override the global width:100% so the date input doesn't force overflow */
 .date-clear-row input[type=date]{
-  flex:1;
+  flex:1 1 0;         /* grow to fill, but can shrink all the way to 0 */
   min-width:0;
+  width:0;            /* flex overrides this; prevents it being a sizing floor */
 }
 .clear-date-btn{
-  display:none; /* shown via JS when a date is set */
-  flex-shrink:0;
+  display:none;       /* shown via JS when a date is set */
+  flex:0 0 26px;      /* fixed size, never pushed to next line */
+  width:26px;
+  height:26px;
   align-items:center;
   justify-content:center;
-  width:28px;
-  height:28px;
   border-radius:var(--radius-full);
-  font-size:1.1rem;
+  font-size:1rem;
   line-height:1;
   color:var(--color-text-faint);
   background:var(--color-surface-2);
   border:1px solid var(--color-border);
   transition:background .15s,color .15s,border-color .15s;
+  padding:0;
 }
 .clear-date-btn:hover{
   background:var(--color-error-hl);
@@ -302,6 +307,7 @@ img,svg{display:block;max-width:100%}
   display:flex;
   flex-direction:column;
   gap:var(--space-1);
+  min-width:0;   /* prevent overflow from children */
 }
 .form-field span,
 .field-label{
@@ -350,7 +356,20 @@ input:focus,textarea:focus,select:focus{
   box-shadow:0 0 0 3px var(--color-primary-hl);
 }
 
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)}
+/*
+  form-row: align-items:start so labels in each cell
+  sit flush at the top regardless of cell height.
+*/
+.form-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:var(--space-3);
+  align-items:start;
+  min-width:0;
+}
+.form-row > *{
+  min-width:0;  /* each cell can shrink below its content width */
+}
 
 .subtask-list{
   display:flex;
@@ -400,20 +419,12 @@ input:focus,textarea:focus,select:focus{
 
 /* =====================================================================
    BREAKPOINT: Tablet / small desktop — 4 visible columns, rest scrollable
-   Triggers below 860px (a typical small laptop / large tablet width)
    ===================================================================== */
 @media(max-width:859px){
-  /* Allow horizontal scroll on the board wrapper */
   .board{
     overflow-x:auto;
     overflow-y:hidden;
   }
-
-  /*
-   * Each grid row is now exactly 8 columns wide but each column has a
-   * fixed minimum of 25vw — so exactly 4 columns are visible at once
-   * and columns 5-8 are reachable by scrolling.
-   */
   .board-header-row,
   .board-span-row,
   .board-body-row{
@@ -421,15 +432,10 @@ input:focus,textarea:focus,select:focus{
     width:max-content;
     min-width:100%;
   }
-
-  /* The body row needs its own scroll region since the board overflow changed */
   .board-body-row{
     min-height:calc(100dvh - var(--topbar-h) - 120px);
   }
-
   .week-label{min-width:100px;font-size:10px}
-
-  /* Stack modal columns on tablet */
   .modal{
     width:min(520px, calc(100vw - 2 * var(--space-4)));
     height:min(680px, calc(100dvh - 2 * var(--space-4)));
@@ -447,12 +453,10 @@ input:focus,textarea:focus,select:focus{
    ===================================================================== */
 @media(max-width:479px){
   :root{--topbar-h:52px}
-
   .topbar{padding:0 var(--space-4);gap:var(--space-2)}
   .brand-name{display:none}
   .week-label{min-width:0;font-size:var(--text-xs)}
   .today-btn{padding:0 var(--space-3)}
-
   .board{
     overflow-x:hidden;
     overflow-y:auto;
@@ -486,8 +490,6 @@ input:focus,textarea:focus,select:focus{
   .task-card{padding:var(--space-4)}
   .task-check{width:22px;height:22px}
   .add-task-btn{padding:.65rem var(--space-3);font-size:var(--text-sm)}
-
-  /* Mobile modal: full-width bottom sheet */
   .modal-overlay{padding:0;align-items:flex-end}
   .modal{
     width:100%;
