@@ -16,7 +16,8 @@
   --shadow-sm:0 1px 2px rgba(0,0,0,.06);--shadow-md:0 4px 12px rgba(0,0,0,.08);--shadow-lg:0 12px 32px rgba(0,0,0,.14);
   --font-body:'Inter',sans-serif;
   --topbar-h:56px;
-  --col-w:260px;
+  /* col-count drives the grid; changed via breakpoints */
+  --col-count:8;
 }
 [data-theme="dark"]{
   --color-bg:#171614;--color-surface:#1c1b19;--color-surface-2:#201f1d;
@@ -58,11 +59,30 @@ img,svg{display:block;max-width:100%}
 .view{display:none}.view.active{display:block}
 #board.view.active{display:block}
 
-/* Board layout */
-.board{overflow-x:auto;height:calc(100dvh - var(--topbar-h));overflow-y:auto;display:flex;flex-direction:column}
+/* =====================================================================
+   BOARD LAYOUT — Responsive Grid
+   Desktop  (≥900px):  8 equal fluid columns, no horizontal scroll
+   Tablet   (480–899px): 4 columns with horizontal scroll for the rest
+   Mobile   (<480px):  single-column stacked card layout
+   ===================================================================== */
+.board{
+  height:calc(100dvh - var(--topbar-h));
+  overflow-y:auto;
+  overflow-x:hidden;
+  display:flex;
+  flex-direction:column;
+}
 .board::-webkit-scrollbar{height:6px;width:6px}
 .board::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:3px}
-.board-header-row,.board-span-row,.board-body-row{display:grid;grid-template-columns:repeat(8,var(--col-w));min-width:calc(8 * var(--col-w))}
+
+/* ── 8-column fluid grid (desktop default) ── */
+.board-header-row,
+.board-span-row,
+.board-body-row{
+  display:grid;
+  grid-template-columns:repeat(8,minmax(0,1fr));
+  width:100%;
+}
 
 /* Header row */
 .board-header-row{position:sticky;top:0;z-index:20;background:var(--color-surface);border-bottom:1px solid var(--color-border)}
@@ -132,7 +152,7 @@ img,svg{display:block;max-width:100%}
 .notes-icon{font-size:11px;opacity:.5;flex-shrink:0;line-height:1;margin-top:2px}
 .task-card.has-notes .notes-icon,.span-card.has-notes .notes-icon{opacity:.65}
 
-/* Notes tooltip — always below the card, no translateY offset */
+/* Notes tooltip */
 .notes-tooltip{
   position:fixed;
   z-index:300;
@@ -150,9 +170,7 @@ img,svg{display:block;max-width:100%}
   opacity:0;
   transition:opacity .15s ease;
 }
-.notes-tooltip.visible{
-  opacity:1;
-}
+.notes-tooltip.visible{opacity:1}
 
 /* Templates view */
 .templates-view{flex-direction:column;padding:var(--space-8);max-width:860px;margin:0 auto;width:100%;gap:var(--space-6)}
@@ -212,5 +230,111 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--color-pr
 .danger-btn{padding:.7rem 1.4rem;border-radius:var(--radius-md);font-size:var(--text-sm);font-weight:600;color:var(--color-error);background:var(--color-error-hl);transition:background .15s}
 .danger-btn:hover{background:var(--color-error);color:#fff}
 
-@media(max-width:700px){.week-label{min-width:100px;font-size:10px}.brand-name{display:none}.date-span-row{flex-direction:column}.date-span-sep{padding-top:0;transform:rotate(90deg)}.form-row{grid-template-columns:1fr}}
+/* =====================================================================
+   BREAKPOINT: Tablet — 4 visible columns, horizontal scroll for rest
+   Applies when viewport is too narrow to comfortably show 8 columns
+   ===================================================================== */
+@media(max-width:899px){
+  .board{
+    overflow-x:auto;
+  }
+  .board-header-row,
+  .board-span-row,
+  .board-body-row{
+    /* Each column gets a fixed 200px min so 4 fill the screen; scroll for 5-8 */
+    grid-template-columns:repeat(8,minmax(200px,1fr));
+    min-width:calc(4 * 200px); /* ensure at least 4 cols visible */
+    width:max-content;
+  }
+  /* Show a subtle scroll hint shadow on the right edge */
+  .board::after{
+    content:'';
+    position:sticky;
+    right:0;
+    top:0;
+    width:32px;
+    height:100%;
+    pointer-events:none;
+    background:linear-gradient(to right,transparent,var(--color-bg));
+    flex-shrink:0;
+  }
+  .week-label{min-width:100px;font-size:10px}
+}
+
+/* =====================================================================
+   BREAKPOINT: Mobile — single-column stacked card layout
+   ===================================================================== */
+@media(max-width:479px){
+  :root{--topbar-h:52px}
+
+  /* Topbar compact */
+  .topbar{padding:0 var(--space-4);gap:var(--space-2)}
+  .brand-name{display:none}
+  .week-label{min-width:0;font-size:var(--text-xs)}
+  .today-btn{padding:0 var(--space-3)}
+
+  /* Board becomes a vertical scroll with day sections */
+  .board{
+    overflow-x:hidden;
+    overflow-y:auto;
+    height:calc(100dvh - var(--topbar-h));
+    flex-direction:column;
+  }
+
+  /* Each row renders as a single full-width column per day */
+  .board-header-row,
+  .board-span-row,
+  .board-body-row{
+    display:contents; /* flatten — children become direct flex/block items */
+  }
+
+  /* Day sections: each column becomes its own card-like section */
+  .column-header{
+    display:flex;
+    align-items:center;
+    gap:var(--space-3);
+    padding:var(--space-3) var(--space-4);
+    background:var(--color-surface);
+    border-bottom:1px solid var(--color-border);
+    border-right:none;
+    position:sticky;
+    top:0;
+    z-index:10;
+  }
+  .col-day{font-size:var(--text-xs)}
+  .col-date{font-size:var(--text-base)}
+
+  /* Span cards full width on mobile */
+  .span-card{
+    margin:var(--space-2) var(--space-4);
+    display:block;
+  }
+
+  /* Body columns stack vertically */
+  .column-body-wrap{
+    border-right:none;
+    border-bottom:2px solid var(--color-divider);
+    min-height:0;
+  }
+  .column-body-wrap:last-child{border-bottom:none}
+
+  /* Bigger tap targets for task cards */
+  .task-card{padding:var(--space-4)}
+  .task-check{width:22px;height:22px}
+  .add-task-btn{padding:.65rem var(--space-3);font-size:var(--text-sm)}
+
+  /* Modal full-screen on mobile */
+  .modal-overlay{padding:0;align-items:flex-end}
+  .modal{
+    border-radius:var(--radius-xl) var(--radius-xl) 0 0;
+    max-height:92dvh;
+    padding:var(--space-6) var(--space-5);
+  }
+
+  /* Stack form rows on mobile */
+  .date-span-row{flex-direction:column}
+  .date-span-sep{padding-top:0;transform:rotate(90deg)}
+  .form-row{grid-template-columns:1fr}
+}
+
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition-duration:.01ms!important}}
