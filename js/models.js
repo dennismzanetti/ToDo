@@ -2,20 +2,19 @@ import { Timestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-f
 
 export function createTask(fields = {}) {
   return {
-    title: fields.title || '',
-    priority: fields.priority || 'medium',
-    // doOnFrom / doOnTo: the date span controlling which board column(s) the task appears in
-    doOnFrom: fields.doOnFrom || null,
-    doOnTo:   fields.doOnTo   || null,
-    // dueDate: deadline shown on the card but NOT used for column placement
-    dueDate:  fields.dueDate  || null,
+    title:     fields.title     || '',
+    priority:  fields.priority  || 'medium',
+    notes:     fields.notes     || '',
+    doOnFrom:  fields.doOnFrom  || null,
+    doOnTo:    fields.doOnTo    || null,
+    dueDate:   fields.dueDate   || null,
     completed: fields.completed || false,
-    tags: Array.isArray(fields.tags) ? fields.tags : [],
-    subtasks: Array.isArray(fields.subtasks) ? fields.subtasks.map(s => ({ ...s, completed: false })) : [],
-    order: typeof fields.order === 'number' ? fields.order : Date.now(),
+    tags:      Array.isArray(fields.tags)     ? fields.tags     : [],
+    subtasks:  Array.isArray(fields.subtasks) ? fields.subtasks.map(s => ({ ...s, completed: false })) : [],
+    order:     typeof fields.order === 'number' ? fields.order : Date.now(),
     templateId: fields.templateId || null,
-    createdAt: fields.createdAt || Timestamp.now(),
-    updatedAt: Timestamp.now()
+    createdAt:  fields.createdAt  || Timestamp.now(),
+    updatedAt:  Timestamp.now()
   };
 }
 
@@ -25,13 +24,13 @@ export function createSubtask(title) {
 
 export function createTemplate(fields = {}) {
   return {
-    title: fields.title || '',
-    priority: fields.priority || 'medium',
+    title:      fields.title      || '',
+    priority:   fields.priority   || 'medium',
     recurrence: fields.recurrence || 'daily',
-    tags: Array.isArray(fields.tags) ? fields.tags : [],
-    subtasks: Array.isArray(fields.subtasks) ? fields.subtasks : [],
-    createdAt: fields.createdAt || Timestamp.now(),
-    updatedAt: Timestamp.now()
+    tags:       Array.isArray(fields.tags)     ? fields.tags     : [],
+    subtasks:   Array.isArray(fields.subtasks) ? fields.subtasks : [],
+    createdAt:  fields.createdAt  || Timestamp.now(),
+    updatedAt:  Timestamp.now()
   };
 }
 
@@ -58,11 +57,6 @@ export function templateMatchesDate(template, date) {
   }
 }
 
-/**
- * Returns the date keys a task should appear in on the board.
- * Uses doOnFrom/doOnTo span. Falls back to dueDate for legacy tasks.
- * Returns ['no-date'] if nothing is set.
- */
 export function taskDisplayKeys(task) {
   const from = tsToDate(task.doOnFrom);
   const to   = tsToDate(task.doOnTo);
@@ -81,7 +75,6 @@ export function taskDisplayKeys(task) {
     return keys;
   }
 
-  // Legacy fallback: use dueDate
   if (task.dueDate) {
     const d = tsToDate(task.dueDate);
     return d ? [toDateKey(d)] : ['no-date'];

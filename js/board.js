@@ -6,11 +6,59 @@ import { Timestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-f
 let weekOffset = 0;
 let currentTasks = [];
 
-const board = document.getElementById('board');
+const board     = document.getElementById('board');
 const weekLabel = document.getElementById('week-label');
 
 const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// ── Tooltip singleton ───────────────────────────────────────────────────────────
+const tooltip = document.createElement('div');
+tooltip.className = 'notes-tooltip';
+tooltip.setAttribute('role', 'tooltip');
+document.body.appendChild(tooltip);
+
+let tooltipTimer = null;
+
+function showTooltip(text, anchorEl) {
+  clearTimeout(tooltipTimer);
+  tooltip.textContent = text;
+  tooltip.classList.add('visible');
+  positionTooltip(anchorEl);
+}
+
+function hideTooltip() {
+  tooltipTimer = setTimeout(() => tooltip.classList.remove('visible'), 80);
+}
+
+function positionTooltip(el) {
+  const rect  = el.getBoundingClientRect();
+  const tRect = tooltip.getBoundingClientRect();
+  const gap   = 8;
+
+  let top  = rect.top - tRect.height - gap + window.scrollY;
+  let left = rect.left + window.scrollX;
+
+  // Flip below if not enough space above
+  if (top < window.scrollY + 4) top = rect.bottom + gap + window.scrollY;
+
+  // Keep within viewport horizontally
+  const maxLeft = window.innerWidth - tRect.width - 8;
+  left = Math.max(8, Math.min(left, maxLeft));
+
+  tooltip.style.top  = `${top}px`;
+  tooltip.style.left = `${left}px`;
+}
+
+function attachNoteTooltip(el, notes) {
+  if (!notes || !notes.trim()) return;
+  el.classList.add('has-notes');
+  el.addEventListener('mouseenter', () => showTooltip(notes, el));
+  el.addEventListener('mouseleave', hideTooltip);
+  el.addEventListener('mousemove', () => positionTooltip(el));
+}
+
+// ── Week / render ──────────────────────────────────────────────────────────────
 
 export function getDays() {
   const today = new Date();
@@ -27,44 +75,30 @@ export function renderBoard(tasks) {
   const days     = getDays();
   const todayKey = toDateKey(new Date());
   const dayKeys  = days.map(toDateKey);
-  // col indices: 0 = no-date, 1–7 = day columns
   const allKeys  = ['no-date', ...dayKeys];
 
   weekLabel.textContent =
     `${MONTHS[days[0].getMonth()]} ${days[0].getDate()} – ` +
     `${MONTHS[days[6].getMonth()]} ${days[6].getDate()}, ${days[6].getFullYear()}`;
 
-  // Separate spanning vs single-day tasks
-  const spanTasks   = [];  // visible on 2+ board columns this week
-  const singleTasks = {};  // keyed by column
+  const spanTasks   = [];
+  const singleTasks = {};
   allKeys.forEach(k => (singleTasks[k] = []));
 
   tasks.forEach(t => {
     const keys = taskDisplayKeys(t);
-    if (keys[0] === 'no-date') {
-      singleTasks['no-date'].push(t);
-      return;
-    }
-    // Which of this week's columns does the task touch?
+    if (keys[0] === 'no-date') { singleTasks['no-date'].push(t); return; }
     const visibleKeys = keys.filter(k => allKeys.includes(k));
     if (visibleKeys.length > 1) {
       spanTasks.push({ task: t, visibleKeys });
     } else if (visibleKeys.length === 1) {
       singleTasks[visibleKeys[0]].push(t);
-    } else {
-      // Task exists but falls outside the visible week — skip
     }
   });
 
-  // ── Build board ────────────────────────────────────────────────────────────
   board.innerHTML = '';
 
-  // CSS grid: 8 columns (no-date + 7 days), rows grow with content
-  // Row 1: headers
-  // Row 2: span-row (spanning cards live here)
-  // Row 3+: per-column bodies + add buttons (each col is an independent flex stack)
-
-  // Column headers
+  // Header row
   const headerRow = document.createElement('div');
   headerRow.className = 'board-header-row';
   [null, ...days].forEach((day, i) => {
@@ -83,12 +117,11 @@ export function renderBoard(tasks) {
   });
   board.appendChild(headerRow);
 
-  // Span row — grid row where multi-day cards live
+  // Span row
   const spanRow = document.createElement('div');
   spanRow.className = 'board-span-row';
-  // Render multi-day cards
   spanTasks.forEach(({ task, visibleKeys }) => {
-    const startIdx = allKeys.indexOf(visibleKeys[0]);   // 1-based grid col
+    const startIdx = allKeys.indexOf(visibleKeys[0]);
     const endIdx   = allKeys.indexOf(visibleKeys[visibleKeys.length - 1]);
     const card = buildSpanCard(task, visibleKeys.length);
     card.style.gridColumn = `${startIdx + 1} / ${endIdx + 2}`;
@@ -96,10 +129,10 @@ export function renderBoard(tasks) {
   });
   board.appendChild(spanRow);
 
-  // Per-column bodies
+  // Body row
   const bodyRow = document.createElement('div');
   bodyRow.className = 'board-body-row';
-  allKeys.forEach((key, i) => {
+  allKeys.forEach(key => {
     const col = document.createElement('div');
     col.className = 'column-body-wrap' + (key === 'no-date' ? ' no-date' : '');
     col.dataset.colKey = key;
@@ -145,17 +178,22 @@ function metaHtml(task) {
   return `${tagsHtml}${dueDateHtml}${progressHtml}`;
 }
 
-/** Single-day card (unchanged visual) */
 function buildTaskCard(task) {
   const card = document.createElement('div');
   card.className = 'task-card' + (task.completed ? ' completed' : '');
   card.dataset.taskId = task.id;
   card.draggable = true;
 
+  // Notes indicator icon
+  const notesIcon = task.notes && task.notes.trim()
+    ? `<span class="notes-icon" aria-label="Has notes">📝</span>`
+    : '';
+
   card.innerHTML = `
     <div class="task-top">
       <button class="task-check${task.completed ? ' checked' : ''}" aria-label="${task.completed ? 'Mark incomplete' : 'Mark complete'}" data-check></button>
       <span class="task-title">${escHtml(task.title)}</span>
+      ${notesIcon}
     </div>
     <div class="task-meta">
       <span class="priority-badge ${task.priority || 'medium'}">${task.priority || 'medium'}</span>
@@ -167,23 +205,27 @@ function buildTaskCard(task) {
     toggleComplete(task.id, !task.completed);
   });
   card.addEventListener('click', () => openModal(task));
+
+  attachNoteTooltip(card, task.notes);
   return card;
 }
 
-/** Spanning card — wide pill that stretches across columns */
 function buildSpanCard(task, spanDays) {
   const card = document.createElement('div');
   card.className = 'task-card span-card' + (task.completed ? ' completed' : '');
   card.dataset.taskId = task.id;
 
-  const priorityClass = task.priority || 'medium';
+  const notesIcon = task.notes && task.notes.trim()
+    ? `<span class="notes-icon" aria-label="Has notes">📝</span>`
+    : '';
 
   card.innerHTML = `
     <div class="span-card-inner">
       <button class="task-check${task.completed ? ' checked' : ''}" aria-label="${task.completed ? 'Mark incomplete' : 'Mark complete'}" data-check></button>
       <span class="task-title">${escHtml(task.title)}</span>
-      <span class="priority-badge ${priorityClass}">${priorityClass}</span>
+      <span class="priority-badge ${task.priority || 'medium'}">${task.priority || 'medium'}</span>
       ${metaHtml(task)}
+      ${notesIcon}
       <span class="span-days-badge">${spanDays}d</span>
     </div>`;
 
@@ -192,6 +234,8 @@ function buildSpanCard(task, spanDays) {
     toggleComplete(task.id, !task.completed);
   });
   card.addEventListener('click', () => openModal(task));
+
+  attachNoteTooltip(card, task.notes);
   return card;
 }
 
@@ -218,9 +262,7 @@ function showInlineAdd(col, addArea, colKey, addBtn) {
     const title = input.value.trim();
     if (!title) { cancel(); return; }
     let doOnFrom = null;
-    if (colKey !== 'no-date') {
-      doOnFrom = Timestamp.fromDate(dateKeyToDate(colKey));
-    }
+    if (colKey !== 'no-date') doOnFrom = Timestamp.fromDate(dateKeyToDate(colKey));
     const colTasks = currentTasks.filter(t => taskDisplayKeys(t).includes(colKey));
     const maxOrder = Math.max(0, ...colTasks.map(t => t.order || 0));
     await addTask({ title, doOnFrom, doOnTo: doOnFrom, order: maxOrder + 1000 });
@@ -238,7 +280,7 @@ function showInlineAdd(col, addArea, colKey, addBtn) {
   });
 }
 
-// ── Drag & drop (single-day cards only) ───────────────────────────────────────
+// ── Drag & drop ─────────────────────────────────────────────────────────────────
 
 let dragId = null;
 
@@ -284,7 +326,7 @@ function bindDragAndDrop() {
       } else if (dropIndex === 0) {
         newOrder = (colTasks[0]?.order || 1000) / 2;
       } else {
-        newOrder = ((colTasks[dropIndex - 1]?.order || 0) + (colTasks[dropIndex]?.order || 0)) / 2;
+        newOrder = ((colTasks[dropIndex-1]?.order || 0) + (colTasks[dropIndex]?.order || 0)) / 2;
       }
 
       const { Timestamp: T } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
@@ -302,8 +344,8 @@ function bindDragAndDrop() {
 
 function escHtml(str) {
   return String(str)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 export function prevWeek()  { weekOffset--; }

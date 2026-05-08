@@ -2,23 +2,24 @@ import { saveTask, deleteTask, addTask } from './store.js';
 import { createSubtask } from './models.js';
 import { Timestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-const overlay      = document.getElementById('modal-overlay');
-const form         = document.getElementById('task-form');
-const titleInput   = document.getElementById('edit-title');
-const priorityInput= document.getElementById('edit-priority');
-const doOnFromInput= document.getElementById('edit-do-on-from');
-const doOnToInput  = document.getElementById('edit-do-on-to');
-const dueDateInput = document.getElementById('edit-due-date');
-const tagsInput    = document.getElementById('edit-tags');
-const subtaskList  = document.getElementById('subtask-list');
+const overlay       = document.getElementById('modal-overlay');
+const form          = document.getElementById('task-form');
+const titleInput    = document.getElementById('edit-title');
+const priorityInput = document.getElementById('edit-priority');
+const doOnFromInput = document.getElementById('edit-do-on-from');
+const doOnToInput   = document.getElementById('edit-do-on-to');
+const dueDateInput  = document.getElementById('edit-due-date');
+const tagsInput     = document.getElementById('edit-tags');
+const notesInput    = document.getElementById('edit-notes');
+const subtaskList   = document.getElementById('subtask-list');
 const newSubtaskInput = document.getElementById('new-subtask-input');
 const addSubtaskBtn   = document.getElementById('add-subtask-btn');
-const deleteBtn    = document.getElementById('delete-task-btn');
-const cancelBtn    = document.getElementById('modal-cancel');
-const closeBtn     = document.getElementById('modal-close');
+const deleteBtn     = document.getElementById('delete-task-btn');
+const cancelBtn     = document.getElementById('modal-cancel');
+const closeBtn      = document.getElementById('modal-close');
 
-let currentTask    = null;
-let pendingSubtasks= [];
+let currentTask     = null;
+let pendingSubtasks = [];
 
 function tsToInputVal(ts) {
   if (!ts) return '';
@@ -34,17 +35,17 @@ function inputToTs(val) {
 }
 
 export function openModal(task) {
-  currentTask = task;
+  currentTask     = task;
   pendingSubtasks = JSON.parse(JSON.stringify(task.subtasks || []));
 
-  titleInput.value    = task.title || '';
+  titleInput.value    = task.title    || '';
   priorityInput.value = task.priority || 'medium';
   doOnFromInput.value = tsToInputVal(task.doOnFrom);
-  doOnToInput.value   = tsToInputVal(task.doOnTo || task.doOnFrom); // default To = From
+  doOnToInput.value   = tsToInputVal(task.doOnTo || task.doOnFrom);
   dueDateInput.value  = tsToInputVal(task.dueDate);
   tagsInput.value     = (task.tags || []).join(', ');
+  notesInput.value    = task.notes || '';
 
-  // Keep doOnTo >= doOnFrom
   doOnFromInput.addEventListener('change', enforceSpanOrder, { once: false });
 
   renderSubtasks();
@@ -95,7 +96,7 @@ newSubtaskInput.addEventListener('keydown', e => {
 
 function closeModal() {
   overlay.hidden = true;
-  currentTask = null;
+  currentTask     = null;
   pendingSubtasks = [];
   form.reset();
   subtaskList.innerHTML = '';
@@ -124,12 +125,13 @@ form.addEventListener('submit', async e => {
 
   const fields = {
     title,
-    priority:  priorityInput.value,
+    priority: priorityInput.value,
     doOnFrom,
     doOnTo,
-    dueDate:   inputToTs(dueDateInput.value),
-    tags:      tagsInput.value.split(',').map(t => t.trim()).filter(Boolean),
-    subtasks:  pendingSubtasks
+    dueDate:  inputToTs(dueDateInput.value),
+    tags:     tagsInput.value.split(',').map(t => t.trim()).filter(Boolean),
+    notes:    notesInput.value.trim(),
+    subtasks: pendingSubtasks
   };
 
   if (currentTask?.id) {
