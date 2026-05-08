@@ -10,13 +10,17 @@ const doOnFromInput = document.getElementById('edit-do-on-from');
 const doOnToInput   = document.getElementById('edit-do-on-to');
 const dueDateInput  = document.getElementById('edit-due-date');
 const tagsInput     = document.getElementById('edit-tags');
-const notesInput    = document.getElementById('edit-notes');
 const subtaskList   = document.getElementById('subtask-list');
 const newSubtaskInput = document.getElementById('new-subtask-input');
 const addSubtaskBtn   = document.getElementById('add-subtask-btn');
 const deleteBtn     = document.getElementById('delete-task-btn');
 const cancelBtn     = document.getElementById('modal-cancel');
 const closeBtn      = document.getElementById('modal-close');
+
+// Read notesInput fresh each time in case element wasn't available at module load
+function getNotesInput() {
+  return document.getElementById('edit-notes');
+}
 
 let currentTask     = null;
 let pendingSubtasks = [];
@@ -44,7 +48,9 @@ export function openModal(task) {
   doOnToInput.value   = tsToInputVal(task.doOnTo || task.doOnFrom);
   dueDateInput.value  = tsToInputVal(task.dueDate);
   tagsInput.value     = (task.tags || []).join(', ');
-  notesInput.value    = task.notes || '';
+
+  const notesEl = getNotesInput();
+  if (notesEl) notesEl.value = task.notes || '';
 
   doOnFromInput.addEventListener('change', enforceSpanOrder, { once: false });
 
@@ -123,6 +129,10 @@ form.addEventListener('submit', async e => {
   const doOnFrom = inputToTs(doOnFromInput.value);
   const doOnTo   = inputToTs(doOnToInput.value) || doOnFrom;
 
+  // Read notes fresh from the DOM at submit time
+  const notesEl = getNotesInput();
+  const notes = notesEl ? notesEl.value.trim() : '';
+
   const fields = {
     title,
     priority: priorityInput.value,
@@ -130,7 +140,7 @@ form.addEventListener('submit', async e => {
     doOnTo,
     dueDate:  inputToTs(dueDateInput.value),
     tags:     tagsInput.value.split(',').map(t => t.trim()).filter(Boolean),
-    notes:    notesInput.value.trim(),
+    notes,
     subtasks: pendingSubtasks
   };
 
