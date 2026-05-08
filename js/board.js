@@ -12,7 +12,7 @@ const weekLabel = document.getElementById('week-label');
 const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-// ── Tooltip singleton ───────────────────────────────────────────────────────────
+// ── Tooltip singleton ───────────────────────────────────────────────────────
 const tooltip = document.createElement('div');
 tooltip.className = 'notes-tooltip';
 tooltip.setAttribute('role', 'tooltip');
@@ -32,15 +32,16 @@ function hideTooltip() {
 }
 
 function positionTooltip(el) {
-  const rect  = el.getBoundingClientRect();
-  const gap   = 8;
+  const rect   = el.getBoundingClientRect();
+  const gap    = 8;
+  const indent = 20;
 
-  // Always position below the card
-  let top  = rect.bottom + gap + window.scrollY;
-  let left = rect.left + window.scrollX;
+  // Below the card, indented 20px from its left edge
+  let top  = rect.bottom + gap;
+  let left = rect.left + indent;
 
   // Keep within viewport horizontally
-  tooltip.style.left = '0px'; // reset before measuring
+  tooltip.style.left = '0px';
   tooltip.style.top  = `${top}px`;
   const tWidth  = tooltip.offsetWidth;
   const maxLeft = window.innerWidth - tWidth - 8;
@@ -56,7 +57,7 @@ function attachNoteTooltip(el, notes) {
   el.addEventListener('mouseleave', hideTooltip);
 }
 
-// ── Week / render ──────────────────────────────────────────────────────────────
+// ── Week / render ────────────────────────────────────────────────────────────
 
 export function getDays() {
   const today = new Date();
@@ -159,7 +160,7 @@ export function renderBoard(tasks) {
   bindDragAndDrop();
 }
 
-// ── Card builders ─────────────────────────────────────────────────────────────
+// ── Card builders ────────────────────────────────────────────────────────────
 
 function metaHtml(task) {
   const subtasksDone  = (task.subtasks || []).filter(s => s.completed).length;
@@ -236,7 +237,7 @@ function buildSpanCard(task, spanDays) {
   return card;
 }
 
-// ── Inline add ────────────────────────────────────────────────────────────────
+// ── Inline add ───────────────────────────────────────────────────────────────
 
 function showInlineAdd(col, addArea, colKey, addBtn) {
   addBtn.style.display = 'none';
@@ -277,7 +278,7 @@ function showInlineAdd(col, addArea, colKey, addBtn) {
   });
 }
 
-// ── Drag & drop ─────────────────────────────────────────────────────────────────
+// ── Drag & drop ──────────────────────────────────────────────────────────────
 
 let dragId = null;
 
