@@ -261,24 +261,20 @@ img, svg { display: block; max-width: 100%; }
 /* ── BOARD LAYOUT ──────────────────────────────────────────────────── */
 .board {
   height: calc(100dvh - var(--topbar-h) - 28px);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  width: 100%;
+  display: flex; flex-direction: column;
+  overflow: hidden; width: 100%;
 }
 .board-header-row,
 .board-span-row,
 .board-body-row {
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
-  width: 100%;
-  min-width: 0;
+  width: 100%; min-width: 0;
 }
 
 /* ── COLUMN HEADERS ────────────────────────────────────────────────── */
 .board-header-row {
-  flex-shrink: 0;
-  z-index: 20;
+  flex-shrink: 0; z-index: 20;
   border-bottom: 1px solid var(--col-header-border);
 }
 .column-header {
@@ -289,15 +285,23 @@ img, svg { display: block; max-width: 100%; }
 }
 .column-header:last-child { border-right: none; }
 
+/* Weekend — slightly darker neutral */
 .column-header[data-col="sat"],
 .column-header[data-col="sun"] { background: var(--col-weekend-header-bg); }
 
-.column-header.is-today { background: color-mix(in srgb, var(--col-header-bg) 80%, rgba(74,124,111,.20)); }
-.column-header.is-today::after {
-  content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px;
+/* Today — filled with primary color, white text */
+.column-header.is-today {
   background: var(--color-primary);
+  border-right-color: var(--color-primary-active);
 }
-.column-header.is-today .col-date { color: var(--color-primary); }
+.column-header.is-today .col-day {
+  color: rgba(255,255,255,.65);
+}
+.column-header.is-today .col-date {
+  color: #ffffff;
+}
+/* Remove the bottom bar — not needed now that the whole header is filled */
+.column-header.is-today::after { display: none; }
 
 .col-day {
   font-size: 10px; font-weight: 700;
