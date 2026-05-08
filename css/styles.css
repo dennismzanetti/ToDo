@@ -132,7 +132,7 @@ img,svg{display:block;max-width:100%}
 .notes-icon{font-size:11px;opacity:.5;flex-shrink:0;line-height:1;margin-top:2px}
 .task-card.has-notes .notes-icon,.span-card.has-notes .notes-icon{opacity:.65}
 
-/* Notes tooltip */
+/* Notes tooltip — always below the card, no translateY offset */
 .notes-tooltip{
   position:fixed;
   z-index:300;
@@ -148,12 +148,10 @@ img,svg{display:block;max-width:100%}
   white-space:pre-wrap;
   word-break:break-word;
   opacity:0;
-  transform:translateY(4px);
-  transition:opacity .15s ease, transform .15s ease;
+  transition:opacity .15s ease;
 }
 .notes-tooltip.visible{
   opacity:1;
-  transform:translateY(0);
 }
 
 /* Templates view */
