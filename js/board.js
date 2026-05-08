@@ -36,11 +36,9 @@ function positionTooltip(el) {
   const gap    = 8;
   const indent = 20;
 
-  // Below the card, indented 20px from its left edge
   let top  = rect.bottom + gap;
   let left = rect.left + indent;
 
-  // Keep within viewport horizontally
   tooltip.style.left = '0px';
   tooltip.style.top  = `${top}px`;
   const tWidth  = tooltip.offsetWidth;
@@ -136,14 +134,7 @@ export function renderBoard(tasks) {
     col.className = 'column-body-wrap' + (key === 'no-date' ? ' no-date' : '');
     col.dataset.colKey = key;
 
-    const body = document.createElement('div');
-    body.className = 'column-body';
-    col.appendChild(body);
-
-    (singleTasks[key] || []).sort((a, b) => (a.order || 0) - (b.order || 0)).forEach(task => {
-      body.appendChild(buildTaskCard(task));
-    });
-
+    // ── Add button at the TOP ──
     const addArea = document.createElement('div');
     addArea.className = 'column-add';
     const addBtn = document.createElement('button');
@@ -151,6 +142,15 @@ export function renderBoard(tasks) {
     addBtn.textContent = '+ Add task';
     addArea.appendChild(addBtn);
     col.appendChild(addArea);
+
+    // ── Task cards below ──
+    const body = document.createElement('div');
+    body.className = 'column-body';
+    col.appendChild(body);
+
+    (singleTasks[key] || []).sort((a, b) => (a.order || 0) - (b.order || 0)).forEach(task => {
+      body.appendChild(buildTaskCard(task));
+    });
 
     addBtn.addEventListener('click', () => showInlineAdd(col, addArea, key, addBtn));
     bodyRow.appendChild(col);
@@ -262,8 +262,8 @@ function showInlineAdd(col, addArea, colKey, addBtn) {
     let doOnFrom = null;
     if (colKey !== 'no-date') doOnFrom = Timestamp.fromDate(dateKeyToDate(colKey));
     const colTasks = currentTasks.filter(t => taskDisplayKeys(t).includes(colKey));
-    const maxOrder = Math.max(0, ...colTasks.map(t => t.order || 0));
-    await addTask({ title, doOnFrom, doOnTo: doOnFrom, order: maxOrder + 1000 });
+    const minOrder = Math.min(0, ...colTasks.map(t => t.order || 0));
+    await addTask({ title, doOnFrom, doOnTo: doOnFrom, order: minOrder - 1000 });
     cancel();
   };
 
