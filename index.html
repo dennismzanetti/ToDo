@@ -96,10 +96,13 @@
                   <option value="high">High</option>
                 </select>
               </label>
-              <label class="form-field">
-                <span>Due Date <span class="hint">(deadline)</span></span>
-                <input type="date" id="edit-due-date" />
-              </label>
+              <div class="form-field">
+                <span class="field-label">Due Date <span class="hint">(deadline)</span></span>
+                <div class="date-clear-row">
+                  <input type="date" id="edit-due-date" />
+                  <button type="button" class="clear-date-btn" id="clear-due-date" aria-label="Clear due date" title="Clear due date">&times;</button>
+                </div>
+              </div>
             </div>
 
             <label class="form-field">
