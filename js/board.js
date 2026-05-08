@@ -35,16 +35,13 @@ function positionTooltip(el) {
   const rect   = el.getBoundingClientRect();
   const gap    = 8;
   const indent = 20;
-
   let top  = rect.bottom + gap;
   let left = rect.left + indent;
-
   tooltip.style.left = '0px';
   tooltip.style.top  = `${top}px`;
   const tWidth  = tooltip.offsetWidth;
   const maxLeft = window.innerWidth - tWidth - 8;
   left = Math.max(8, Math.min(left, maxLeft));
-
   tooltip.style.left = `${left}px`;
 }
 
@@ -95,26 +92,37 @@ export function renderBoard(tasks) {
 
   board.innerHTML = '';
 
-  // Header row
+  // ── Header row ──
   const headerRow = document.createElement('div');
   headerRow.className = 'board-header-row';
-  [null, ...days].forEach((day, i) => {
+
+  // No-date column header
+  const noDateHdr = document.createElement('div');
+  noDateHdr.className = 'column-header no-date-header';
+  noDateHdr.dataset.col = 'no-date';
+  noDateHdr.innerHTML = `<div class="col-day">No Date</div><div class="col-date">—</div>`;
+  headerRow.appendChild(noDateHdr);
+
+  days.forEach(day => {
+    const key = toDateKey(day);
+    const isToday   = key === todayKey;
+    const dayIdx    = day.getDay(); // 0=Sun,6=Sat
+    const isWeekend = dayIdx === 0 || dayIdx === 6;
+    const dayName   = DAYS[dayIdx].toLowerCase();
+
     const hdr = document.createElement('div');
-    hdr.className = 'column-header';
-    if (i === 0) {
-      hdr.innerHTML = `<div class="col-day">No Date</div><div class="col-date">—</div>`;
-    } else {
-      const key = toDateKey(day);
-      const isToday = key === todayKey;
-      hdr.innerHTML =
-        `<div class="col-day">${DAYS[day.getDay()]}</div>` +
-        `<div class="col-date${isToday ? ' today' : ''}">${MONTHS[day.getMonth()]} ${day.getDate()}</div>`;
-    }
+    hdr.className = 'column-header' +
+      (isToday   ? ' is-today'   : '') +
+      (isWeekend ? ' is-weekend' : ' is-weekday');
+    hdr.dataset.col = dayName;
+    hdr.innerHTML =
+      `<div class="col-day">${DAYS[dayIdx]}</div>` +
+      `<div class="col-date${isToday ? ' today' : ''}">${MONTHS[day.getMonth()]} ${day.getDate()}</div>`;
     headerRow.appendChild(hdr);
   });
   board.appendChild(headerRow);
 
-  // Span row
+  // ── Span row ──
   const spanRow = document.createElement('div');
   spanRow.className = 'board-span-row';
   spanTasks.forEach(({ task, visibleKeys }) => {
@@ -126,15 +134,31 @@ export function renderBoard(tasks) {
   });
   board.appendChild(spanRow);
 
-  // Body row
+  // ── Body row ──
   const bodyRow = document.createElement('div');
   bodyRow.className = 'board-body-row';
-  allKeys.forEach(key => {
-    const col = document.createElement('div');
-    col.className = 'column-body-wrap' + (key === 'no-date' ? ' no-date' : '');
-    col.dataset.colKey = key;
 
-    // ── Add button at the TOP ──
+  allKeys.forEach((key, colIndex) => {
+    const col = document.createElement('div');
+    let dayName = 'no-date';
+    let isWeekend = false;
+    let isToday = false;
+
+    if (key !== 'no-date') {
+      const day = days[colIndex - 1]; // colIndex 0 = no-date, 1..7 = days
+      const dayIdx = day.getDay();
+      isWeekend = dayIdx === 0 || dayIdx === 6;
+      isToday   = key === todayKey;
+      dayName   = DAYS[dayIdx].toLowerCase();
+    }
+
+    col.className = 'column-body-wrap' +
+      (key === 'no-date' ? ' no-date' : '') +
+      (isWeekend ? ' is-weekend' : '') +
+      (isToday   ? ' is-today'   : '');
+    col.dataset.colKey = key;
+    col.dataset.col    = dayName;
+
     const addArea = document.createElement('div');
     addArea.className = 'column-add';
     const addBtn = document.createElement('button');
@@ -143,7 +167,6 @@ export function renderBoard(tasks) {
     addArea.appendChild(addBtn);
     col.appendChild(addArea);
 
-    // ── Task cards below ──
     const body = document.createElement('div');
     body.className = 'column-body';
     col.appendChild(body);
@@ -179,7 +202,8 @@ function metaHtml(task) {
 
 function buildTaskCard(task) {
   const card = document.createElement('div');
-  card.className = 'task-card' + (task.completed ? ' completed' : '');
+  const priority = task.priority || 'medium';
+  card.className = `task-card priority-${priority}` + (task.completed ? ' completed' : '');
   card.dataset.taskId = task.id;
   card.draggable = true;
 
@@ -194,7 +218,7 @@ function buildTaskCard(task) {
       ${notesIcon}
     </div>
     <div class="task-meta">
-      <span class="priority-badge ${task.priority || 'medium'}">${task.priority || 'medium'}</span>
+      <span class="priority-badge ${priority}">${priority}</span>
       ${metaHtml(task)}
     </div>`;
 
@@ -210,7 +234,8 @@ function buildTaskCard(task) {
 
 function buildSpanCard(task, spanDays) {
   const card = document.createElement('div');
-  card.className = 'task-card span-card' + (task.completed ? ' completed' : '');
+  const priority = task.priority || 'medium';
+  card.className = `task-card span-card priority-${priority}` + (task.completed ? ' completed' : '');
   card.dataset.taskId = task.id;
 
   const notesIcon = task.notes && task.notes.trim()
@@ -221,7 +246,7 @@ function buildSpanCard(task, spanDays) {
     <div class="span-card-inner">
       <button class="task-check${task.completed ? ' checked' : ''}" aria-label="${task.completed ? 'Mark incomplete' : 'Mark complete'}" data-check></button>
       <span class="task-title">${escHtml(task.title)}</span>
-      <span class="priority-badge ${task.priority || 'medium'}">${task.priority || 'medium'}</span>
+      <span class="priority-badge ${priority}">${priority}</span>
       ${metaHtml(task)}
       ${notesIcon}
       <span class="span-days-badge">${spanDays}d</span>
