@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Templates – To-Do List</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 64 64" aria-label="To-Do List" role="img" class="logo" width="36" height="36">
+        <rect x="10" y="8" width="44" height="48" rx="10" stroke="currentColor" stroke-width="4" fill="none"/>
+        <path d="M20 24h24M20 34h24M20 44h14" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+        <path d="M15 24l3 3 6-7" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="brand-name">To-Do List</span>
+    </div>
+
+    <nav class="main-nav" aria-label="Main navigation">
+      <a class="nav-btn" href="index.html">Board</a>
+      <a class="nav-btn active" href="templates.html">Templates</a>
+    </nav>
+
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+  </header>
+
+  <!-- Templates view -->
+  <div id="templates-view" class="templates-view">
+    <div class="templates-header">
+      <div>
+        <h2>Task Templates</h2>
+        <p class="muted">Recurring tasks automatically added to your board each week.</p>
+      </div>
+      <button class="primary-btn" id="new-template-btn">+ New template</button>
+    </div>
+    <div id="templates-list" class="templates-list"></div>
+    <div class="empty-state" id="templates-empty">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 12h6M12 9v6"/></svg>
+      <h3>No templates yet</h3>
+      <p>Create a template to automatically add recurring tasks to your board each week.</p>
+      <button class="primary-btn" id="empty-new-template-btn">+ New template</button>
+    </div>
+  </div>
+
+  <!-- Template edit modal -->
+  <div class="modal-overlay" id="tmpl-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="tmpl-modal-title" hidden>
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="tmpl-modal-title">New Template</h2>
+        <button class="icon-btn" id="tmpl-modal-close" aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form id="tmpl-form" class="task-form" novalidate>
+        <input type="hidden" id="tmpl-id" />
+        <label class="form-field">
+          <span>Title <span class="required">*</span></span>
+          <input type="text" id="tmpl-title" placeholder="Template title" required />
+        </label>
+        <div class="form-row">
+          <label class="form-field">
+            <span>Priority</span>
+            <select id="tmpl-priority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </label>
+          <label class="form-field">
+            <span>Recurrence</span>
+            <select id="tmpl-recurrence">
+              <option value="daily">Daily (Mon–Fri)</option>
+              <option value="daily-all">Daily (every day)</option>
+              <option value="mon">Every Monday</option>
+              <option value="tue">Every Tuesday</option>
+              <option value="wed">Every Wednesday</option>
+              <option value="thu">Every Thursday</option>
+              <option value="fri">Every Friday</option>
+              <option value="sat">Every Saturday</option>
+              <option value="sun">Every Sunday</option>
+            </select>
+          </label>
+        </div>
+        <label class="form-field">
+          <span>Tags <span class="hint">(comma separated)</span></span>
+          <input type="text" id="tmpl-tags" placeholder="e.g. work, routine" />
+        </label>
+        <div class="form-field">
+          <span class="field-label">Subtasks</span>
+          <div id="tmpl-subtask-list" class="subtask-list"></div>
+          <div class="subtask-add-row">
+            <input type="text" id="tmpl-new-subtask" placeholder="Add a subtask..." />
+            <button type="button" class="secondary-btn" id="tmpl-add-subtask-btn">Add</button>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="danger-btn" id="tmpl-delete-btn" hidden>Delete template</button>
+          <div class="modal-actions-right">
+            <button type="button" class="secondary-btn" id="tmpl-cancel">Cancel</button>
+            <button type="submit" class="primary-btn">Save template</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="./js/templates-app.js"></script>
+</body>
+</html>
