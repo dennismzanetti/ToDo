@@ -57,6 +57,11 @@ export function templateMatchesDate(template, date) {
   }
 }
 
+/**
+ * Returns the list of date-keys (YYYY-MM-DD) that a task should appear in.
+ * Column placement is controlled ONLY by doOnFrom / doOnTo.
+ * dueDate is a display-only deadline badge and never affects placement.
+ */
 export function taskDisplayKeys(task) {
   const from = tsToDate(task.doOnFrom);
   const to   = tsToDate(task.doOnTo);
@@ -75,11 +80,7 @@ export function taskDisplayKeys(task) {
     return keys;
   }
 
-  if (task.dueDate) {
-    const d = tsToDate(task.dueDate);
-    return d ? [toDateKey(d)] : ['no-date'];
-  }
-
+  // No doOnFrom set — always show in "No Date" column regardless of dueDate
   return ['no-date'];
 }
 
