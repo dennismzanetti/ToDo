@@ -16,7 +16,6 @@
   --shadow-sm:0 1px 2px rgba(0,0,0,.06);--shadow-md:0 4px 12px rgba(0,0,0,.08);--shadow-lg:0 12px 32px rgba(0,0,0,.14);
   --font-body:'Inter',sans-serif;
   --topbar-h:56px;
-  --col-count:8;
 }
 [data-theme="dark"]{
   --color-bg:#171614;--color-surface:#1c1b19;--color-surface-2:#201f1d;
@@ -59,28 +58,31 @@ img,svg{display:block;max-width:100%}
 #board.view.active{display:block}
 
 /* =====================================================================
-   BOARD LAYOUT — Responsive Grid
-   Desktop  (≥900px):  8 equal fluid columns, no horizontal scroll
-   Tablet   (480–899px): 4 columns with horizontal scroll for the rest
-   Mobile   (<480px):  single-column stacked card layout
+   BOARD LAYOUT
+   Desktop  (≥860px):  8 equal fluid columns — all fit in the viewport
+   Tablet   (<860px):  4 equal fluid columns — columns 5-8 scroll
+   Mobile   (<480px):  single-column stacked layout
    ===================================================================== */
+
 .board{
   height:calc(100dvh - var(--topbar-h));
   overflow-y:auto;
   overflow-x:hidden;
   display:flex;
   flex-direction:column;
+  width:100%;
 }
 .board::-webkit-scrollbar{height:6px;width:6px}
 .board::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:3px}
 
-/* ── 8-column fluid grid (desktop default) ── */
+/* ── Desktop: 8 columns always fill 100% of the viewport width ── */
 .board-header-row,
 .board-span-row,
 .board-body-row{
   display:grid;
   grid-template-columns:repeat(8,minmax(0,1fr));
   width:100%;
+  min-width:0;
 }
 
 /* Header row */
@@ -213,7 +215,6 @@ img,svg{display:block;max-width:100%}
 .modal{
   background:var(--color-surface);
   border-radius:var(--radius-xl);
-  /* Fixed height so modal never scrolls — fills viewport with padding */
   width:min(860px, calc(100vw - 2 * var(--space-4)));
   height:min(560px, calc(100dvh - 2 * var(--space-4)));
   display:flex;
@@ -222,7 +223,6 @@ img,svg{display:block;max-width:100%}
   box-shadow:var(--shadow-lg);
 }
 
-/* Header */
 .modal-header{
   display:flex;
   justify-content:space-between;
@@ -233,7 +233,6 @@ img,svg{display:block;max-width:100%}
 }
 .modal-header h2{font-size:var(--text-base);font-weight:700}
 
-/* Form fills remaining height */
 .task-form{
   flex:1;
   display:flex;
@@ -241,7 +240,6 @@ img,svg{display:block;max-width:100%}
   min-height:0;
 }
 
-/* Two-column body */
 .modal-body{
   flex:1;
   display:grid;
@@ -263,14 +261,12 @@ img,svg{display:block;max-width:100%}
   border-right:1px solid var(--color-divider);
 }
 
-/* Right column: notes + subtasks grow to fill height */
 .modal-col-right{
   overflow-y:auto;
 }
 .modal-col-right::-webkit-scrollbar{width:4px}
 .modal-col-right::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:2px}
 
-/* Form fields */
 .form-field{
   display:flex;
   flex-direction:column;
@@ -293,7 +289,6 @@ img,svg{display:block;max-width:100%}
 }
 .required{color:var(--color-error)}
 
-/* Notes textarea fills available height in right col */
 .form-field-grow{
   flex:1;
   min-height:0;
@@ -326,7 +321,6 @@ input:focus,textarea:focus,select:focus{
 
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)}
 
-/* Subtask list scrolls inside right column */
 .subtask-list{
   display:flex;
   flex-direction:column;
@@ -355,7 +349,6 @@ input:focus,textarea:focus,select:focus{
 .subtask-remove:hover{color:var(--color-error)}
 .subtask-add-row{display:flex;gap:var(--space-2);flex-shrink:0}
 
-/* Modal footer */
 .modal-actions{
   display:flex;
   justify-content:space-between;
@@ -375,17 +368,34 @@ input:focus,textarea:focus,select:focus{
 .danger-btn:hover{background:var(--color-error);color:#fff}
 
 /* =====================================================================
-   BREAKPOINT: Tablet — 4 visible columns, horizontal scroll for rest
+   BREAKPOINT: Tablet / small desktop — 4 visible columns, rest scrollable
+   Triggers below 860px (a typical small laptop / large tablet width)
    ===================================================================== */
-@media(max-width:899px){
-  .board{overflow-x:auto}
+@media(max-width:859px){
+  /* Allow horizontal scroll on the board wrapper */
+  .board{
+    overflow-x:auto;
+    overflow-y:hidden;
+  }
+
+  /*
+   * Each grid row is now exactly 8 columns wide but each column has a
+   * fixed minimum of 25vw — so exactly 4 columns are visible at once
+   * and columns 5-8 are reachable by scrolling.
+   */
   .board-header-row,
   .board-span-row,
   .board-body-row{
-    grid-template-columns:repeat(8,minmax(200px,1fr));
-    min-width:calc(4 * 200px);
+    grid-template-columns:repeat(8, minmax(25vw, 1fr));
     width:max-content;
+    min-width:100%;
   }
+
+  /* The body row needs its own scroll region since the board overflow changed */
+  .board-body-row{
+    min-height:calc(100dvh - var(--topbar-h) - 120px);
+  }
+
   .week-label{min-width:100px;font-size:10px}
 
   /* Stack modal columns on tablet */
@@ -422,6 +432,8 @@ input:focus,textarea:focus,select:focus{
   .board-span-row,
   .board-body-row{
     display:contents;
+    width:auto;
+    min-width:0;
   }
   .column-header{
     display:flex;
