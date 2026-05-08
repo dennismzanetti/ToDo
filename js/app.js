@@ -2,11 +2,10 @@ import { initStore, subscribe } from './store.js';
 import { renderBoard, prevWeek, nextWeek, resetWeek } from './board.js';
 import { applyTemplates } from './templates-engine.js';
 
-// Theme
+// Theme — light is the default; only override if user has explicitly saved a preference
 const root = document.documentElement;
 const themeToggle = document.querySelector('[data-theme-toggle]');
-let theme = localStorage.getItem('theme') ||
-  (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+let theme = localStorage.getItem('theme') || 'light';
 root.setAttribute('data-theme', theme);
 themeToggle.addEventListener('click', () => {
   theme = theme === 'dark' ? 'light' : 'dark';
