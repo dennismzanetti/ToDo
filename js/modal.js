@@ -2,28 +2,40 @@ import { saveTask, deleteTask, addTask } from './store.js';
 import { createSubtask } from './models.js';
 import { Timestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-const overlay       = document.getElementById('modal-overlay');
-const form          = document.getElementById('task-form');
-const titleInput    = document.getElementById('edit-title');
-const priorityInput = document.getElementById('edit-priority');
-const doOnFromInput = document.getElementById('edit-do-on-from');
-const doOnToInput   = document.getElementById('edit-do-on-to');
-const dueDateInput  = document.getElementById('edit-due-date');
-const tagsInput     = document.getElementById('edit-tags');
-const subtaskList   = document.getElementById('subtask-list');
+const overlay         = document.getElementById('modal-overlay');
+const form            = document.getElementById('task-form');
+const titleInput      = document.getElementById('edit-title');
+const priorityInput   = document.getElementById('edit-priority');
+const doOnFromInput   = document.getElementById('edit-do-on-from');
+const doOnToInput     = document.getElementById('edit-do-on-to');
+const dueDateInput    = document.getElementById('edit-due-date');
+const clearDueDateBtn = document.getElementById('clear-due-date');
+const tagsInput       = document.getElementById('edit-tags');
+const subtaskList     = document.getElementById('subtask-list');
 const newSubtaskInput = document.getElementById('new-subtask-input');
 const addSubtaskBtn   = document.getElementById('add-subtask-btn');
-const deleteBtn     = document.getElementById('delete-task-btn');
-const cancelBtn     = document.getElementById('modal-cancel');
-const closeBtn      = document.getElementById('modal-close');
+const deleteBtn       = document.getElementById('delete-task-btn');
+const cancelBtn       = document.getElementById('modal-cancel');
+const closeBtn        = document.getElementById('modal-close');
+
+// Clear due date button
+clearDueDateBtn.addEventListener('click', () => {
+  dueDateInput.value = '';
+  syncClearBtn();
+});
+
+// Show/hide the clear button based on whether a date is set
+function syncClearBtn() {
+  clearDueDateBtn.style.display = dueDateInput.value ? 'flex' : 'none';
+}
+
+dueDateInput.addEventListener('change', syncClearBtn);
 
 // Resolved after DOM is ready
 let notesInput = null;
 document.addEventListener('DOMContentLoaded', () => {
   notesInput = document.getElementById('edit-notes');
-  console.log('[modal] notesInput bound:', notesInput);
 });
-// Fallback: also try immediately (works if script runs after DOM parse)
 if (!notesInput) {
   notesInput = document.getElementById('edit-notes');
 }
@@ -55,9 +67,9 @@ export function openModal(task) {
   dueDateInput.value  = tsToInputVal(task.dueDate);
   tagsInput.value     = (task.tags || []).join(', ');
 
-  // Always re-query in case reference is stale
+  syncClearBtn();
+
   notesInput = document.getElementById('edit-notes');
-  console.log('[modal] openModal notesInput:', notesInput, 'task.notes:', task.notes);
   if (notesInput) notesInput.value = task.notes || '';
 
   doOnFromInput.addEventListener('change', enforceSpanOrder, { once: false });
@@ -115,6 +127,7 @@ function closeModal() {
   form.reset();
   subtaskList.innerHTML = '';
   doOnToInput.min = '';
+  syncClearBtn();
 }
 
 cancelBtn.addEventListener('click', closeModal);
@@ -137,10 +150,8 @@ form.addEventListener('submit', async e => {
   const doOnFrom = inputToTs(doOnFromInput.value);
   const doOnTo   = inputToTs(doOnToInput.value) || doOnFrom;
 
-  // Re-query at submit time as final safety net
   const notesEl = document.getElementById('edit-notes');
   const notes = notesEl ? notesEl.value.trim() : '';
-  console.log('[modal] submit — notesEl:', notesEl, 'notes value:', notes);
 
   const fields = {
     title,
@@ -152,8 +163,6 @@ form.addEventListener('submit', async e => {
     notes,
     subtasks: pendingSubtasks
   };
-
-  console.log('[modal] saving fields:', fields);
 
   if (currentTask?.id) {
     await saveTask(currentTask.id, fields);
