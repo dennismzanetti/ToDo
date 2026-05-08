@@ -33,20 +33,19 @@ function hideTooltip() {
 
 function positionTooltip(el) {
   const rect  = el.getBoundingClientRect();
-  const tRect = tooltip.getBoundingClientRect();
   const gap   = 8;
 
-  let top  = rect.top - tRect.height - gap + window.scrollY;
+  // Always position below the card
+  let top  = rect.bottom + gap + window.scrollY;
   let left = rect.left + window.scrollX;
 
-  // Flip below if not enough space above
-  if (top < window.scrollY + 4) top = rect.bottom + gap + window.scrollY;
-
   // Keep within viewport horizontally
-  const maxLeft = window.innerWidth - tRect.width - 8;
+  tooltip.style.left = '0px'; // reset before measuring
+  tooltip.style.top  = `${top}px`;
+  const tWidth  = tooltip.offsetWidth;
+  const maxLeft = window.innerWidth - tWidth - 8;
   left = Math.max(8, Math.min(left, maxLeft));
 
-  tooltip.style.top  = `${top}px`;
   tooltip.style.left = `${left}px`;
 }
 
@@ -55,7 +54,6 @@ function attachNoteTooltip(el, notes) {
   el.classList.add('has-notes');
   el.addEventListener('mouseenter', () => showTooltip(notes, el));
   el.addEventListener('mouseleave', hideTooltip);
-  el.addEventListener('mousemove', () => positionTooltip(el));
 }
 
 // ── Week / render ──────────────────────────────────────────────────────────────
@@ -184,7 +182,6 @@ function buildTaskCard(task) {
   card.dataset.taskId = task.id;
   card.draggable = true;
 
-  // Notes indicator icon
   const notesIcon = task.notes && task.notes.trim()
     ? `<span class="notes-icon" aria-label="Has notes">📝</span>`
     : '';
