@@ -17,9 +17,15 @@ const deleteBtn     = document.getElementById('delete-task-btn');
 const cancelBtn     = document.getElementById('modal-cancel');
 const closeBtn      = document.getElementById('modal-close');
 
-// Read notesInput fresh each time in case element wasn't available at module load
-function getNotesInput() {
-  return document.getElementById('edit-notes');
+// Resolved after DOM is ready
+let notesInput = null;
+document.addEventListener('DOMContentLoaded', () => {
+  notesInput = document.getElementById('edit-notes');
+  console.log('[modal] notesInput bound:', notesInput);
+});
+// Fallback: also try immediately (works if script runs after DOM parse)
+if (!notesInput) {
+  notesInput = document.getElementById('edit-notes');
 }
 
 let currentTask     = null;
@@ -49,8 +55,10 @@ export function openModal(task) {
   dueDateInput.value  = tsToInputVal(task.dueDate);
   tagsInput.value     = (task.tags || []).join(', ');
 
-  const notesEl = getNotesInput();
-  if (notesEl) notesEl.value = task.notes || '';
+  // Always re-query in case reference is stale
+  notesInput = document.getElementById('edit-notes');
+  console.log('[modal] openModal notesInput:', notesInput, 'task.notes:', task.notes);
+  if (notesInput) notesInput.value = task.notes || '';
 
   doOnFromInput.addEventListener('change', enforceSpanOrder, { once: false });
 
@@ -129,9 +137,10 @@ form.addEventListener('submit', async e => {
   const doOnFrom = inputToTs(doOnFromInput.value);
   const doOnTo   = inputToTs(doOnToInput.value) || doOnFrom;
 
-  // Read notes fresh from the DOM at submit time
-  const notesEl = getNotesInput();
+  // Re-query at submit time as final safety net
+  const notesEl = document.getElementById('edit-notes');
   const notes = notesEl ? notesEl.value.trim() : '';
+  console.log('[modal] submit — notesEl:', notesEl, 'notes value:', notes);
 
   const fields = {
     title,
@@ -143,6 +152,8 @@ form.addEventListener('submit', async e => {
     notes,
     subtasks: pendingSubtasks
   };
+
+  console.log('[modal] saving fields:', fields);
 
   if (currentTask?.id) {
     await saveTask(currentTask.id, fields);
