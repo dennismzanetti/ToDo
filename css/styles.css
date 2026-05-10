@@ -69,7 +69,6 @@
   --shadow-lg:  0 12px 32px rgba(0,0,0,.10), 0 4px 8px rgba(0,0,0,.05);
   --transition: 160ms cubic-bezier(.16,1,.3,1);
   --topbar-h: 60px;
-  /* Footer height token — used in board height calculations */
   --footer-h: 28px;
 
   /* Topbar — primary teal */
@@ -80,7 +79,7 @@
   --topbar-text-active:    #ffffff;
   --topbar-logo:           rgba(255,255,255,.75);
 
-  /* iOS safe area insets (used below) */
+  /* iOS safe area insets */
   --safe-top:    env(safe-area-inset-top,    0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left:   env(safe-area-inset-left,   0px);
@@ -131,7 +130,6 @@
   --shadow-md:  0 4px 12px rgba(0,0,0,.40), 0 2px 4px rgba(0,0,0,.20);
   --shadow-lg:  0 12px 32px rgba(0,0,0,.50), 0 4px 8px rgba(0,0,0,.30);
 
-  /* Topbar dark — deeper shade of primary */
   --topbar-bg:             #2c4d45;
   --topbar-border:         rgba(0,0,0,.25);
   --topbar-brand-color:    #e0f0ec;
@@ -172,37 +170,42 @@
 
 /* ── BASE RESET ────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
 html {
+  /* Lock html to full viewport — no scrolling at html level */
   height: 100%;
-  /* Use fill-available for iOS Safari height fix */
-  height: -webkit-fill-available;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
   text-rendering: optimizeLegibility;
-  /* Prevent font inflation on iOS landscape */
   -webkit-text-size-adjust: 100%;
   -moz-text-size-adjust: none;
   text-size-adjust: none;
 }
+
 body {
+  /*
+   * KEY FIX: Instead of overflow:hidden + dvh math on children,
+   * we make body a full-height flex column. The topbar is flex-shrink:0,
+   * the active view takes flex:1 and the fixed footer sits on top.
+   * This works on all browsers including iOS Safari where dvh is unreliable.
+   */
   height: 100%;
-  min-height: -webkit-fill-available;
+  display: flex;
+  flex-direction: column;
   font-family: var(--font-body);
   font-size: var(--text-sm);
   background: var(--color-bg);
   color: var(--color-text);
   line-height: 1.5;
   overflow: hidden;
-  /* iOS momentum scrolling for scrollable children */
   -webkit-overflow-scrolling: touch;
-  /* NOTE: -webkit-touch-callout is intentionally NOT set on body
-     so that inputs/textareas retain native copy-paste on iOS */
 }
-/* Only suppress callout on non-interactive card elements */
+
 .task-card, .span-card, .template-card {
   -webkit-touch-callout: none;
 }
+
 a, button, input, textarea, select { font: inherit; color: inherit; }
 button { cursor: pointer; border: none; background: none; }
 img, svg { display: block; max-width: 100%; }
@@ -211,11 +214,9 @@ img, svg { display: block; max-width: 100%; }
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
-/* iOS tap highlight removal */
 a, button, [role="button"] {
   -webkit-tap-highlight-color: transparent;
 }
-/* iOS date input: prevent zoom (font-size must be >= 16px) */
 input[type="date"], input[type="text"], textarea, select {
   font-size: max(16px, var(--text-xs));
 }
@@ -229,7 +230,9 @@ input[type="date"], input[type="text"], textarea, select {
 
 /* ── TOPBAR ────────────────────────────────────────────────────────── */
 .topbar {
-  position: sticky; top: 0; z-index: 50;
+  position: relative;
+  z-index: 50;
+  flex-shrink: 0;
   /* Extend into top safe area (notch / Dynamic Island) */
   padding-top: var(--safe-top);
   height: calc(var(--topbar-h) + var(--safe-top));
@@ -238,12 +241,10 @@ input[type="date"], input[type="text"], textarea, select {
   padding-right: calc(var(--space-6) + var(--safe-right));
   padding-bottom: 0;
   gap: var(--space-4);
-  flex-shrink: 0;
   background: var(--topbar-bg);
   border-bottom: 1px solid var(--topbar-border);
   box-shadow: 0 1px 8px rgba(0,0,0,.15);
 }
-/* Align inner items to the bottom of the extended topbar */
 .topbar > * { margin-bottom: calc(var(--topbar-h) / 2 - 18px); }
 
 .brand { display: flex; align-items: center; gap: var(--space-3); }
@@ -279,7 +280,6 @@ input[type="date"], input[type="text"], textarea, select {
   transition: background var(--transition), color var(--transition);
 }
 .icon-btn:hover { background: rgba(0,0,0,.12); color: rgba(255,255,255,.90); }
-/* iOS active state feedback */
 .icon-btn:active { background: rgba(0,0,0,.20); }
 .today-btn {
   padding: 0 var(--space-4); height: 44px;
@@ -295,17 +295,37 @@ input[type="date"], input[type="text"], textarea, select {
 .today-btn:active { background: rgba(0,0,0,.28); }
 
 /* ── VIEWS ─────────────────────────────────────────────────────────── */
-.view { display: none; }
-.view.active { display: block; }
-#board.view.active { display: flex; flex-direction: column; }
+/*
+ * Views are hidden by default. The active view uses flex:1 so it
+ * fills all remaining space in the body flex column, pushing the
+ * fixed footer below. No dvh math needed anywhere.
+ */
+.view { display: none; flex: 1; min-height: 0; }
+.view.active { display: flex; }
+
+/* Board specifically is a column flex so its inner rows stack */
+#board.view.active {
+  flex-direction: column;
+  overflow: hidden;
+}
 
 /* ── BOARD LAYOUT ──────────────────────────────────────────────────── */
 .board {
-  /* Use the --footer-h token so the calculation stays in sync */
-  height: calc(100dvh - var(--topbar-h) - var(--safe-top) - var(--footer-h) - var(--safe-bottom));
-  display: flex; flex-direction: column;
-  overflow: hidden; width: 100%;
+  /*
+   * FIX: board fills its flex parent (the body) via flex:1 on .view.active.
+   * No dvh height calculation needed — flex:1 + min-height:0 does the job
+   * reliably on all browsers including iOS Safari.
+   */
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 100%;
+  /* Bottom padding so content clears the fixed footer */
+  padding-bottom: calc(var(--footer-h) + var(--safe-bottom));
 }
+
 .board-header-row,
 .board-span-row,
 .board-body-row {
@@ -327,21 +347,15 @@ input[type="date"], input[type="text"], textarea, select {
 }
 .column-header:last-child { border-right: none; }
 
-/* Weekend — slightly darker neutral */
 .column-header[data-col="sat"],
 .column-header[data-col="sun"] { background: var(--col-weekend-header-bg); }
 
-/* Today — filled with primary color, white text */
 .column-header.is-today {
   background: var(--color-primary);
   border-right-color: var(--color-primary-active);
 }
-.column-header.is-today .col-day {
-  color: rgba(255,255,255,.65);
-}
-.column-header.is-today .col-date {
-  color: #ffffff;
-}
+.column-header.is-today .col-day { color: rgba(255,255,255,.65); }
+.column-header.is-today .col-date { color: #ffffff; }
 .column-header.is-today::after { display: none; }
 
 .col-day {
@@ -357,11 +371,9 @@ input[type="date"], input[type="text"], textarea, select {
   color: var(--col-header-text);
 }
 
-/* Weekend subtle emphasis */
 .column-header[data-col="sat"] .col-day,
 .column-header[data-col="sun"] .col-day { font-weight: 800; letter-spacing: .12em; }
 
-/* Saturday left border separator */
 .column-body-wrap[data-col="sat"],
 .column-header[data-col="sat"] { border-left: 1px solid var(--col-body-border); }
 
@@ -432,7 +444,6 @@ input[type="date"], input[type="text"], textarea, select {
 .column-body {
   flex: 1; min-height: 0; overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  /* Allow vertical scroll gestures to pass through naturally */
   touch-action: pan-y;
   padding: var(--space-3);
   display: flex; flex-direction: column; gap: var(--space-2);
@@ -482,8 +493,6 @@ input[type="date"], input[type="text"], textarea, select {
   cursor: pointer;
   transition: box-shadow var(--transition), transform var(--transition), border-color var(--transition);
   user-select: none; position: relative; flex-shrink: 0;
-  /* Default: allow vertical scrolling to work normally.
-     touch-action: none is applied dynamically by JS only during active drag. */
   touch-action: pan-y;
 }
 .task-card.priority-low    { border-left-color: var(--priority-low-accent); }
@@ -492,7 +501,6 @@ input[type="date"], input[type="text"], textarea, select {
 .task-card:hover  { box-shadow: var(--shadow-md); transform: translateY(-1px); }
 .task-card:active { box-shadow: var(--shadow-sm); transform: none; }
 .task-card.dragging { opacity: .4; transform: scale(.97); }
-/* Lock all gestures once drag is confirmed */
 .task-card.touch-dragging { touch-action: none; }
 .task-card.completed { opacity: .55; }
 .task-card.completed .task-title { text-decoration: line-through; color: var(--color-text-faint); }
@@ -512,12 +520,10 @@ input[type="date"], input[type="text"], textarea, select {
   border: 2px solid var(--color-border);
   background: none; display: flex; align-items: center; justify-content: center;
   transition: all var(--transition); margin-top: 1px;
-  /* Ensure 44px tap target via padding */
   padding: 10px;
   box-sizing: content-box;
   margin: -10px;
   margin-right: calc(var(--space-2) - 10px);
-  /* Reset for non-touch */
 }
 @media (hover: hover) {
   .task-check { padding: 0; box-sizing: border-box; margin: 0; margin-top: 1px; }
@@ -571,13 +577,12 @@ input[type="date"], input[type="text"], textarea, select {
   opacity: 0; transition: opacity .15s ease;
 }
 .notes-tooltip.visible { opacity: 1; }
-/* Hide tooltip on touch devices — not needed, tap opens modal */
 @media (hover: none) {
   .notes-tooltip { display: none !important; }
 }
 
 /* ── TEMPLATES VIEW ────────────────────────────────────────────────── */
-.templates-view { flex-direction: column; padding: var(--space-8); max-width: 860px; margin: 0 auto; width: 100%; gap: var(--space-6); }
+.templates-view { flex-direction: column; padding: var(--space-8); max-width: 860px; margin: 0 auto; width: 100%; gap: var(--space-6); overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .templates-view.active { display: flex; }
 .templates-header { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); }
 .templates-header h2 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 800; letter-spacing: -.02em; }
@@ -694,11 +699,9 @@ input[type=text], input[type=date], textarea, select {
   color: var(--color-text);
   font-size: max(16px, var(--text-xs));
   transition: border-color var(--transition), box-shadow var(--transition);
-  /* Prevent iOS rounding of inputs */
   -webkit-appearance: none;
   appearance: none;
 }
-/* Restore native select arrow on iOS */
 select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6b67' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .75rem center; padding-right: 2rem; }
 textarea { resize: vertical; min-height: 60px; -webkit-appearance: none; }
 input:focus, textarea:focus, select:focus {
@@ -732,7 +735,6 @@ input:focus, textarea:focus, select:focus {
 .modal-actions {
   display: flex; justify-content: space-between; align-items: center;
   padding: var(--space-4) var(--space-6);
-  /* Add safe-area padding so buttons aren't hidden behind home bar */
   padding-bottom: calc(var(--space-4) + var(--safe-bottom));
   border-top: 1px solid var(--color-divider);
   flex-shrink: 0;
@@ -826,7 +828,6 @@ input:focus, textarea:focus, select:focus {
   .week-label { min-width: 0; font-size: var(--text-xs); }
   .today-btn { padding: 0 var(--space-3); }
 
-  /* Templates view: reduce padding on mobile */
   .templates-view {
     padding: var(--space-4);
     padding-bottom: calc(var(--space-4) + var(--safe-bottom));
@@ -834,32 +835,32 @@ input:focus, textarea:focus, select:focus {
   }
 
   /*
-   * MOBILE BOARD FIX
-   * ─────────────────────────────────────────────────────────────────
-   * Problem: the desktop board uses a fixed-height flex container with
-   * height: calc(100dvh - topbar - footer). On iOS Safari, 100dvh is
-   * unreliable (it ignores browser chrome) and can collapse the board
-   * to zero height, making it appear blank.
-   *
-   * Fix: on mobile the board stacks vertically (one column per day) so
-   * we don't need a fixed height at all. Instead we make the page body
-   * scrollable and let the board grow naturally. The body overflow:hidden
-   * rule is overridden here so the page itself can scroll.
+   * MOBILE BOARD: switch to single-column vertical scroll layout.
+   * body becomes scrollable; board and rows stack vertically.
    */
-  body { overflow: auto; -webkit-overflow-scrolling: touch; }
+  body {
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* Allow body to grow taller than the viewport on mobile */
+    height: auto;
+    min-height: 100%;
+  }
 
+  /* Board no longer needs to fill the viewport — it grows with content */
+  #board.view.active {
+    flex: none;
+    overflow: visible;
+    height: auto;
+  }
   .board {
-    /* Remove the dvh height constraint — let the board grow naturally */
+    flex: none;
     height: auto;
     min-height: 0;
     overflow: visible;
-    flex-direction: column;
-    /* Add bottom padding so last column clears the fixed footer */
     padding-bottom: calc(var(--footer-h) + var(--safe-bottom) + var(--space-4));
   }
 
-  /* Row wrappers are display:contents so their children are
-     laid out directly inside .board */
+  /* Row wrappers become invisible layout containers */
   .board-header-row, .board-span-row, .board-body-row {
     display: contents;
     width: auto;
@@ -871,31 +872,34 @@ input:focus, textarea:focus, select:focus {
     padding: var(--space-3) var(--space-4);
     border-bottom: 1px solid var(--col-header-border);
     border-right: none;
+    border-left: none !important;
     position: sticky;
     top: calc(var(--topbar-h) + var(--safe-top));
     z-index: 10;
-    border-left: none !important;
   }
   .column-header::before { display: none; }
-  .column-header::after { display: none; }
-  .col-day { font-size: var(--text-xs); }
+  .column-header::after  { display: none; }
+  .col-day  { font-size: var(--text-xs); }
   .col-date { font-size: var(--text-base); }
+
   .span-card { margin: var(--space-2) var(--space-4); display: block; }
+
   .column-body-wrap {
     border-right: none;
-    border-bottom: 2px solid var(--color-divider);
-    /* Reset height — let it grow with its content */
-    height: auto;
     border-left: none !important;
+    border-bottom: 2px solid var(--color-divider);
+    height: auto;
+    overflow: visible;
   }
   .column-body-wrap:last-child { border-bottom: none; }
-  /* column-body no longer needs flex:1 / min-height:0 on mobile */
+
   .column-body {
-    touch-action: pan-y;
-    overflow: visible;
-    /* Show all tasks without inner scroll */
+    flex: none;
     min-height: 60px;
+    overflow: visible;
+    touch-action: pan-y;
   }
+
   .task-card {
     padding: var(--space-4);
     padding-left: calc(var(--space-4) - 2px);
@@ -904,14 +908,13 @@ input:focus, textarea:focus, select:focus {
   .task-check { width: 24px; height: 24px; }
   .add-task-btn { padding: .65rem var(--space-3); font-size: var(--text-sm); }
 
-  /* Bottom sheet modal on mobile */
-  .modal-overlay { padding: 0; align-items: flex-end; padding-bottom: 0; }
+  /* Bottom sheet modal */
+  .modal-overlay { padding: 0; align-items: flex-end; }
   .modal {
     width: 100%;
     height: 92dvh;
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   }
-  /* Drag handle indicator on bottom sheet */
   .modal::before {
     content: '';
     display: block;
