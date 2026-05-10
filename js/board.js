@@ -275,7 +275,7 @@ function showInlineAdd(col, addArea, colKey, addBtn) {
   input.type = 'text';
   input.className = 'inline-add-input';
   input.placeholder = 'Task title...';
-  // font-size >= 16px prevents iOS zoom on focus
+  // font-size 16px prevents iOS zoom on focus
   input.style.fontSize = '16px';
   const confirmBtn = document.createElement('button');
   confirmBtn.type = 'button';
@@ -284,7 +284,9 @@ function showInlineAdd(col, addArea, colKey, addBtn) {
   form.appendChild(input);
   form.appendChild(confirmBtn);
   addArea.insertBefore(form, addBtn);
-  input.focus();
+
+  // Defer focus slightly so iOS keyboard animation is smooth
+  requestAnimationFrame(() => input.focus());
 
   const submit = async () => {
     const title = input.value.trim();
@@ -318,10 +320,29 @@ let touchClone    = null;
 let touchStartX   = 0;
 let touchStartY   = 0;
 let touchDragging = false;
-const TOUCH_DRAG_THRESHOLD = 8; // px before activating drag
+// Slightly higher threshold: must move >12px AND be more horizontal than vertical
+// before activating drag, so vertical scroll gestures don't accidentally trigger it.
+const TOUCH_DRAG_THRESHOLD = 12;
+
+// ── Body scroll lock ─────────────────────────────────────────────────────────
+// Prevents iOS rubber-band scroll behind the floating drag ghost.
+let _scrollTop = 0;
+function lockBodyScroll() {
+  _scrollTop = window.scrollY;
+  document.body.style.overflow = 'hidden';
+  document.body.style.position = 'fixed';
+  document.body.style.top      = `-${_scrollTop}px`;
+  document.body.style.width    = '100%';
+}
+function unlockBodyScroll() {
+  document.body.style.overflow = '';
+  document.body.style.position = '';
+  document.body.style.top      = '';
+  document.body.style.width    = '';
+  window.scrollTo(0, _scrollTop);
+}
 
 function findDropTarget(x, y) {
-  // Hide clone so elementFromPoint works
   if (touchClone) touchClone.style.display = 'none';
   const el = document.elementFromPoint(x, y);
   if (touchClone) touchClone.style.display = '';
@@ -361,6 +382,16 @@ async function commitTouchDrop(body, dropIndex) {
   await reorderTask(touchDragId, newOrder, doOnFrom, doOnTo);
 }
 
+function cleanupTouchDrag(card) {
+  card?.classList.remove('touch-dragging', 'dragging');
+  touchClone?.remove();
+  document.querySelectorAll('.column-body').forEach(b => b.classList.remove('drag-over'));
+  unlockBodyScroll();
+  touchDragId   = null;
+  touchClone    = null;
+  touchDragging = false;
+}
+
 function bindDragAndDrop() {
   // ── Mouse drag (desktop) ──
   document.querySelectorAll('.task-card:not(.span-card)').forEach(card => {
@@ -385,40 +416,48 @@ function bindDragAndDrop() {
 
     card.addEventListener('touchmove', e => {
       if (!touchDragId) return;
-      const t = e.touches[0];
+      const t  = e.touches[0];
       const dx = t.clientX - touchStartX;
       const dy = t.clientY - touchStartY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
 
-      if (!touchDragging && Math.sqrt(dx*dx + dy*dy) > TOUCH_DRAG_THRESHOLD) {
+      if (!touchDragging) {
+        // Only activate drag if the gesture has moved far enough.
+        // Do NOT call preventDefault before drag is confirmed — that
+        // would block native scroll for small movements.
+        if (dist < TOUCH_DRAG_THRESHOLD) return;
         touchDragging = true;
         card.classList.add('touch-dragging', 'dragging');
+        lockBodyScroll();
 
-        // Create floating ghost clone
+        // Anchor the ghost under the finger, vertically centred on the card
+        const cardRect = card.getBoundingClientRect();
         touchClone = card.cloneNode(true);
-        touchClone.style.cssText = `
-          position:fixed; z-index:999;
-          width:${card.offsetWidth}px;
-          opacity:0.85;
-          pointer-events:none;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.18);
-          transform: scale(1.03);
-          left:${card.getBoundingClientRect().left}px;
-          top:${card.getBoundingClientRect().top}px;
-          transition: none;
-        `;
+        touchClone.style.cssText = [
+          'position:fixed',
+          'z-index:999',
+          `width:${cardRect.width}px`,
+          'opacity:0.88',
+          'pointer-events:none',
+          'box-shadow:0 8px 24px rgba(0,0,0,0.22)',
+          'transform:scale(1.03)',
+          `left:${cardRect.left}px`,
+          `top:${t.clientY - cardRect.height / 2}px`,
+          'transition:none',
+          'border-radius:var(--radius-lg)',
+        ].join(';');
         document.body.appendChild(touchClone);
       }
 
-      if (touchDragging) {
-        e.preventDefault(); // prevent page scroll during drag
-        touchClone.style.left = `${t.clientX - card.offsetWidth / 2}px`;
-        touchClone.style.top  = `${t.clientY - 20}px`;
+      // Drag is active — prevent scroll and move the ghost
+      e.preventDefault();
+      const cardRect = card.getBoundingClientRect();
+      touchClone.style.left = `${t.clientX - cardRect.width / 2}px`;
+      touchClone.style.top  = `${t.clientY - cardRect.height / 2}px`;
 
-        // Highlight target column
-        document.querySelectorAll('.column-body').forEach(b => b.classList.remove('drag-over'));
-        const target = findDropTarget(t.clientX, t.clientY);
-        if (target) target.classList.add('drag-over');
-      }
+      document.querySelectorAll('.column-body').forEach(b => b.classList.remove('drag-over'));
+      const target = findDropTarget(t.clientX, t.clientY);
+      if (target) target.classList.add('drag-over');
     }, { passive: false });
 
     card.addEventListener('touchend', async e => {
@@ -429,25 +468,17 @@ function bindDragAndDrop() {
         const target = findDropTarget(t.clientX, t.clientY);
         const dropIndex = target ? getDropIndex(target, t.clientY) : -1;
 
-        // Clean up visual state
-        card.classList.remove('touch-dragging', 'dragging');
-        touchClone?.remove();
-        document.querySelectorAll('.column-body').forEach(b => b.classList.remove('drag-over'));
-
+        cleanupTouchDrag(card);
         if (target) await commitTouchDrop(target, dropIndex);
+      } else {
+        // Tap (no drag) — just reset state, click event will fire naturally
+        touchDragId = null;
       }
-
-      touchDragId   = null;
-      touchClone    = null;
-      touchDragging = false;
     });
 
-    card.addEventListener('touchcancel', () => {
-      card.classList.remove('touch-dragging', 'dragging');
-      touchClone?.remove();
-      document.querySelectorAll('.column-body').forEach(b => b.classList.remove('drag-over'));
-      touchDragId = null; touchClone = null; touchDragging = false;
-    });
+    // touchcancel fires when a phone call, notification, or system gesture
+    // interrupts the touch sequence — always clean up.
+    card.addEventListener('touchcancel', () => cleanupTouchDrag(card));
   });
 
   // ── Mouse drop targets ──

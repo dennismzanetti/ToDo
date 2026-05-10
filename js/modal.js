@@ -18,20 +18,65 @@ const deleteBtn       = document.getElementById('delete-task-btn');
 const cancelBtn       = document.getElementById('modal-cancel');
 const closeBtn        = document.getElementById('modal-close');
 
+// ── Body scroll lock ─────────────────────────────────────────────────────────
+// Locks page scroll while modal is open so iOS doesn't scroll the board behind it.
+let _bodyScrollTop = 0;
+function lockBodyScroll() {
+  _bodyScrollTop = window.scrollY;
+  document.body.style.overflow = 'hidden';
+  document.body.style.position = 'fixed';
+  document.body.style.top      = `-${_bodyScrollTop}px`;
+  document.body.style.width    = '100%';
+}
+function unlockBodyScroll() {
+  document.body.style.overflow = '';
+  document.body.style.position = '';
+  document.body.style.top      = '';
+  document.body.style.width    = '';
+  window.scrollTo(0, _bodyScrollTop);
+}
+
+// ── Delete confirmation ───────────────────────────────────────────────────────
+// Native confirm() is unreliable in iOS PWA / standalone mode.
+// We inject a small inline confirmation row instead.
+function showDeleteConfirm() {
+  // Prevent double-injection
+  if (deleteBtn.parentElement.querySelector('.delete-confirm-row')) return;
+
+  const row = document.createElement('div');
+  row.className = 'delete-confirm-row';
+  row.style.cssText = 'display:flex;gap:8px;align-items:center;animation:fadeIn .15s ease';
+  row.innerHTML = `
+    <span style="font-size:var(--text-xs);color:var(--color-text-muted);white-space:nowrap">Delete this task?</span>
+    <button type="button" class="danger-btn" id="confirm-delete-yes" style="padding:.35rem .8rem;min-height:36px">Yes, delete</button>
+    <button type="button" class="secondary-btn" id="confirm-delete-no" style="padding:.35rem .8rem;min-height:36px">Cancel</button>
+  `;
+  deleteBtn.parentElement.appendChild(row);
+  deleteBtn.style.display = 'none';
+
+  row.querySelector('#confirm-delete-yes').addEventListener('click', async () => {
+    if (!currentTask?.id) return;
+    await deleteTask(currentTask.id);
+    closeModal();
+  });
+  row.querySelector('#confirm-delete-no').addEventListener('click', () => {
+    row.remove();
+    deleteBtn.style.display = '';
+  });
+}
+
 // Clear due date button
 clearDueDateBtn.addEventListener('click', () => {
   dueDateInput.value = '';
   syncClearBtn();
 });
 
-// Show/hide the clear button based on whether a date is set
 function syncClearBtn() {
   clearDueDateBtn.style.display = dueDateInput.value ? 'flex' : 'none';
 }
 
 dueDateInput.addEventListener('change', syncClearBtn);
 
-// Resolved after DOM is ready
 let notesInput = null;
 document.addEventListener('DOMContentLoaded', () => {
   notesInput = document.getElementById('edit-notes');
@@ -74,9 +119,23 @@ export function openModal(task) {
 
   doOnFromInput.addEventListener('change', enforceSpanOrder, { once: false });
 
+  // Reset any lingering delete confirmation
+  const confirmRow = overlay.querySelector('.delete-confirm-row');
+  if (confirmRow) confirmRow.remove();
+  deleteBtn.style.display = '';
+
   renderSubtasks();
   overlay.hidden = false;
-  titleInput.focus();
+  lockBodyScroll();
+
+  // Defer focus by one frame — prevents iOS keyboard from jumping open
+  // before the bottom sheet slide-in animation completes.
+  requestAnimationFrame(() => {
+    // Only auto-focus on non-touch devices to avoid unwanted keyboard pop-up.
+    if (window.matchMedia('(hover: hover)').matches) {
+      titleInput.focus();
+    }
+  });
 }
 
 function enforceSpanOrder() {
@@ -113,7 +172,8 @@ addSubtaskBtn.addEventListener('click', () => {
   pendingSubtasks.push(createSubtask(t));
   newSubtaskInput.value = '';
   renderSubtasks();
-  newSubtaskInput.focus();
+  // Defer focus so the list has re-rendered first
+  requestAnimationFrame(() => newSubtaskInput.focus());
 });
 
 newSubtaskInput.addEventListener('keydown', e => {
@@ -122,6 +182,7 @@ newSubtaskInput.addEventListener('keydown', e => {
 
 function closeModal() {
   overlay.hidden = true;
+  unlockBodyScroll();
   currentTask     = null;
   pendingSubtasks = [];
   form.reset();
@@ -135,12 +196,8 @@ closeBtn.addEventListener('click', closeModal);
 overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !overlay.hidden) closeModal(); });
 
-deleteBtn.addEventListener('click', async () => {
-  if (!currentTask?.id) return;
-  if (!confirm('Delete this task?')) return;
-  await deleteTask(currentTask.id);
-  closeModal();
-});
+// Use inline confirmation instead of native confirm() for PWA compatibility
+deleteBtn.addEventListener('click', () => showDeleteConfirm());
 
 form.addEventListener('submit', async e => {
   e.preventDefault();
