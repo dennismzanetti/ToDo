@@ -12,12 +12,20 @@ let _templates = [];
 let _taskListeners = [];
 let _templateListeners = [];
 
+// Whether the first snapshot has arrived yet (used to know if we can replay)
+let _tasksReady     = false;
+let _templatesReady = false;
+
 export function subscribe(fn) {
   _taskListeners.push(fn);
+  // Replay current state immediately if store is already populated
+  if (_tasksReady) fn([..._tasks]);
   return () => { _taskListeners = _taskListeners.filter(l => l !== fn); };
 }
 export function subscribeTemplates(fn) {
   _templateListeners.push(fn);
+  // Replay current state immediately if store is already populated
+  if (_templatesReady) fn([..._templates]);
   return () => { _templateListeners = _templateListeners.filter(l => l !== fn); };
 }
 
@@ -31,10 +39,12 @@ export function initStore() {
   const q = query(tasksRef, orderBy('order'));
   onSnapshot(q, snap => {
     _tasks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    _tasksReady = true;
     notifyTasks();
   });
   onSnapshot(templatesRef, snap => {
     _templates = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    _templatesReady = true;
     notifyTemplates();
   });
 }
