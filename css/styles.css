@@ -860,9 +860,26 @@ a { color: inherit; text-decoration: none; }
    ══════════════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
 
-  /* Override body/html scroll lock for mobile board */
-  html, body { overflow: visible; height: auto; }
+  /* Make body scrollable — the mobile board is a normal document flow */
+  html {
+    height: auto;
+    min-height: 100%;
+  }
+  body {
+    height: auto;
+    min-height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
 
+  /* Topbar stays sticky at top */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  /* Board view: block flow, full height auto */
   .view.active {
     display: block;
     flex: none;
