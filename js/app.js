@@ -1,1 +1,54 @@
-aW1wb3J0IHsgaW5pdFN0b3JlLCBzdWJzY3JpYmUsIHN1YnNjcmliZVRlbXBsYXRlcyB9IGZyb20gJy4vc3RvcmUuanMnOwppbXBvcnQgeyByZW5kZXJCb2FyZCwgcHJldldlZWssIG5leHRXZWVrLCByZXNldFdlZWsgfSBmcm9tICcuL2JvYXJkLmpzJzsKaW1wb3J0IHsgYXBwbHlUZW1wbGF0ZXMgfSBmcm9tICcuL3RlbXBsYXRlcy1lbmdpbmUuanMnOwoKLy8g4pSA4pSAIFRoZW1lIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgApjb25zdCByb290ID0gZG9jdW1lbnQuZG9jdW1lbnRFbGVtZW50Owpjb25zdCB0aGVtZVRvZ2dsZSA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoJ1tkYXRhLXRoZW1lLXRvZ2dsZV0nKTsKY29uc3QgbXEgPSB3aW5kb3cubWF0Y2hNZWRpYSgnKHByZWZlcnMtY29sb3Itc2NoZW1lOiBkYXJrKScpOwpsZXQgbWFudWFsVGhlbWUgPSBudWxsOwoKZnVuY3Rpb24gYXBwbHlUaGVtZSh0KSB7CiAgcm9vdC5zZXRBdHRyaWJ1dGUoJ2RhdGEtdGhlbWUnLCB0KTsKICBpZiAoIXRoZW1lVG9nZ2xlKSByZXR1cm47CiAgdGhlbWVUb2dnbGUuc2V0QXR0cmlidXRlKCdhcmlhLWxhYmVsJywgYFN3aXRjaCB0byAke3QgPT09ICdkYXJrJyA/ICdsaWdodCcgOiAnZGFyayd9IG1vZGVgKTsKICB0aGVtZVRvZ2dsZS5pbm5lckhUTUwgPSB0ID09PSAnZGFyaycKICAgID8gJzxzdmcgd2lkdGg9IjE4IiBoZWlnaHQ9IjE4IiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iY3VycmVudENvbG9yIiBzdHJva2Utd2lkdGg9IjIiPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjUiLz48cGF0aCBkPSJNMTIgMXYyTTEyIDIxdjJNNC4yMiA0LjIybDEuNDIgMS40Mk0xOC4zNiAxOC4zNmwxLjQyIDEuNDJNMSAxMmgyTTIxIDEyaDJNNC4yMiAxOS43OGwxLjQyLTEuNDJNMTguMzYgNS42NGwxLjQyLTEuNDIiLz48L3N2Zz4nCiAgICA6ICc8c3ZnIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIj48cGF0aCBkPSJNMjEgMTIuNzlBOSA5IDAgMSAxIDExLjIxIDMgNyA3IDAgMCAwIDIxIDEyLjc5eiIvPjwvc3ZnPic7Cn0KCmFwcGx5VGhlbWUobXEubWF0Y2hlcyA/ICdkYXJrJyA6ICdsaWdodCcpOwptcS5hZGRFdmVudExpc3RlbmVyPy4oJ2NoYW5nZScsICgpID0+IHsgaWYgKCFtYW51YWxUaGVtZSkgYXBwbHlUaGVtZShtcS5tYXRjaGVzID8gJ2RhcmsnIDogJ2xpZ2h0Jyk7IH0pOwp0aGVtZVRvZ2dsZT8uYWRkRXZlbnRMaXN0ZW5lcignY2xpY2snLCAoKSA9PiB7CiAgbWFudWFsVGhlbWUgPSAocm9vdC5nZXRBdHRyaWJ1dGUoJ2RhdGEtdGhlbWUnKSA9PT0gJ2RhcmsnKSA/ICdsaWdodCcgOiAnZGFyayc7CiAgYXBwbHlUaGVtZShtYW51YWxUaGVtZSk7Cn0pOwoKLy8g4pSA4pSAIFdlZWsgbmF2IOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgApsZXQgbGFzdFRhc2tzID0gW107CmRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdwcmV2LXdlZWsnKT8uYWRkRXZlbnRMaXN0ZW5lcignY2xpY2snLCAoKSA9PiB7IHByZXZXZWVrKCk7IHJlbmRlckJvYXJkKGxhc3RUYXNrcyk7IH0pOwpkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnbmV4dC13ZWVrJyk/LmFkZEV2ZW50TGlzdGVuZXIoJ2NsaWNrJywgKCkgPT4geyBuZXh0V2VlaygpOyByZW5kZXJCb2FyZChsYXN0VGFza3MpOyB9KTsKZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3RvZGF5LWJ0bicpPy5hZGRFdmVudExpc3RlbmVyKCdjbGljaycsICgpID0+IHsgcmVzZXRXZWVrKCk7IHJlbmRlckJvYXJkKGxhc3RUYXNrcyk7IH0pOwoKLy8g4pSA4pSAIFN0b3JlIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgApsZXQgdGFza3NSZWFkeSA9IGZhbHNlLCB0ZW1wbGF0ZXNSZWFkeSA9IGZhbHNlOwpmdW5jdGlvbiBtYXliZUFwcGx5VGVtcGxhdGVzKCkgeyBpZiAodGFza3NSZWFkeSAmJiB0ZW1wbGF0ZXNSZWFkeSkgYXBwbHlUZW1wbGF0ZXMoKTsgfQoKc3Vic2NyaWJlKHRhc2tzID0+IHsKICBsYXN0VGFza3MgPSB0YXNrczsKICByZW5kZXJCb2FyZCh0YXNrcyk7CiAgaWYgKCF0YXNrc1JlYWR5KSB7IHRhc2tzUmVhZHkgPSB0cnVlOyBtYXliZUFwcGx5VGVtcGxhdGVzKCk7IH0KfSk7CgpzdWJzY3JpYmVUZW1wbGF0ZXMoKCkgPT4gewogIGlmICghdGVtcGxhdGVzUmVhZHkpIHsgdGVtcGxhdGVzUmVhZHkgPSB0cnVlOyBtYXliZUFwcGx5VGVtcGxhdGVzKCk7IH0KfSk7CgovLyDilIDilIAgU2VydmljZSBXb3JrZXIg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACmlmICgnc2VydmljZVdvcmtlcicgaW4gbmF2aWdhdG9yKSB7CiAgd2luZG93LmFkZEV2ZW50TGlzdGVuZXIoJ2xvYWQnLCAoKSA9PiB7CiAgICBuYXZpZ2F0b3Iuc2VydmljZVdvcmtlci5yZWdpc3RlcignLi9zZXJ2aWNlLXdvcmtlci5qcycpLmNhdGNoKCgpID0+IHt9KTsKICB9KTsKfQoKaW5pdFN0b3JlKCk7Cg==
+import { initStore, subscribe, subscribeTemplates } from './store.js';
+import { renderBoard, prevWeek, nextWeek, resetWeek } from './board.js';
+import { applyTemplates } from './templates-engine.js';
+
+// ── Theme ──────────────────────────────────────────────────────────────────
+const root = document.documentElement;
+const themeToggle = document.querySelector('[data-theme-toggle]');
+const mq = window.matchMedia('(prefers-color-scheme: dark)');
+let manualTheme = null;
+
+function applyTheme(t) {
+  root.setAttribute('data-theme', t);
+  if (!themeToggle) return;
+  themeToggle.setAttribute('aria-label', `Switch to ${t === 'dark' ? 'light' : 'dark'} mode`);
+  themeToggle.innerHTML = t === 'dark'
+    ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
+    : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+}
+
+applyTheme(mq.matches ? 'dark' : 'light');
+mq.addEventListener?.('change', () => { if (!manualTheme) applyTheme(mq.matches ? 'dark' : 'light'); });
+themeToggle?.addEventListener('click', () => {
+  manualTheme = (root.getAttribute('data-theme') === 'dark') ? 'light' : 'dark';
+  applyTheme(manualTheme);
+});
+
+// ── Week nav ──────────────────────────────────────────────────────────────
+let lastTasks = [];
+document.getElementById('prev-week')?.addEventListener('click', () => { prevWeek(); renderBoard(lastTasks); });
+document.getElementById('next-week')?.addEventListener('click', () => { nextWeek(); renderBoard(lastTasks); });
+document.getElementById('today-btn')?.addEventListener('click', () => { resetWeek(); renderBoard(lastTasks); });
+
+// ── Store ─────────────────────────────────────────────────────────────────
+let tasksReady = false, templatesReady = false;
+function maybeApplyTemplates() { if (tasksReady && templatesReady) applyTemplates(); }
+
+subscribe(tasks => {
+  lastTasks = tasks;
+  renderBoard(tasks);
+  if (!tasksReady) { tasksReady = true; maybeApplyTemplates(); }
+});
+
+subscribeTemplates(() => {
+  if (!templatesReady) { templatesReady = true; maybeApplyTemplates(); }
+});
+
+// ── Service Worker ────────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+  });
+}
+
+initStore();
