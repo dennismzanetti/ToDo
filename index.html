@@ -15,32 +15,8 @@
   <link rel="stylesheet" href="./css/styles.css" />
   <link rel="manifest" href="./manifest.json" />
   <link rel="apple-touch-icon" href="./icons/icon-192.png" />
-
-  <!-- DEBUG: force board visible regardless of CSS -->
-  <style>
-    #board {
-      display: flex !important;
-      flex: 1 !important;
-      min-height: 0 !important;
-      background: red !important;
-    }
-    #debug-banner {
-      position: fixed;
-      top: 80px;
-      left: 0; right: 0;
-      background: lime;
-      color: black;
-      font-size: 20px;
-      font-weight: bold;
-      text-align: center;
-      padding: 12px;
-      z-index: 9999;
-    }
-  </style>
 </head>
 <body>
-  <div id="debug-banner">✅ HTML IS LOADING — board should appear below in RED</div>
-
   <a class="skip-link" href="#board">Skip to content</a>
 
   <header class="topbar">
