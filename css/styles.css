@@ -174,7 +174,6 @@
 /* ── RESET ──────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html {
-  /* Lock html to full viewport — no scrolling at html level */
   height: 100%;
   -webkit-text-size-adjust: none;
   text-size-adjust: none;
@@ -182,12 +181,6 @@ html {
   scroll-behavior: smooth;
 }
 body {
-  /*
-   * KEY FIX: Instead of overflow:hidden + dvh math on children,
-   * we make body a full-height flex column. The topbar is flex-shrink:0,
-   * the active view takes flex:1 and the fixed footer sits on top.
-   * This works on all browsers including iOS Safari where dvh is unreliable.
-   */
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -217,6 +210,31 @@ a { color: inherit; text-decoration: none; }
   }
 }
 
+/* ── SKIP LINK (screen-reader / keyboard only) ─────────────────────── */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.skip-link:focus {
+  position: fixed;
+  top: var(--space-2);
+  left: var(--space-2);
+  width: auto;
+  height: auto;
+  overflow: visible;
+  z-index: 9999;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
 /* ── TOPBAR ─────────────────────────────────────────────────────────── */
 .topbar {
   position: relative;
@@ -225,14 +243,21 @@ a { color: inherit; text-decoration: none; }
   border-bottom: 1px solid var(--topbar-border);
   flex-shrink: 0;
   box-shadow: var(--shadow-sm);
+  /* Account for iPhone notch/Dynamic Island */
   padding-top: var(--safe-top);
   height: calc(var(--topbar-h) + var(--safe-top));
-  display: flex; align-items: flex-end; justify-content: space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding-inline: var(--space-4);
-  padding-bottom: var(--space-2);
   gap: var(--space-4);
+  /* Re-align content below the safe area padding */
+  padding-bottom: 0;
 }
-.topbar > * { margin-bottom: calc(var(--topbar-h) / 2 - 18px); }
+/* Nudge inner items down past the safe-area padding so they center in the visible 60px */
+.topbar > * {
+  margin-top: var(--safe-top);
+}
 
 .brand { display: flex; align-items: center; gap: var(--space-3); }
 .brand-name {
@@ -288,20 +313,9 @@ a { color: inherit; text-decoration: none; }
 .theme-toggle-btn:hover { background: var(--color-surface-offset); color: var(--color-text); }
 
 /* ── VIEWS ─────────────────────────────────────────────────────────── */
-/*
- * Views are hidden by default. The active view uses flex:1 so it
- * fills all remaining space in the body flex column, pushing the
- * fixed footer below. No dvh math needed anywhere.
- *
- * IMPORTANT: flex:1 and min-height:0 MUST be re-declared on .view.active,
- * not just on .view. When display:none is overridden, the browser
- * re-evaluates flex participation from scratch — properties set while
- * display:none was active are NOT inherited into the new display state.
- */
 .view { display: none; }
 .view.active { display: flex; flex: 1; min-height: 0; }
 
-/* Board specifically is a column flex so its inner rows stack */
 #board.view.active {
   flex-direction: column;
   overflow: hidden;
@@ -309,18 +323,12 @@ a { color: inherit; text-decoration: none; }
 
 /* ── BOARD LAYOUT ──────────────────────────────────────────────────── */
 .board {
-  /*
-   * FIX: board fills its flex parent (.view.active) via flex:1.
-   * No dvh height calculation needed — flex:1 + min-height:0 does the job
-   * reliably on all browsers including iOS Safari.
-   */
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   width: 100%;
-  /* Bottom padding so content clears the fixed footer */
   padding-bottom: calc(var(--footer-h) + var(--safe-bottom));
 }
 
@@ -500,7 +508,7 @@ a { color: inherit; text-decoration: none; }
 .task-meta {
   display: flex; flex-wrap: wrap; gap: var(--space-1);
   align-items: center;
-  padding-left: 28px; /* align with title */
+  padding-left: 28px;
 }
 .priority-badge {
   font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
@@ -544,7 +552,7 @@ a { color: inherit; text-decoration: none; }
   border-radius: var(--radius-md);
   border: 1px solid var(--color-primary);
   background: var(--color-surface-2);
-  font-size: 16px; /* prevents iOS zoom */
+  font-size: 16px;
   color: var(--color-text);
   outline: none;
 }
@@ -617,12 +625,10 @@ a { color: inherit; text-decoration: none; }
 .modal-title-input {
   flex: 1; min-width: 0;
   font-family: var(--font-display);
-  font-size: clamp(1.1rem, 1rem + .5vw, 1.4rem);
   font-weight: 800;
   color: var(--color-text);
   background: none; border: none; outline: none;
   padding: 0; line-height: 1.2;
-  /* iOS zoom prevention */
   font-size: max(16px, clamp(1.1rem, 1rem + .5vw, 1.4rem));
 }
 .modal-close {
@@ -641,9 +647,8 @@ a { color: inherit; text-decoration: none; }
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text);
-  font-size: var(--text-sm);
+  font-size: max(16px, var(--text-sm));
   transition: border-color var(--transition-interactive);
-  font-size: max(16px, var(--text-sm)); /* iOS zoom prevention */
 }
 .form-select:focus, .form-input:focus, .form-textarea:focus {
   outline: none; border-color: var(--color-primary);
@@ -692,7 +697,7 @@ a { color: inherit; text-decoration: none; }
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-border);
   background: var(--color-surface);
-  font-size: max(16px, var(--text-sm)); /* iOS zoom prevention */
+  font-size: max(16px, var(--text-sm));
   color: var(--color-text);
   transition: border-color var(--transition-interactive);
 }
@@ -731,10 +736,9 @@ a { color: inherit; text-decoration: none; }
   border-radius: var(--radius-full);
   border: 1px solid var(--color-border);
   background: var(--color-surface);
-  font-size: var(--text-xs);
   color: var(--color-text);
   width: 120px;
-  font-size: max(16px, var(--text-xs)); /* iOS zoom prevention */
+  font-size: max(16px, var(--text-xs));
   transition: border-color var(--transition-interactive);
 }
 .tag-add-input:focus { outline: none; border-color: var(--color-primary); }
@@ -873,8 +877,6 @@ a { color: inherit; text-decoration: none; }
 
 /* ── RESPONSIVE (mobile < 480px) ───────────────────────────────────── */
 @media (max-width: 479px) {
-  /* On mobile the board becomes a horizontal scroll of 8 columns,
-     each column sized to ~220px so the user can swipe left/right */
   html, body { overflow: visible; height: auto; }
 
   .topbar {
@@ -885,7 +887,6 @@ a { color: inherit; text-decoration: none; }
   .week-nav .today-btn { display: none; }
   .week-nav #week-label { font-size: 11px; min-width: 0; }
 
-  /* On mobile, views fill the viewport naturally with scroll */
   .view.active {
     display: block;
     flex: none;
@@ -893,7 +894,6 @@ a { color: inherit; text-decoration: none; }
     height: auto;
   }
 
-  /* Board scrolls horizontally */
   #board.view.active {
     display: block;
     overflow: visible;
