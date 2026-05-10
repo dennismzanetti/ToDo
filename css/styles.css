@@ -804,7 +804,7 @@ a { color: inherit; text-decoration: none; }
   align-content: start;
 }
 
-/* Template card — matches what templates-page.js renders */
+/* Template card */
 .template-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -855,23 +855,20 @@ a { color: inherit; text-decoration: none; }
   .templates-view { padding: var(--space-4) var(--space-4) calc(var(--footer-h) + var(--safe-bottom) + var(--space-8)); }
 }
 
-/* ── RESPONSIVE (mobile < 480px) ───────────────────────────────────── */
-@media (max-width: 479px) {
-  html, body { overflow: visible; height: auto; }
+/* ══════════════════════════════════════════════════════════════════════
+   MOBILE BOARD VIEW  (< 768px)
+   ══════════════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
 
-  .topbar {
-    padding-inline: var(--space-3);
-    gap: var(--space-2);
-  }
-  .week-nav { gap: var(--space-1); }
-  .week-nav .today-btn { display: none; }
-  .week-nav #week-label { font-size: 11px; min-width: 0; }
+  /* Override body/html scroll lock for mobile board */
+  html, body { overflow: visible; height: auto; }
 
   .view.active {
     display: block;
     flex: none;
-    min-height: 0;
     height: auto;
+    min-height: 0;
+    overflow: visible;
   }
 
   #board.view.active {
@@ -880,53 +877,269 @@ a { color: inherit; text-decoration: none; }
     padding-bottom: calc(56px + var(--safe-bottom) + var(--space-8));
   }
 
-  .board {
+  /* Board container in mobile mode */
+  .board--mobile {
     overflow: visible;
     height: auto;
     min-height: 0;
     padding-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
   }
 
-  .board-header-row,
-  .board-span-row,
-  .board-body-row {
-    display: grid;
-    grid-template-columns: repeat(8, minmax(200px, 1fr));
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+  /* ── Day picker strip ── */
+  .mobile-day-strip {
+    position: sticky;
+    top: calc(var(--topbar-h) + var(--safe-top));
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-2);
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
   }
 
-  .board-body-row {
-    flex: none;
+  .mobile-nav-arrow {
+    flex-shrink: 0;
+    width: 36px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: var(--radius-lg);
+    color: var(--color-text-muted);
+    transition: background var(--transition-interactive), color var(--transition-interactive);
+  }
+  .mobile-nav-arrow:active { background: var(--color-surface-offset); color: var(--color-text); }
+
+  .mobile-day-pills {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    gap: 2px;
+  }
+
+  .mobile-day-pill {
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center;
+    padding: var(--space-1) 0;
+    border-radius: var(--radius-lg);
+    gap: 2px;
+    transition: background var(--transition-interactive);
+    min-width: 0;
+  }
+  .mobile-day-pill:active { background: var(--color-surface-offset); }
+
+  .pill-day {
+    font-size: 9px; font-weight: 700; letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--color-text-faint);
+  }
+  .pill-date {
+    font-family: var(--font-display);
+    font-size: 1rem; font-weight: 800; line-height: 1;
+    color: var(--color-text-muted);
+  }
+
+  /* Today pill — unselected */
+  .mobile-day-pill.is-today .pill-date { color: var(--color-primary); }
+  .mobile-day-pill.is-today .pill-day  { color: var(--color-primary); opacity: .7; }
+
+  /* Active / selected pill */
+  .mobile-day-pill.active {
+    background: var(--color-primary);
+  }
+  .mobile-day-pill.active .pill-day,
+  .mobile-day-pill.active .pill-date {
+    color: #fff;
+  }
+
+  /* ── Day heading ── */
+  .mobile-day-heading {
+    display: flex; align-items: baseline; gap: var(--space-3);
+    padding: var(--space-4) var(--space-4) var(--space-2);
+  }
+  .mobile-day-name {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2rem);
+    font-weight: 800; letter-spacing: -.03em;
+    color: var(--color-text);
+  }
+  .mobile-day-name.is-today { color: var(--color-primary); }
+  .mobile-day-full {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+  .mobile-today-chip {
+    font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    padding: 2px var(--space-2);
+    background: var(--color-primary-highlight);
+    color: var(--color-primary);
+    border-radius: var(--radius-full);
+    align-self: center;
+  }
+
+  /* ── Sections ── */
+  .mobile-section {
+    padding: 0 var(--space-3) var(--space-4);
+  }
+  .mobile-tasks-section {
+    padding-top: var(--space-2);
+  }
+  .mobile-nodate-section {
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--color-divider);
+    margin-top: var(--space-2);
+  }
+
+  .mobile-section-label {
+    font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--color-text-faint);
+    padding: var(--space-2) var(--space-1) var(--space-2);
+  }
+
+  /* ── Task list ── */
+  .mobile-task-list {
+    display: flex; flex-direction: column; gap: var(--space-2);
+  }
+
+  /* ── Mobile task card ── */
+  .mobile-task-card {
+    display: flex; align-items: center; gap: var(--space-3);
+    padding: var(--space-3) var(--space-3);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    cursor: pointer;
+    transition: box-shadow var(--transition-interactive);
+    -webkit-tap-highlight-color: transparent;
+    min-height: 60px;
+  }
+  .mobile-task-card:active { box-shadow: var(--shadow-md); background: var(--color-surface-2); }
+  .mobile-task-card.completed { opacity: .55; }
+  .mobile-task-card.completed .task-title { text-decoration: line-through; color: var(--color-text-muted); }
+
+  /* Priority stripe */
+  .mobile-task-card.priority-high   { box-shadow: inset 4px 0 0 #e05252; }
+  .mobile-task-card.priority-high:active   { box-shadow: inset 4px 0 0 #e05252, var(--shadow-md); }
+  .mobile-task-card.priority-medium { box-shadow: inset 4px 0 0 #e09a2f; }
+  .mobile-task-card.priority-medium:active { box-shadow: inset 4px 0 0 #e09a2f, var(--shadow-md); }
+  .mobile-task-card.priority-low    { box-shadow: inset 4px 0 0 #5aa85e; }
+  .mobile-task-card.priority-low:active    { box-shadow: inset 4px 0 0 #5aa85e, var(--shadow-md); }
+
+  .mobile-card-left { flex-shrink: 0; }
+
+  /* Larger tap target for checkbox on mobile */
+  .mobile-task-card .task-check {
+    width: 26px; height: 26px;
+    border-width: 2px;
+  }
+  .mobile-task-card .task-check.checked::after {
+    width: 6px; height: 10px;
+  }
+
+  .mobile-card-body {
+    flex: 1; min-width: 0;
+    display: flex; flex-direction: column; gap: var(--space-1);
+  }
+  .mobile-card-title-row {
+    display: flex; align-items: center; gap: var(--space-2);
+  }
+  .mobile-card-title-row .task-title {
+    font-size: var(--text-base);
+    white-space: normal;
     overflow: visible;
-    align-items: stretch;
+    text-overflow: clip;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .mobile-card-meta {
+    display: flex; flex-wrap: wrap; gap: var(--space-1);
+    align-items: center;
   }
 
-  .column-body-wrap {
-    height: auto;
-    min-height: 400px;
-    overflow: visible;
+  .mobile-card-arrow {
+    flex-shrink: 0;
+    color: var(--color-text-faint);
+    display: flex; align-items: center;
   }
 
-  .column-body {
-    overflow: visible;
-    flex: none;
-    height: auto;
-    min-height: 300px;
+  /* Span cards */
+  .mobile-span-card {
+    background: oklch(from var(--color-primary) l c h / .06);
+    border-color: oklch(from var(--color-primary) l c h / .2);
   }
 
-  /* Templates on mobile: single column */
-  .templates-view {
-    overflow-y: auto;
-    height: auto;
-    flex: none;
-    padding-bottom: calc(56px + var(--safe-bottom) + var(--space-8));
+  /* ── Add task button ── */
+  .mobile-add-area {
+    padding: var(--space-2) 0;
   }
-  .templates-grid {
-    grid-template-columns: 1fr;
+  .mobile-add-btn {
+    display: flex; align-items: center; gap: var(--space-2);
+    width: 100%;
+    padding: var(--space-3) var(--space-3);
+    border-radius: var(--radius-xl);
+    border: 1.5px dashed var(--color-border);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm); font-weight: 600;
+    transition: background var(--transition-interactive), border-color var(--transition-interactive), color var(--transition-interactive);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mobile-add-btn:active {
+    background: var(--color-primary-highlight);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+  .mobile-add-btn svg { flex-shrink: 0; }
+
+  .mobile-add-area--small { padding: var(--space-1) 0; }
+  .mobile-add-btn--small {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-xs);
+    border-radius: var(--radius-lg);
   }
 
-  /* Modal becomes bottom sheet */
+  /* ── Mobile inline add ── */
+  .mobile-inline-add-form {
+    display: flex; gap: var(--space-2);
+    padding: var(--space-2) 0;
+  }
+  .mobile-inline-add-input {
+    flex: 1; min-width: 0;
+    padding: var(--space-3) var(--space-3);
+    border-radius: var(--radius-xl);
+    border: 1.5px solid var(--color-primary);
+    background: var(--color-surface-2);
+    font-size: 16px;
+    color: var(--color-text);
+    outline: none;
+    box-shadow: 0 0 0 3px oklch(from var(--color-primary) l c h / .12);
+  }
+  .mobile-inline-confirm-btn {
+    padding: 0 var(--space-4);
+    height: 48px;
+    border-radius: var(--radius-xl);
+    background: var(--color-primary);
+    color: #fff;
+    font-size: var(--text-sm); font-weight: 700;
+    flex-shrink: 0;
+    transition: background var(--transition-interactive);
+  }
+  .mobile-inline-confirm-btn:active { background: var(--color-primary-hover); }
+
+  /* ── Empty state ── */
+  .mobile-empty-state {
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center;
+    padding: var(--space-12) var(--space-8);
+    gap: var(--space-3);
+    color: var(--color-text-faint);
+  }
+  .mobile-empty-state p { font-size: var(--text-sm); color: var(--color-text-muted); }
+
+  /* Modal bottom sheet on mobile */
   .modal-backdrop {
     align-items: flex-end;
     padding: 0;
@@ -939,7 +1152,16 @@ a { color: inherit; text-decoration: none; }
     padding-top: var(--space-5);
   }
 
-  #board.view.active {
-    flex-direction: column;
+  /* Templates on mobile */
+  .templates-view {
+    overflow-y: auto;
+    height: auto;
+    flex: none;
+    padding-bottom: calc(56px + var(--safe-bottom) + var(--space-8));
   }
+  .templates-grid { grid-template-columns: 1fr; }
+
+  /* Hide desktop week-nav on mobile board */
+  .week-nav .today-btn { display: none; }
+  .week-nav #week-label { font-size: 11px; min-width: 0; }
 }

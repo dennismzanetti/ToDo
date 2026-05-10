@@ -5,6 +5,7 @@ import { Timestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-f
 
 let weekOffset = 0;
 let currentTasks = [];
+let mobileDayOffset = 0; // 0 = today, -1 = yesterday, etc.
 
 const board     = document.getElementById('board');
 const weekLabel = document.getElementById('week-label');
@@ -12,7 +13,12 @@ const weekLabel = document.getElementById('week-label');
 const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-// ── Tooltip singleton (desktop only) ───────────────────────────────────────
+// ── Mobile detection ─────────────────────────────────────────────────────────
+function isMobile() {
+  return window.innerWidth < 768;
+}
+
+// ── Tooltip singleton (desktop only) ─────────────────────────────────────────
 const tooltip = document.createElement('div');
 tooltip.className = 'notes-tooltip';
 tooltip.setAttribute('role', 'tooltip');
@@ -45,7 +51,6 @@ function positionTooltip(el) {
   tooltip.style.left = `${left}px`;
 }
 
-// Only attach tooltip on pointer-with-hover devices (not iOS)
 function attachNoteTooltip(el, notes) {
   if (!notes || !notes.trim()) return;
   el.classList.add('has-notes');
@@ -55,7 +60,7 @@ function attachNoteTooltip(el, notes) {
   }
 }
 
-// ── Week / render ────────────────────────────────────────────────────────────
+// ── Week / date helpers ───────────────────────────────────────────────────────
 
 export function getDays() {
   const today = new Date();
@@ -67,8 +72,366 @@ export function getDays() {
   });
 }
 
+function getMobileDays() {
+  // Show 7 days centered on today+mobileDayOffset
+  const center = new Date();
+  center.setHours(0, 0, 0, 0);
+  center.setDate(center.getDate() + mobileDayOffset);
+  // Build a strip of 7 days: 3 before, center, 3 after
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(center);
+    d.setDate(center.getDate() + (i - 3));
+    return d;
+  });
+}
+
+// ── Main render entry point ───────────────────────────────────────────────────
+
 export function renderBoard(tasks) {
   currentTasks = tasks;
+  if (isMobile()) {
+    renderMobileBoard(tasks);
+  } else {
+    renderDesktopBoard(tasks);
+  }
+}
+
+// ── Re-render on resize ───────────────────────────────────────────────────────
+let _resizeTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(() => renderBoard(currentTasks), 150);
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// MOBILE BOARD
+// ══════════════════════════════════════════════════════════════════════════════
+
+function renderMobileBoard(tasks) {
+  board.innerHTML = '';
+  board.className = 'board board--mobile';
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayKey = toDateKey(today);
+
+  const activeDay = new Date(today);
+  activeDay.setDate(today.getDate() + mobileDayOffset);
+  const activeDayKey = toDateKey(activeDay);
+
+  // ── Day picker strip ──────────────────────────────────────────────────────
+  const strip = document.createElement('div');
+  strip.className = 'mobile-day-strip';
+
+  // Navigation arrows
+  const prevBtn = document.createElement('button');
+  prevBtn.className = 'mobile-nav-arrow';
+  prevBtn.setAttribute('aria-label', 'Previous day');
+  prevBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
+  prevBtn.addEventListener('click', () => { mobileDayOffset--; renderMobileBoard(currentTasks); });
+
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'mobile-nav-arrow';
+  nextBtn.setAttribute('aria-label', 'Next day');
+  nextBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+  nextBtn.addEventListener('click', () => { mobileDayOffset++; renderMobileBoard(currentTasks); });
+
+  // Day pill buttons
+  const pillsWrap = document.createElement('div');
+  pillsWrap.className = 'mobile-day-pills';
+
+  getMobileDays().forEach((d, i) => {
+    const key = toDateKey(d);
+    const isActive  = key === activeDayKey;
+    const isToday   = key === todayKey;
+    const pill = document.createElement('button');
+    pill.className = 'mobile-day-pill' +
+      (isActive  ? ' active'    : '') +
+      (isToday   ? ' is-today'  : '');
+    pill.setAttribute('aria-label', `${DAYS[d.getDay()]} ${MONTHS[d.getMonth()]} ${d.getDate()}`);
+    pill.innerHTML =
+      `<span class="pill-day">${DAYS[d.getDay()]}</span>` +
+      `<span class="pill-date">${d.getDate()}</span>`;
+    const offset = mobileDayOffset + (i - 3);
+    pill.addEventListener('click', () => { mobileDayOffset = offset; renderMobileBoard(currentTasks); });
+    pillsWrap.appendChild(pill);
+  });
+
+  strip.appendChild(prevBtn);
+  strip.appendChild(pillsWrap);
+  strip.appendChild(nextBtn);
+  board.appendChild(strip);
+
+  // ── Active day heading ────────────────────────────────────────────────────
+  const heading = document.createElement('div');
+  heading.className = 'mobile-day-heading';
+  const isActiveTodayDay = activeDayKey === todayKey;
+  heading.innerHTML =
+    `<span class="mobile-day-name${isActiveTodayDay ? ' is-today' : ''}">${DAYS[activeDay.getDay()]}</span>` +
+    `<span class="mobile-day-full">${MONTHS[activeDay.getMonth()]} ${activeDay.getDate()}, ${activeDay.getFullYear()}</span>` +
+    (isActiveTodayDay ? `<span class="mobile-today-chip">Today</span>` : '');
+  board.appendChild(heading);
+
+  // ── Span tasks for active day ─────────────────────────────────────────────
+  const spanTasksForDay = [];
+  const singleTasksForDay = [];
+
+  tasks.forEach(t => {
+    const keys = taskDisplayKeys(t);
+    if (keys[0] === 'no-date') return;
+    if (!keys.includes(activeDayKey)) return;
+    if (keys.length > 1) {
+      spanTasksForDay.push(t);
+    } else {
+      singleTasksForDay.push(t);
+    }
+  });
+
+  // No-date tasks shown separately
+  const noDateTasks = tasks.filter(t => taskDisplayKeys(t)[0] === 'no-date');
+
+  // ── Span section ─────────────────────────────────────────────────────────
+  if (spanTasksForDay.length > 0) {
+    const spanSection = document.createElement('div');
+    spanSection.className = 'mobile-section';
+    const spanLabel = document.createElement('div');
+    spanLabel.className = 'mobile-section-label';
+    spanLabel.textContent = 'Multi-day';
+    spanSection.appendChild(spanLabel);
+    spanTasksForDay.forEach(t => {
+      spanSection.appendChild(buildMobileSpanCard(t));
+    });
+    board.appendChild(spanSection);
+  }
+
+  // ── Tasks section ─────────────────────────────────────────────────────────
+  const taskSection = document.createElement('div');
+  taskSection.className = 'mobile-section mobile-tasks-section';
+  taskSection.dataset.colKey = activeDayKey;
+
+  const addArea = document.createElement('div');
+  addArea.className = 'mobile-add-area';
+  const addBtn = document.createElement('button');
+  addBtn.className = 'mobile-add-btn';
+  addBtn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>Add task</span>`;
+  addArea.appendChild(addBtn);
+  taskSection.appendChild(addArea);
+
+  const taskList = document.createElement('div');
+  taskList.className = 'mobile-task-list';
+
+  if (singleTasksForDay.length === 0 && spanTasksForDay.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'mobile-empty-state';
+    empty.innerHTML = `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><p>No tasks for this day</p>`;
+    taskList.appendChild(empty);
+  } else {
+    singleTasksForDay
+      .sort((a, b) => (a.order || 0) - (b.order || 0))
+      .forEach(t => taskList.appendChild(buildMobileTaskCard(t)));
+  }
+
+  taskSection.appendChild(taskList);
+  board.appendChild(taskSection);
+
+  addBtn.addEventListener('click', () => showMobileInlineAdd(taskList, addArea, activeDayKey, addBtn));
+
+  // ── No-date section ───────────────────────────────────────────────────────
+  if (noDateTasks.length > 0) {
+    const ndSection = document.createElement('div');
+    ndSection.className = 'mobile-section mobile-nodate-section';
+    ndSection.dataset.colKey = 'no-date';
+
+    const ndLabel = document.createElement('div');
+    ndLabel.className = 'mobile-section-label';
+    ndLabel.textContent = 'No date';
+    ndSection.appendChild(ndLabel);
+
+    const ndAddArea = document.createElement('div');
+    ndAddArea.className = 'mobile-add-area mobile-add-area--small';
+    const ndAddBtn = document.createElement('button');
+    ndAddBtn.className = 'mobile-add-btn mobile-add-btn--small';
+    ndAddBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>Add</span>`;
+    ndAddArea.appendChild(ndAddBtn);
+    ndSection.appendChild(ndAddArea);
+
+    const ndList = document.createElement('div');
+    ndList.className = 'mobile-task-list';
+    noDateTasks
+      .sort((a, b) => (a.order || 0) - (b.order || 0))
+      .forEach(t => ndList.appendChild(buildMobileTaskCard(t)));
+    ndSection.appendChild(ndList);
+    board.appendChild(ndSection);
+
+    ndAddBtn.addEventListener('click', () => showMobileInlineAdd(ndList, ndAddArea, 'no-date', ndAddBtn));
+  }
+
+  // ── Swipe gesture ─────────────────────────────────────────────────────────
+  attachMobileSwipe(board);
+}
+
+// ── Swipe handler ─────────────────────────────────────────────────────────────
+let _swipeTouchStartX = 0;
+let _swipeTouchStartY = 0;
+let _swipeActive = false;
+
+function attachMobileSwipe(el) {
+  el.addEventListener('touchstart', e => {
+    _swipeTouchStartX = e.touches[0].clientX;
+    _swipeTouchStartY = e.touches[0].clientY;
+    _swipeActive = false;
+  }, { passive: true });
+
+  el.addEventListener('touchmove', e => {
+    const dx = e.touches[0].clientX - _swipeTouchStartX;
+    const dy = e.touches[0].clientY - _swipeTouchStartY;
+    if (!_swipeActive && Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
+      _swipeActive = true;
+    }
+  }, { passive: true });
+
+  el.addEventListener('touchend', e => {
+    if (!_swipeActive) return;
+    const dx = e.changedTouches[0].clientX - _swipeTouchStartX;
+    if (Math.abs(dx) > 50) {
+      if (dx < 0) { mobileDayOffset++; }
+      else        { mobileDayOffset--; }
+      renderMobileBoard(currentTasks);
+    }
+    _swipeActive = false;
+  }, { passive: true });
+}
+
+// ── Mobile card builders ──────────────────────────────────────────────────────
+
+function buildMobileTaskCard(task) {
+  const card = document.createElement('div');
+  const priority = task.priority || 'medium';
+  card.className = `mobile-task-card priority-${priority}` + (task.completed ? ' completed' : '');
+  card.dataset.taskId = task.id;
+
+  const subtasksDone  = (task.subtasks || []).filter(s => s.completed).length;
+  const subtasksTotal = (task.subtasks || []).length;
+  const progressHtml  = subtasksTotal > 0
+    ? `<span class="subtask-progress${subtasksDone === subtasksTotal ? ' done' : ''}">${subtasksDone}/${subtasksTotal}</span>`
+    : '';
+  const tagsHtml = (task.tags || []).map(t => `<span class="tag-chip">${escHtml(t)}</span>`).join('');
+  let dueDateHtml = '';
+  if (task.dueDate) {
+    const d = task.dueDate.toDate ? task.dueDate.toDate() : new Date(task.dueDate);
+    dueDateHtml = `<span class="due-date-badge">📅 ${MONTHS[d.getMonth()]} ${d.getDate()}</span>`;
+  }
+  const notesIcon = task.notes && task.notes.trim()
+    ? `<span class="notes-icon" aria-label="Has notes">📝</span>` : '';
+
+  card.innerHTML = `
+    <div class="mobile-card-left">
+      <button class="task-check${task.completed ? ' checked' : ''}" aria-label="${task.completed ? 'Mark incomplete' : 'Mark complete'}" data-check></button>
+    </div>
+    <div class="mobile-card-body">
+      <div class="mobile-card-title-row">
+        <span class="task-title">${escHtml(task.title)}</span>
+        ${notesIcon}
+      </div>
+      <div class="mobile-card-meta">
+        <span class="priority-badge ${priority}">${priority}</span>
+        ${tagsHtml}${dueDateHtml}${progressHtml}
+      </div>
+    </div>
+    <div class="mobile-card-arrow">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>`;
+
+  card.querySelector('[data-check]').addEventListener('click', e => {
+    e.stopPropagation();
+    toggleComplete(task.id, !task.completed);
+  });
+  card.addEventListener('click', () => openModal(task));
+  return card;
+}
+
+function buildMobileSpanCard(task) {
+  const card = document.createElement('div');
+  const priority = task.priority || 'medium';
+  card.className = `mobile-task-card mobile-span-card priority-${priority}` + (task.completed ? ' completed' : '');
+  card.dataset.taskId = task.id;
+
+  const keys = taskDisplayKeys(task);
+  const spanDays = keys.length;
+
+  card.innerHTML = `
+    <div class="mobile-card-left">
+      <button class="task-check${task.completed ? ' checked' : ''}" aria-label="${task.completed ? 'Mark incomplete' : 'Mark complete'}" data-check></button>
+    </div>
+    <div class="mobile-card-body">
+      <div class="mobile-card-title-row">
+        <span class="task-title">${escHtml(task.title)}</span>
+        <span class="span-days-badge">${spanDays}d</span>
+      </div>
+      <div class="mobile-card-meta">
+        <span class="priority-badge ${priority}">${priority}</span>
+      </div>
+    </div>
+    <div class="mobile-card-arrow">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>`;
+
+  card.querySelector('[data-check]').addEventListener('click', e => {
+    e.stopPropagation();
+    toggleComplete(task.id, !task.completed);
+  });
+  card.addEventListener('click', () => openModal(task));
+  return card;
+}
+
+// ── Mobile inline add ─────────────────────────────────────────────────────────
+
+function showMobileInlineAdd(taskList, addArea, colKey, addBtn) {
+  addBtn.style.display = 'none';
+  const form = document.createElement('div');
+  form.className = 'mobile-inline-add-form';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'mobile-inline-add-input';
+  input.placeholder = 'Task title…';
+  input.style.fontSize = '16px';
+  const confirmBtn = document.createElement('button');
+  confirmBtn.type = 'button';
+  confirmBtn.className = 'mobile-inline-confirm-btn';
+  confirmBtn.textContent = 'Add';
+  form.appendChild(input);
+  form.appendChild(confirmBtn);
+  addArea.insertBefore(form, addBtn);
+
+  requestAnimationFrame(() => input.focus());
+
+  const submit = async () => {
+    const title = input.value.trim();
+    if (!title) { cancel(); return; }
+    let doOnFrom = null;
+    if (colKey !== 'no-date') doOnFrom = Timestamp.fromDate(dateKeyToDate(colKey));
+    const colTasks = currentTasks.filter(t => taskDisplayKeys(t).includes(colKey));
+    const minOrder = Math.min(0, ...colTasks.map(t => t.order || 0));
+    await addTask({ title, doOnFrom, doOnTo: doOnFrom, order: minOrder - 1000 });
+    cancel();
+  };
+  const cancel = () => { form.remove(); addBtn.style.display = ''; };
+  confirmBtn.addEventListener('click', submit);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); submit(); }
+    if (e.key === 'Escape') cancel();
+  });
+  input.addEventListener('blur', () => {
+    setTimeout(() => { if (!confirmBtn.matches(':focus')) cancel(); }, 150);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DESKTOP BOARD (unchanged)
+// ══════════════════════════════════════════════════════════════════════════════
+
+function renderDesktopBoard(tasks) {
+  board.className = 'board';
   const days     = getDays();
   const todayKey = toDateKey(new Date());
   const dayKeys  = days.map(toDateKey);
@@ -99,7 +462,6 @@ export function renderBoard(tasks) {
   const headerRow = document.createElement('div');
   headerRow.className = 'board-header-row';
 
-  // No-date column header
   const noDateHdr = document.createElement('div');
   noDateHdr.className = 'column-header no-date-header';
   noDateHdr.dataset.col = 'no-date';
@@ -109,7 +471,7 @@ export function renderBoard(tasks) {
   days.forEach(day => {
     const key = toDateKey(day);
     const isToday   = key === todayKey;
-    const dayIdx    = day.getDay(); // 0=Sun,6=Sat
+    const dayIdx    = day.getDay();
     const isWeekend = dayIdx === 0 || dayIdx === 6;
     const dayName   = DAYS[dayIdx].toLowerCase();
 
@@ -186,7 +548,7 @@ export function renderBoard(tasks) {
   bindDragAndDrop();
 }
 
-// ── Card builders ────────────────────────────────────────────────────────────
+// ── Desktop card builders ─────────────────────────────────────────────────────
 
 function metaHtml(task) {
   const subtasksDone  = (task.subtasks || []).filter(s => s.completed).length;
@@ -265,7 +627,7 @@ function buildSpanCard(task, spanDays) {
   return card;
 }
 
-// ── Inline add ───────────────────────────────────────────────────────────────
+// ── Desktop inline add ────────────────────────────────────────────────────────
 
 function showInlineAdd(col, addArea, colKey, addBtn) {
   addBtn.style.display = 'none';
@@ -275,7 +637,6 @@ function showInlineAdd(col, addArea, colKey, addBtn) {
   input.type = 'text';
   input.className = 'inline-add-input';
   input.placeholder = 'Task title...';
-  // font-size 16px prevents iOS zoom on focus
   input.style.fontSize = '16px';
   const confirmBtn = document.createElement('button');
   confirmBtn.type = 'button';
@@ -285,7 +646,6 @@ function showInlineAdd(col, addArea, colKey, addBtn) {
   form.appendChild(confirmBtn);
   addArea.insertBefore(form, addBtn);
 
-  // Defer focus slightly so iOS keyboard animation is smooth
   requestAnimationFrame(() => input.focus());
 
   const submit = async () => {
@@ -310,229 +670,161 @@ function showInlineAdd(col, addArea, colKey, addBtn) {
   });
 }
 
-// ── Drag & Drop (mouse) + Touch-based reorder (iOS) ──────────────────────────
+// ── Drag & Drop (desktop only) ────────────────────────────────────────────────
 
 let dragId = null;
 
-// Touch drag state
 let touchDragId   = null;
 let touchClone    = null;
 let touchStartX   = 0;
 let touchStartY   = 0;
 let touchDragging = false;
-// Slightly higher threshold: must move >12px AND be more horizontal than vertical
-// before activating drag, so vertical scroll gestures don't accidentally trigger it.
 const TOUCH_DRAG_THRESHOLD = 12;
 
-// ── Body scroll lock ─────────────────────────────────────────────────────────
-// Prevents iOS rubber-band scroll behind the floating drag ghost.
 let _scrollTop = 0;
 function lockBodyScroll() {
   _scrollTop = window.scrollY;
   document.body.style.overflow = 'hidden';
-  document.body.style.position = 'fixed';
-  document.body.style.top      = `-${_scrollTop}px`;
-  document.body.style.width    = '100%';
+  document.body.style.top = `-${_scrollTop}px`;
 }
 function unlockBodyScroll() {
   document.body.style.overflow = '';
-  document.body.style.position = '';
-  document.body.style.top      = '';
-  document.body.style.width    = '';
+  document.body.style.top = '';
   window.scrollTo(0, _scrollTop);
 }
 
-function findDropTarget(x, y) {
-  if (touchClone) touchClone.style.display = 'none';
-  const el = document.elementFromPoint(x, y);
-  if (touchClone) touchClone.style.display = '';
-  return el?.closest('.column-body');
-}
-
-function getDropIndex(body, y) {
-  const cards = [...body.querySelectorAll('.task-card:not(.touch-dragging)')];
-  return cards.findIndex(c => {
-    const rect = c.getBoundingClientRect();
-    return y < rect.top + rect.height / 2;
-  });
-}
-
-async function commitTouchDrop(body, dropIndex) {
-  if (!touchDragId || !body) return;
-  const colKey   = body.closest('.column-body-wrap').dataset.colKey;
-  const colTasks = currentTasks
-    .filter(t => taskDisplayKeys(t).includes(colKey) && t.id !== touchDragId)
-    .sort((a, b) => (a.order || 0) - (b.order || 0));
-
-  let newOrder;
-  if (dropIndex === -1 || dropIndex >= colTasks.length) {
-    newOrder = (colTasks.at(-1)?.order || 0) + 1000;
-  } else if (dropIndex === 0) {
-    newOrder = (colTasks[0]?.order || 1000) / 2;
-  } else {
-    newOrder = ((colTasks[dropIndex-1]?.order || 0) + (colTasks[dropIndex]?.order || 0)) / 2;
-  }
-
-  const { Timestamp: T } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
-  let doOnFrom = null, doOnTo = null;
-  if (colKey !== 'no-date') {
-    const d = T.fromDate(dateKeyToDate(colKey));
-    doOnFrom = d; doOnTo = d;
-  }
-  await reorderTask(touchDragId, newOrder, doOnFrom, doOnTo);
-}
-
-function cleanupTouchDrag(card) {
-  card?.classList.remove('touch-dragging', 'dragging');
-  touchClone?.remove();
-  document.querySelectorAll('.column-body').forEach(b => b.classList.remove('drag-over'));
-  unlockBodyScroll();
-  touchDragId   = null;
-  touchClone    = null;
-  touchDragging = false;
-}
-
 function bindDragAndDrop() {
-  // ── Mouse drag (desktop) ──
-  document.querySelectorAll('.task-card:not(.span-card)').forEach(card => {
+  board.querySelectorAll('.task-card[draggable]').forEach(card => {
     card.addEventListener('dragstart', e => {
       dragId = card.dataset.taskId;
       card.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
     });
     card.addEventListener('dragend', () => {
+      dragId = null;
       card.classList.remove('dragging');
-      document.querySelectorAll('.column-body').forEach(b => b.classList.remove('drag-over'));
+      board.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
     });
 
-    // ── Touch drag (iOS / mobile) ──
-    card.addEventListener('touchstart', e => {
-      const t = e.touches[0];
-      touchDragId   = card.dataset.taskId;
-      touchStartX   = t.clientX;
-      touchStartY   = t.clientY;
-      touchDragging = false;
-    }, { passive: true });
-
-    card.addEventListener('touchmove', e => {
-      if (!touchDragId) return;
-      const t  = e.touches[0];
-      const dx = t.clientX - touchStartX;
-      const dy = t.clientY - touchStartY;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-
-      if (!touchDragging) {
-        // Only activate drag if the gesture has moved far enough.
-        // Do NOT call preventDefault before drag is confirmed — that
-        // would block native scroll for small movements.
-        if (dist < TOUCH_DRAG_THRESHOLD) return;
-        touchDragging = true;
-        card.classList.add('touch-dragging', 'dragging');
-        lockBodyScroll();
-
-        // Anchor the ghost under the finger, vertically centred on the card
-        const cardRect = card.getBoundingClientRect();
-        touchClone = card.cloneNode(true);
-        touchClone.style.cssText = [
-          'position:fixed',
-          'z-index:999',
-          `width:${cardRect.width}px`,
-          'opacity:0.88',
-          'pointer-events:none',
-          'box-shadow:0 8px 24px rgba(0,0,0,0.22)',
-          'transform:scale(1.03)',
-          `left:${cardRect.left}px`,
-          `top:${t.clientY - cardRect.height / 2}px`,
-          'transition:none',
-          'border-radius:var(--radius-lg)',
-        ].join(';');
-        document.body.appendChild(touchClone);
-      }
-
-      // Drag is active — prevent scroll and move the ghost
-      e.preventDefault();
-      const cardRect = card.getBoundingClientRect();
-      touchClone.style.left = `${t.clientX - cardRect.width / 2}px`;
-      touchClone.style.top  = `${t.clientY - cardRect.height / 2}px`;
-
-      document.querySelectorAll('.column-body').forEach(b => b.classList.remove('drag-over'));
-      const target = findDropTarget(t.clientX, t.clientY);
-      if (target) target.classList.add('drag-over');
-    }, { passive: false });
-
-    card.addEventListener('touchend', async e => {
-      if (!touchDragId) return;
-
-      if (touchDragging) {
-        const t = e.changedTouches[0];
-        const target = findDropTarget(t.clientX, t.clientY);
-        const dropIndex = target ? getDropIndex(target, t.clientY) : -1;
-
-        cleanupTouchDrag(card);
-        if (target) await commitTouchDrop(target, dropIndex);
-      } else {
-        // Tap (no drag) — just reset state, click event will fire naturally
-        touchDragId = null;
-      }
-    });
-
-    // touchcancel fires when a phone call, notification, or system gesture
-    // interrupts the touch sequence — always clean up.
-    card.addEventListener('touchcancel', () => cleanupTouchDrag(card));
+    // Touch drag
+    card.addEventListener('touchstart', handleTouchStart, { passive: true });
+    card.addEventListener('touchmove',  handleTouchMove,  { passive: false });
+    card.addEventListener('touchend',   handleTouchEnd,   { passive: true });
   });
 
-  // ── Mouse drop targets ──
-  document.querySelectorAll('.column-body').forEach(body => {
-    body.addEventListener('dragover', e => {
+  board.querySelectorAll('.column-body').forEach(col => {
+    col.addEventListener('dragover', e => {
       e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      body.classList.add('drag-over');
+      col.classList.add('drag-over');
     });
-    body.addEventListener('dragleave', () => body.classList.remove('drag-over'));
-    body.addEventListener('drop', async e => {
+    col.addEventListener('dragleave', () => col.classList.remove('drag-over'));
+    col.addEventListener('drop', async e => {
       e.preventDefault();
-      body.classList.remove('drag-over');
+      col.classList.remove('drag-over');
       if (!dragId) return;
-
-      const colKey  = body.closest('.column-body-wrap').dataset.colKey;
-      const cards   = [...body.querySelectorAll('.task-card:not(.dragging)')];
-      const dropIndex = cards.findIndex(c => {
-        const rect = c.getBoundingClientRect();
-        return e.clientY < rect.top + rect.height / 2;
-      });
-
-      const colTasks = currentTasks
-        .filter(t => taskDisplayKeys(t).includes(colKey) && t.id !== dragId)
-        .sort((a, b) => (a.order || 0) - (b.order || 0));
-
-      let newOrder;
-      if (dropIndex === -1 || dropIndex >= colTasks.length) {
-        newOrder = (colTasks.at(-1)?.order || 0) + 1000;
-      } else if (dropIndex === 0) {
-        newOrder = (colTasks[0]?.order || 1000) / 2;
-      } else {
-        newOrder = ((colTasks[dropIndex-1]?.order || 0) + (colTasks[dropIndex]?.order || 0)) / 2;
-      }
-
-      const { Timestamp: T } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+      const colKey = col.closest('.column-body-wrap').dataset.colKey;
+      const task   = currentTasks.find(t => t.id === dragId);
+      if (!task) return;
       let doOnFrom = null, doOnTo = null;
       if (colKey !== 'no-date') {
-        const d = T.fromDate(dateKeyToDate(colKey));
-        doOnFrom = d; doOnTo = d;
+        const d = dateKeyToDate(colKey);
+        doOnFrom = Timestamp.fromDate(d);
+        doOnTo   = Timestamp.fromDate(d);
       }
-
-      await reorderTask(dragId, newOrder, doOnFrom, doOnTo);
-      dragId = null;
+      const colTasks = currentTasks.filter(t =>
+        taskDisplayKeys(t).includes(colKey) && t.id !== dragId
+      );
+      const minOrder = Math.min(0, ...colTasks.map(t => t.order || 0));
+      await reorderTask(dragId, { doOnFrom, doOnTo, order: minOrder - 1000 });
     });
   });
 }
+
+function handleTouchStart(e) {
+  if (e.touches.length !== 1) return;
+  touchDragId   = this.dataset.taskId;
+  touchStartX   = e.touches[0].clientX;
+  touchStartY   = e.touches[0].clientY;
+  touchDragging = false;
+  touchClone    = null;
+}
+
+function handleTouchMove(e) {
+  if (!touchDragId) return;
+  const dx = e.touches[0].clientX - touchStartX;
+  const dy = e.touches[0].clientY - touchStartY;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  if (!touchDragging) {
+    const isMoreHoriz = Math.abs(dx) > Math.abs(dy);
+    if (dist < TOUCH_DRAG_THRESHOLD || !isMoreHoriz) return;
+    touchDragging = true;
+    lockBodyScroll();
+    const orig = this;
+    touchClone = orig.cloneNode(true);
+    const rect = orig.getBoundingClientRect();
+    touchClone.style.cssText = `
+      position:fixed;z-index:9999;pointer-events:none;
+      width:${rect.width}px;opacity:.9;
+      box-shadow:0 8px 32px oklch(.2 .01 80/.25);
+      transform:rotate(2deg) scale(1.03);
+      transition:none;
+      left:${rect.left}px;top:${rect.top}px;
+    `;
+    document.body.appendChild(touchClone);
+    orig.classList.add('touch-dragging');
+  }
+  if (touchDragging && touchClone) {
+    e.preventDefault();
+    touchClone.style.left = `${e.touches[0].clientX - touchClone.offsetWidth / 2}px`;
+    touchClone.style.top  = `${e.touches[0].clientY - touchClone.offsetHeight / 2}px`;
+    const cols = board.querySelectorAll('.column-body');
+    cols.forEach(c => c.classList.remove('drag-over'));
+    const elBelow = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+    const overCol = elBelow && elBelow.closest('.column-body');
+    if (overCol) overCol.classList.add('drag-over');
+  }
+}
+
+async function handleTouchEnd(e) {
+  if (!touchDragId) return;
+  unlockBodyScroll();
+  if (touchClone) { touchClone.remove(); touchClone = null; }
+  board.querySelectorAll('.touch-dragging').forEach(c => c.classList.remove('touch-dragging'));
+  board.querySelectorAll('.drag-over').forEach(c => c.classList.remove('drag-over'));
+
+  if (touchDragging && e.changedTouches.length === 1) {
+    const elBelow = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+    const overCol = elBelow && elBelow.closest('.column-body-wrap');
+    if (overCol) {
+      const colKey = overCol.dataset.colKey;
+      let doOnFrom = null, doOnTo = null;
+      if (colKey !== 'no-date') {
+        const d = dateKeyToDate(colKey);
+        doOnFrom = Timestamp.fromDate(d);
+        doOnTo   = Timestamp.fromDate(d);
+      }
+      const colTasks = currentTasks.filter(t =>
+        taskDisplayKeys(t).includes(colKey) && t.id !== touchDragId
+      );
+      const minOrder = Math.min(0, ...colTasks.map(t => t.order || 0));
+      await reorderTask(touchDragId, { doOnFrom, doOnTo, order: minOrder - 1000 });
+    }
+  }
+  touchDragId   = null;
+  touchDragging = false;
+}
+
+// ── Shared utils ──────────────────────────────────────────────────────────────
 
 function escHtml(str) {
   return String(str)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
-export function prevWeek()  { weekOffset--; }
-export function nextWeek()  { weekOffset++; }
-export function resetWeek() { weekOffset = 0; }
+// ── Week nav (desktop topbar controls) ───────────────────────────────────────
+export function prevWeek()  { weekOffset--;  renderBoard(currentTasks); }
+export function nextWeek()  { weekOffset++;  renderBoard(currentTasks); }
+export function gotoToday() { weekOffset = 0; mobileDayOffset = 0; renderBoard(currentTasks); }
