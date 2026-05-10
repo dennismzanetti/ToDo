@@ -1,0 +1,91 @@
+
+/* =============================================================================
+   MOBILE.CSS — Additional iPhone optimizations
+   Loaded after styles.css on both index.html and templates.html
+   ============================================================================= */
+
+/* ── Drag handle for bottom-sheet modal (iPhone) ───────────────────────────── */
+@media (max-width: 479px) {
+  .modal::before {
+    content: '';
+    display: block;
+    width: 40px; height: 4px;
+    border-radius: var(--radius-full);
+    background: var(--color-border);
+    margin: var(--space-3) auto 0;
+    flex-shrink: 0;
+  }
+}
+
+/* ── Bottom navigation bar on mobile ───────────────────────────────────────── */
+@media (max-width: 479px) {
+  .main-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 60;
+    height: calc(56px + var(--safe-bottom));
+    padding-bottom: var(--safe-bottom);
+    padding-left: var(--safe-left);
+    padding-right: var(--safe-right);
+    background: var(--topbar-bg);
+    border-top: 1px solid var(--topbar-border);
+    box-shadow: 0 -2px 12px rgba(0,0,0,.20);
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-start;
+    padding-top: var(--space-2);
+    gap: 0;
+    border-radius: 0;
+  }
+  .nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 var(--space-2);
+    font-size: 10px;
+    font-weight: 600;
+    text-align: center;
+    letter-spacing: .01em;
+    border-radius: 0;
+    background: none !important;
+    min-height: 44px;
+    gap: 4px;
+  }
+  .nav-btn.active {
+    color: var(--topbar-text-active);
+    background: rgba(0,0,0,.18) !important;
+  }
+  /* Shift board up to clear bottom nav bar */
+  .board {
+    height: calc(100dvh - var(--topbar-h) - var(--safe-top) - 28px - 56px - var(--safe-bottom));
+  }
+  .version-footer {
+    bottom: calc(56px + var(--safe-bottom));
+  }
+  .templates-view {
+    padding-bottom: calc(56px + var(--safe-bottom) + var(--space-8));
+  }
+}
+
+/* ── Active-state feedback for touch (iOS has no hover) ─────────────────────── */
+@media (hover: none) {
+  .task-card:active      { box-shadow: var(--shadow-sm); transform: scale(.98); }
+  .span-card:active      { box-shadow: var(--shadow-sm); transform: scale(.98); }
+  .template-card:active  { box-shadow: var(--shadow-sm); transform: scale(.98); }
+  .primary-btn:active    { background: var(--color-primary-active); transform: none; }
+  .secondary-btn:active  { background: var(--color-surface-offset); }
+  .danger-btn:active     { background: var(--color-error); color: #fff; }
+  .nav-btn:active        { background: rgba(0,0,0,.18) !important; }
+  .icon-btn:active       { background: rgba(0,0,0,.22); }
+  .today-btn:active      { background: rgba(0,0,0,.28); }
+}
+
+/* ── Minimum touch-target sizing on touch devices ───────────────────────────── */
+@media (hover: none) {
+  .task-card  { min-height: 52px; }
+  .add-task-btn { min-height: 52px; }
+  .span-card  { min-height: 44px; display: flex; align-items: center; }
+  .subtask-remove { min-width: 44px; min-height: 44px; }
+}
