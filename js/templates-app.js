@@ -1,1 +1,35 @@
-aW1wb3J0IHsgaW5pdFN0b3JlIH0gZnJvbSAnLi9zdG9yZS5qcyc7CmltcG9ydCB7IGluaXRUZW1wbGF0ZXNQYWdlIH0gZnJvbSAnLi90ZW1wbGF0ZXMtcGFnZS5qcyc7CgovLyDilIDilIAgVGhlbWUg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACmNvbnN0IHJvb3QgPSBkb2N1bWVudC5kb2N1bWVudEVsZW1lbnQ7CmNvbnN0IHRoZW1lVG9nZ2xlID0gZG9jdW1lbnQucXVlcnlTZWxlY3RvcignW2RhdGEtdGhlbWUtdG9nZ2xlXScpOwpjb25zdCBtcSA9IHdpbmRvdy5tYXRjaE1lZGlhKCcocHJlZmVycy1jb2xvci1zY2hlbWU6IGRhcmspJyk7CmxldCBtYW51YWxUaGVtZSA9IG51bGw7CgpmdW5jdGlvbiBhcHBseVRoZW1lKHQpIHsKICByb290LnNldEF0dHJpYnV0ZSgnZGF0YS10aGVtZScsIHQpOwogIGlmICghdGhlbWVUb2dnbGUpIHJldHVybjsKICB0aGVtZVRvZ2dsZS5zZXRBdHRyaWJ1dGUoJ2FyaWEtbGFiZWwnLCBgU3dpdGNoIHRvICR7dCA9PT0gJ2RhcmsnID8gJ2xpZ2h0JyA6ICdkYXJrJ30gbW9kZWApOwogIHRoZW1lVG9nZ2xlLmlubmVySFRNTCA9IHQgPT09ICdkYXJrJwogICAgPyAnPHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiI+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iNSIvPjxwYXRoIGQ9Ik0xMiAxdjJNMTIgMjF2Mk00LjIyIDQuMjJsMS40MiAxLjQyTTE4LjM2IDE4LjM2bDEuNDIgMS40Mk0xIDEyaDJNMjEgMTJoMk00LjIyIDE5Ljc4bDEuNDItMS40Mk0xOC4zNiA1LjY0bDEuNDItMS40MiIvPjwvc3ZnPicKICAgIDogJzxzdmcgd2lkdGg9IjE4IiBoZWlnaHQ9IjE4IiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iY3VycmVudENvbG9yIiBzdHJva2Utd2lkdGg9IjIiPjxwYXRoIGQ9Ik0yMSAxMi43OUE5IDkgMCAxIDEgMTEuMjEgMyA3IDcgMCAwIDAgMjEgMTIuNzl6Ii8+PC9zdmc+JzsKfQoKYXBwbHlUaGVtZShtcS5tYXRjaGVzID8gJ2RhcmsnIDogJ2xpZ2h0Jyk7Cm1xLmFkZEV2ZW50TGlzdGVuZXI/LignY2hhbmdlJywgKCkgPT4geyBpZiAoIW1hbnVhbFRoZW1lKSBhcHBseVRoZW1lKG1xLm1hdGNoZXMgPyAnZGFyaycgOiAnbGlnaHQnKTsgfSk7CnRoZW1lVG9nZ2xlPy5hZGRFdmVudExpc3RlbmVyKCdjbGljaycsICgpID0+IHsKICBtYW51YWxUaGVtZSA9IChyb290LmdldEF0dHJpYnV0ZSgnZGF0YS10aGVtZScpID09PSAnZGFyaycpID8gJ2xpZ2h0JyA6ICdkYXJrJzsKICBhcHBseVRoZW1lKG1hbnVhbFRoZW1lKTsKfSk7CgovLyDilIDilIAgU2VydmljZSBXb3JrZXIg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACmlmICgnc2VydmljZVdvcmtlcicgaW4gbmF2aWdhdG9yKSB7CiAgd2luZG93LmFkZEV2ZW50TGlzdGVuZXIoJ2xvYWQnLCAoKSA9PiB7CiAgICBuYXZpZ2F0b3Iuc2VydmljZVdvcmtlci5yZWdpc3RlcignLi9zZXJ2aWNlLXdvcmtlci5qcycpLmNhdGNoKCgpID0+IHt9KTsKICB9KTsKfQoKaW5pdFN0b3JlKCk7CmluaXRUZW1wbGF0ZXNQYWdlKCk7Cg==
+// v2 – cache bust
+import { initStore } from './store.js';
+import { initTemplatesPage } from './templates-page.js';
+
+// ── Theme ──────────────────────────────────────────────────────────────────
+const root = document.documentElement;
+const themeToggle = document.querySelector('[data-theme-toggle]');
+const mq = window.matchMedia('(prefers-color-scheme: dark)');
+let manualTheme = null;
+
+function applyTheme(t) {
+  root.setAttribute('data-theme', t);
+  if (!themeToggle) return;
+  themeToggle.setAttribute('aria-label', `Switch to ${t === 'dark' ? 'light' : 'dark'} mode`);
+  themeToggle.innerHTML = t === 'dark'
+    ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
+    : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+}
+
+applyTheme(mq.matches ? 'dark' : 'light');
+mq.addEventListener?.('change', () => { if (!manualTheme) applyTheme(mq.matches ? 'dark' : 'light'); });
+themeToggle?.addEventListener('click', () => {
+  manualTheme = (root.getAttribute('data-theme') === 'dark') ? 'light' : 'dark';
+  applyTheme(manualTheme);
+});
+
+// ── Service Worker ─────────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+  });
+}
+
+initStore();
+initTemplatesPage();
