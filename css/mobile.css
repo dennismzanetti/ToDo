@@ -1,4 +1,3 @@
-
 /* =============================================================================
    MOBILE.CSS — Additional iPhone optimizations
    Loaded after styles.css on both index.html and templates.html
@@ -57,10 +56,22 @@
     color: var(--topbar-text-active);
     background: rgba(0,0,0,.18) !important;
   }
-  /* Shift board up to clear bottom nav bar */
-  .board {
-    height: calc(100dvh - var(--topbar-h) - var(--safe-top) - 28px - 56px - var(--safe-bottom));
+
+  /*
+   * KEY FIX: Do NOT set height on .board here.
+   * The body flex-column chain (body → .view.active flex:1 → .board flex:1)
+   * handles sizing automatically and works on iOS Safari.
+   * Instead, just add bottom padding to .view so content isn't hidden behind the fixed nav bar.
+   */
+  .view.active {
+    padding-bottom: calc(56px + var(--safe-bottom));
   }
+
+  /* Board itself scrolls; the fixed bottom nav sits on top */
+  #board.view.active {
+    padding-bottom: 0; /* board uses internal column scroll, not page scroll */
+  }
+
   .version-footer {
     bottom: calc(56px + var(--safe-bottom));
   }
