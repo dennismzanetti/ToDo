@@ -210,7 +210,7 @@ a { color: inherit; text-decoration: none; }
   }
 }
 
-/* ── SKIP LINK (screen-reader / keyboard only) ─────────────────────── */
+/* ── SKIP LINK (screen-reader / keyboard only) ──────────────────────── */
 .skip-link {
   position: absolute;
   left: -9999px;
@@ -243,7 +243,6 @@ a { color: inherit; text-decoration: none; }
   border-bottom: 1px solid var(--topbar-border);
   flex-shrink: 0;
   box-shadow: var(--shadow-sm);
-  /* Account for iPhone notch/Dynamic Island */
   padding-top: var(--safe-top);
   height: calc(var(--topbar-h) + var(--safe-top));
   display: flex;
@@ -251,10 +250,8 @@ a { color: inherit; text-decoration: none; }
   justify-content: space-between;
   padding-inline: var(--space-4);
   gap: var(--space-4);
-  /* Re-align content below the safe area padding */
   padding-bottom: 0;
 }
-/* Nudge inner items down past the safe-area padding so they center in the visible 60px */
 .topbar > * {
   margin-top: var(--safe-top);
 }
@@ -312,7 +309,7 @@ a { color: inherit; text-decoration: none; }
 }
 .theme-toggle-btn:hover { background: var(--color-surface-offset); color: var(--color-text); }
 
-/* ── VIEWS ─────────────────────────────────────────────────────────── */
+/* ── VIEWS ──────────────────────────────────────────────────────────── */
 .view { display: none; }
 .view.active { display: flex; flex: 1; min-height: 0; }
 
@@ -321,7 +318,7 @@ a { color: inherit; text-decoration: none; }
   overflow: hidden;
 }
 
-/* ── BOARD LAYOUT ──────────────────────────────────────────────────── */
+/* ── BOARD LAYOUT ───────────────────────────────────────────────────── */
 .board {
   flex: 1;
   min-height: 0;
@@ -466,7 +463,6 @@ a { color: inherit; text-decoration: none; }
 .task-card.completed { opacity: .55; }
 .task-card.completed .task-title { text-decoration: line-through; color: var(--color-text-muted); }
 
-/* Priority accent — left border only via box-shadow so it doesn't shift layout */
 .task-card.priority-high   { box-shadow: inset 3px 0 0 #e05252; }
 .task-card.priority-high:hover { box-shadow: inset 3px 0 0 #e05252, var(--shadow-md); }
 .task-card.priority-medium { box-shadow: inset 3px 0 0 #e09a2f; }
@@ -521,6 +517,14 @@ a { color: inherit; text-decoration: none; }
 [data-theme="dark"] .priority-badge.high   { background: #3f1515; color: #f87171; }
 [data-theme="dark"] .priority-badge.medium { background: #3b2e0e; color: #fbbf24; }
 [data-theme="dark"] .priority-badge.low    { background: #0e2d1a; color: #4ade80; }
+
+.recurrence-badge {
+  font-size: 10px; font-weight: 600; letter-spacing: .03em;
+  padding: 1px var(--space-2);
+  background: var(--color-surface-offset);
+  color: var(--color-text-muted);
+  border-radius: var(--radius-full);
+}
 
 .subtask-progress {
   font-size: 10px; font-weight: 600;
@@ -598,7 +602,7 @@ a { color: inherit; text-decoration: none; }
   display: flex; align-items: center;
 }
 
-/* ── MODAL ──────────────────────────────────────────────────────────── */
+/* ── MODAL (shared by both pages) ───────────────────────────────────── */
 .modal-backdrop {
   position: fixed; inset: 0; z-index: 100;
   background: oklch(.1 0 0 / .55);
@@ -607,7 +611,9 @@ a { color: inherit; text-decoration: none; }
   opacity: 0; pointer-events: none;
   transition: opacity .18s;
 }
-.modal-backdrop.open { opacity: 1; pointer-events: all; }
+.modal-backdrop.open,
+.modal-backdrop:not([hidden]) { opacity: 1; pointer-events: all; }
+.modal-backdrop[hidden] { display: none; }
 .modal {
   background: var(--color-surface-2);
   border-radius: var(--radius-xl);
@@ -620,7 +626,7 @@ a { color: inherit; text-decoration: none; }
   transform: translateY(8px);
   transition: transform .18s cubic-bezier(.16,1,.3,1);
 }
-.modal-backdrop.open .modal { transform: translateY(0); }
+.modal-backdrop:not([hidden]) .modal { transform: translateY(0); }
 .modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
 .modal-title-input {
   flex: 1; min-width: 0;
@@ -658,7 +664,7 @@ a { color: inherit; text-decoration: none; }
 
 /* Subtasks */
 .subtask-list { display: flex; flex-direction: column; gap: var(--space-2); }
-.subtask-row {
+.subtask-row, .subtask-item {
   display: flex; align-items: center; gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
   background: var(--color-surface);
@@ -691,7 +697,7 @@ a { color: inherit; text-decoration: none; }
   transition: background var(--transition-interactive), color var(--transition-interactive);
 }
 .subtask-remove:hover { background: var(--color-error-highlight); color: var(--color-error); }
-.subtask-add-row { display: flex; gap: var(--space-2); }
+.subtask-add-row { display: flex; gap: var(--space-2); margin-top: var(--space-2); }
 .subtask-add-input {
   flex: 1; padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-lg);
@@ -743,7 +749,7 @@ a { color: inherit; text-decoration: none; }
 }
 .tag-add-input:focus { outline: none; border-color: var(--color-primary); }
 
-/* Modal footer buttons */
+/* Modal footer */
 .modal-footer { display: flex; gap: var(--space-3); justify-content: flex-end; padding-top: var(--space-2); border-top: 1px solid var(--color-divider); }
 .primary-btn {
   padding: var(--space-2) var(--space-5);
@@ -770,73 +776,63 @@ a { color: inherit; text-decoration: none; }
 }
 .danger-btn:hover { background: var(--color-error); color: #fff; }
 
-/* ── TEMPLATES VIEW ──────────────────────────────────────────────────── */
+/* ── TEMPLATES VIEW ─────────────────────────────────────────────────── */
 .templates-view {
+  flex: 1;
+  display: flex;
   flex-direction: column;
   overflow-y: auto;
   padding: var(--space-6) var(--space-6) calc(var(--footer-h) + var(--safe-bottom) + var(--space-8));
   gap: var(--space-6);
   -webkit-overflow-scrolling: touch;
+  min-height: 0;
 }
-.templates-view.active { display: flex; flex: 1; min-height: 0; }
-.templates-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+.templates-header {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
+  flex-shrink: 0;
+}
 .templates-title {
   font-family: var(--font-display);
   font-size: clamp(1.4rem, 1.2rem + .8vw, 2rem);
   font-weight: 800; letter-spacing: -.03em;
 }
+.text-muted { font-size: var(--text-sm); color: var(--color-text-muted); margin-top: var(--space-1); }
 .templates-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(320px,100%), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
   gap: var(--space-4);
+  align-content: start;
 }
+
+/* Template card — matches what templates-page.js renders */
 .template-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   padding: var(--space-5);
-  display: flex; flex-direction: column; gap: var(--space-3);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
   cursor: pointer;
   transition: box-shadow var(--transition-interactive);
 }
 .template-card:hover { box-shadow: var(--shadow-md); }
-.template-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-2); }
-.template-name {
+.template-card-info { display: flex; flex-direction: column; gap: var(--space-2); flex: 1; min-width: 0; }
+.template-card-title {
   font-family: var(--font-display);
   font-size: clamp(1rem, .9rem + .4vw, 1.2rem);
   font-weight: 800; letter-spacing: -.02em;
+  color: var(--color-text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.template-card-actions { display: flex; gap: var(--space-1); }
-.template-delete-btn {
-  width: 30px; height: 30px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: var(--radius-full);
-  color: var(--color-text-faint);
-  transition: background var(--transition-interactive), color var(--transition-interactive);
+.template-card-meta {
+  display: flex; flex-wrap: wrap; gap: var(--space-1);
+  align-items: center;
 }
-.template-delete-btn:hover { background: var(--color-error-highlight); color: var(--color-error); }
-.template-tasks-preview {
-  display: flex; flex-direction: column; gap: var(--space-1);
-}
-.template-task-preview-item {
-  font-size: var(--text-xs); color: var(--color-text-muted);
-  display: flex; align-items: center; gap: var(--space-2);
-}
-.template-task-preview-item::before {
-  content: ''; display: block;
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: var(--color-border); flex-shrink: 0;
-}
-.template-meta {
-  display: flex; flex-wrap: wrap; gap: var(--space-2);
-  font-size: 10px; color: var(--color-text-faint);
-}
-.template-meta span {
-  padding: 2px var(--space-2);
-  background: var(--color-surface-offset);
-  border-radius: var(--radius-full);
-}
+.template-card-actions { flex-shrink: 0; }
+
+/* Template empty state */
 .template-empty {
   display: flex; flex-direction: column; align-items: center;
   text-align: center; padding: var(--space-16) var(--space-8);
@@ -845,22 +841,6 @@ a { color: inherit; text-decoration: none; }
 .template-empty svg { color: var(--color-text-faint); }
 .template-empty h3 { color: var(--color-text); font-size: var(--text-lg); }
 .template-empty p { max-width: 36ch; font-size: var(--text-sm); }
-
-/* ── TEMPLATE MODAL ─────────────────────────────────────────────────── */
-.template-tasks-editor { display: flex; flex-direction: column; gap: var(--space-2); }
-.template-task-row {
-  display: flex; align-items: center; gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-}
-.template-task-title { flex: 1; font-size: var(--text-sm); color: var(--color-text); }
-.template-task-offset {
-  font-size: 10px; color: var(--color-text-faint);
-  background: var(--color-surface-offset);
-  padding: 1px var(--space-2); border-radius: var(--radius-full);
-}
 
 /* ── SCROLLBAR ──────────────────────────────────────────────────────── */
 ::-webkit-scrollbar       { width: 5px; height: 5px; }
@@ -933,6 +913,17 @@ a { color: inherit; text-decoration: none; }
     flex: none;
     height: auto;
     min-height: 300px;
+  }
+
+  /* Templates on mobile: single column */
+  .templates-view {
+    overflow-y: auto;
+    height: auto;
+    flex: none;
+    padding-bottom: calc(56px + var(--safe-bottom) + var(--space-8));
+  }
+  .templates-grid {
+    grid-template-columns: 1fr;
   }
 
   /* Modal becomes bottom sheet */
