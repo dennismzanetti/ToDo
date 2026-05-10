@@ -1,1 +1,45 @@
-Y29uc3QgQ0FDSEUgPSAndG9kby12MSc7CmNvbnN0IFNIRUZMID0gWwogICcuLycsICcuL2luZGV4Lmh0bWwnLCAnLi90ZW1wbGF0ZXMuaHRtbCcsICcuL21hbmlmZXN0Lmpzb24nLAogICcuL2Nzcy9zdHlsZXMuY3NzJywKICAnLi9qcy9hcHAuanMnLCAnLi9qcy9ib2FyZC5qcycsICcuL2pzL21vZGFsLmpzJywgJy4vanMvbW9kZWxzLmpzJywKICAnLi9qcy9zdG9yZS5qcycsICcuL2pzL3RlbXBsYXRlcy1hcHAuanMnLCAnLi9qcy90ZW1wbGF0ZXMtZW5naW5lLmpzJywKICAnLi9qcy90ZW1wbGF0ZXMtcGFnZS5qcycsICcuL2pzL2ZpcmViYXNlLmpzJywgJy4vanMvZmlyZWJhc2UtY29uZmlnLmpzJywKICAnLi9pY29ucy9pY29uLTE5Mi5wbmcnLCAnLi9pY29ucy9pY29uLTUxMi5wbmcnCl07CgpzZWxmLmFkZEV2ZW50TGlzdGVuZXIoJ2luc3RhbGwnLCBlID0+IHsKICBlLndhaXRVbnRpbChjYWNoZXMub3BlbihDQUNIRSkudGhlbihjID0+IGMuYWRkQWxsKFNIRUxMKSkpOwogIHNlbGYuc2tpcFdhaXRpbmcoKTsKfSk7CgpzZWxmLmFkZEV2ZW50TGlzdGVuZXIoJ2FjdGl2YXRlJywgZSA9PiB7CiAgZS53YWl0VW50aWwoCiAgICBjYWNoZXMua2V5cygpLnRoZW4oa2V5cyA9PgogICAgICBQcm9taXNlLmFsbChrZXlzLmZpbHRlcihrID0+IGsgIT09IENBQ0hFKS5tYXAoayA9PiBjYWNoZXMuZGVsZXRlKGspKSkKICAgICkKICApOwogIHNlbGYuY2xpZW50cy5jbGFpbSgpOwp9KTsKCnNlbGYuYWRkRXZlbnRMaXN0ZW5lcignZmV0Y2gnLCBlID0+IHsKICBpZiAoZS5yZXF1ZXN0Lm1ldGhvZCAhPT0gJ0dFVCcpIHJldHVybjsKICAvLyBBbHdheXMgbmV0d29yayBmb3IgRmlyZWJhc2UgKyBmb250IHJlcXVlc3RzCiAgaWYgKAogICAgZS5yZXF1ZXN0LnVybC5pbmNsdWRlcygnZmlyZWJhc2UnKSB8fAogICAgZS5yZXF1ZXN0LnVybC5pbmNsdWRlcygnZ29vZ2xlYXBpcy5jb20nKSB8fAogICAgZS5yZXF1ZXN0LnVybC5pbmNsdWRlcygnZm9udHNoYXJlLmNvbScpCiAgKSByZXR1cm47CgogIGUucmVzcG9uZFdpdGgoCiAgICBjYWNoZXMubWF0Y2goZS5yZXF1ZXN0KS50aGVuKGNhY2hlZCA9PiB7CiAgICAgIGNvbnN0IG5ldHdvcmsgPSBmZXRjaChlLnJlcXVlc3QpLnRoZW4ocmVzID0+IHsKICAgICAgICBpZiAocmVzLm9rICYmIGUucmVxdWVzdC51cmwuc3RhcnRzV2l0aChzZWxmLmxvY2F0aW9uLm9yaWdpbikpIHsKICAgICAgICAgIGNhY2hlcy5vcGVuKENBQ0hFKS50aGVuKGMgPT4gYy5wdXQoZS5yZXF1ZXN0LCByZXMuY2xvbmUoKSkpOwogICAgICAgIH0KICAgICAgICByZXR1cm4gcmVzOwogICAgICB9KS5jYXRjaCgoKSA9PiBjYWNoZWQgfHwgY2FjaGVzLm1hdGNoKCcuL2luZGV4Lmh0bWwnKSk7CiAgICAgIHJldHVybiBjYWNoZWQgfHwgbmV0d29yazsKICAgIH0pCiAgKTsKfSk7Cg==
+const CACHE = 'todo-v1';
+const SHELL = [
+  './', './index.html', './templates.html', './manifest.json',
+  './css/styles.css',
+  './js/app.js', './js/board.js', './js/modal.js', './js/models.js',
+  './js/store.js', './js/templates-app.js', './js/templates-engine.js',
+  './js/templates-page.js', './js/firebase.js', './js/firebase-config.js',
+  './icons/icon-192.png', './icons/icon-512.png'
+];
+
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)));
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    )
+  );
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
+  // Always network for Firebase + font requests
+  if (
+    e.request.url.includes('firebase') ||
+    e.request.url.includes('googleapis.com') ||
+    e.request.url.includes('fontshare.com')
+  ) return;
+
+  e.respondWith(
+    caches.match(e.request).then(cached => {
+      const network = fetch(e.request).then(res => {
+        if (res.ok && e.request.url.startsWith(self.location.origin)) {
+          caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+        }
+        return res;
+      }).catch(() => cached || caches.match('./index.html'));
+      return cached || network;
+    })
+  );
+});
