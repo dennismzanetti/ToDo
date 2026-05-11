@@ -509,168 +509,283 @@ a { color: inherit; text-decoration: none; }
 .column-body.drag-over { background: oklch(from var(--color-primary) l c h / .08); }
 
 /* ═══════════════════════════════════════════════════════
-   DESKTOP TASK CARDS — refined, compact, stylish
+   DESKTOP TASK CARDS
    ═══════════════════════════════════════════════════════ */
 
-.task-card {
-  position: relative;
-  background: var(--color-surface-2);
-  border: 1px solid oklch(from var(--color-text) l c h / .08);
-  border-radius: var(--radius-md);
-  padding: 5px var(--space-2) 5px 8px;
-  cursor: pointer;
-  user-select: none;
-  transition:
-    background var(--transition-interactive),
-    box-shadow var(--transition-interactive),
-    border-color var(--transition-interactive);
-  /* Priority indicator as a left accent line via box-shadow inset */
-  box-shadow: inset 3px 0 0 var(--card-priority-color, var(--color-border));
-}
+@media (min-width: 768px) {
 
-/* Priority color vars applied per card */
-.task-card.priority-high   { --card-priority-color: var(--priority-high-color); }
-.task-card.priority-medium { --card-priority-color: var(--priority-medium-color); }
-.task-card.priority-low    { --card-priority-color: var(--priority-low-color); }
+  .task-card {
+    position: relative;
+    background: var(--color-surface-2);
+    /* Thin alpha-blended border, replaced on hover with a primary tint */
+    border: 1px solid oklch(from var(--color-text) l c h / .07);
+    border-radius: var(--radius-md);
+    /* Tight padding: 4px top/bottom, 8px right, 6px left (leaves room for priority bar) */
+    padding: 4px var(--space-2) 4px 9px;
+    cursor: pointer;
+    user-select: none;
+    /* Priority bar rendered as left inset shadow — no extra DOM */
+    box-shadow: inset 3px 0 0 var(--card-priority-color, transparent);
+    transition:
+      background   var(--transition-interactive),
+      border-color var(--transition-interactive),
+      box-shadow   var(--transition-interactive),
+      transform    var(--transition-interactive);
+  }
 
-.task-card:hover {
-  background: var(--color-surface-2);
-  border-color: oklch(from var(--color-primary) l c h / .3);
-  box-shadow:
-    inset 3px 0 0 var(--card-priority-color, var(--color-border)),
-    var(--shadow-sm);
-}
-.task-card.dragging { opacity: .35; }
+  /* Priority color tokens */
+  .task-card.priority-high   { --card-priority-color: var(--priority-high-color); }
+  .task-card.priority-medium { --card-priority-color: var(--priority-medium-color); }
+  .task-card.priority-low    { --card-priority-color: var(--priority-low-color); }
 
-/* Single-row layout: check · title · badges · notes-icon */
-.task-top {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-width: 0;
-}
+  .task-card:hover {
+    border-color: oklch(from var(--color-primary) l c h / .28);
+    box-shadow:
+      inset 3px 0 0 var(--card-priority-color, transparent),
+      0 2px 8px oklch(from var(--color-primary) l c h / .10);
+    transform: translateY(-1px);
+  }
 
-/* Hide the old separate meta row — badges live inline now */
-.task-meta {
-  display: none;
-}
+  .task-card:active {
+    transform: translateY(0);
+    box-shadow: inset 3px 0 0 var(--card-priority-color, transparent);
+  }
 
-/* Title */
-.task-title {
-  flex: 1;
-  min-width: 0;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 1.3;
-  color: var(--color-text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  .task-card.dragging {
+    opacity: .3;
+    transform: scale(.97);
+  }
 
-/* Inline badge strip — visible only on hover to keep cards minimal */
-.task-badges {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  flex-shrink: 0;
-  opacity: 0;
-  transition: opacity var(--transition-interactive);
-}
-.task-card:hover .task-badges { opacity: 1; }
+  /* ── Single-row layout ── */
+  .task-top {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+  }
 
-/* Completed state */
-.task-card.completed .task-title {
-  text-decoration: line-through;
-  color: var(--color-text-faint);
-}
-.task-card.completed {
-  opacity: .6;
-}
+  /* Hide the old separate meta row */
+  .task-meta { display: none; }
 
-/* ── Checkbox ── */
-.task-check {
-  flex-shrink: 0;
-  width: 15px; height: 15px;
-  border-radius: var(--radius-full);
-  background: none;
-  display: flex; align-items: center; justify-content: center;
-  border: 1.5px solid var(--color-border);
-  transition: border-color var(--transition-interactive), background var(--transition-interactive);
-}
-.task-check::after {
-  content: ''; display: block;
-  width: 5px; height: 5px;
-  border-radius: var(--radius-full);
-}
-.task-check.checked {
-  border-color: var(--color-primary);
-  background: var(--color-primary);
-}
-.task-check.checked::after { background: #fff; }
+  /* ── Title ── */
+  .task-title {
+    flex: 1;
+    min-width: 0;
+    font-size: 11.5px;
+    font-weight: 500;
+    line-height: 1.3;
+    color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: .005em;
+  }
 
-/* ── Priority badge (shown inline on hover) ── */
-.priority-badge {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  padding: 1px 5px;
-  border-radius: var(--radius-full);
-  line-height: 1.6;
-  white-space: nowrap;
-}
-.priority-badge.high   { background: oklch(from var(--priority-high-color)   l c h / .12); color: var(--priority-high-color); }
-.priority-badge.medium { background: oklch(from var(--priority-medium-color) l c h / .12); color: var(--priority-medium-color); }
-.priority-badge.low    { background: oklch(from var(--priority-low-color)    l c h / .12); color: var(--priority-low-color); }
+  /* ── Inline badge strip — revealed on hover ── */
+  .task-badges {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    flex-shrink: 0;
+    /* Start invisible; transition in on card hover */
+    opacity: 0;
+    max-width: 0;
+    overflow: hidden;
+    transition:
+      opacity  var(--transition-interactive),
+      max-width var(--transition-interactive);
+  }
+  .task-card:hover .task-badges {
+    opacity: 1;
+    max-width: 120px;
+  }
 
-/* Dark mode badge overrides for opacity-based backgrounds */
-[data-theme="dark"] .priority-badge.high   { background: #3f1515; color: var(--priority-high-color); }
-[data-theme="dark"] .priority-badge.medium { background: #3b2e0e; color: var(--priority-medium-color); }
-[data-theme="dark"] .priority-badge.low    { background: #0e2d1a; color: var(--priority-low-color); }
+  /* ── Completed state ── */
+  .task-card.completed {
+    opacity: .55;
+  }
+  .task-card.completed .task-title {
+    text-decoration: line-through;
+    color: var(--color-text-faint);
+  }
 
-/* ── Tag chips ── */
-.tag-chip {
-  font-size: 9px; font-weight: 600;
-  padding: 1px 5px; border-radius: var(--radius-full);
-  background: var(--color-surface-offset);
-  color: var(--color-text-muted);
-  line-height: 1.6;
-  white-space: nowrap;
-}
+  /* ── Checkbox ── */
+  .task-check {
+    flex-shrink: 0;
+    width: 14px; height: 14px;
+    border-radius: var(--radius-full);
+    background: none;
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid oklch(from var(--color-text) l c h / .2);
+    transition:
+      border-color var(--transition-interactive),
+      background   var(--transition-interactive);
+  }
+  .task-check::after {
+    content: ''; display: block;
+    width: 5px; height: 5px;
+    border-radius: var(--radius-full);
+  }
+  .task-check.checked {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+  }
+  .task-check.checked::after { background: #fff; }
 
-/* ── Due date badge ── */
-.due-date-badge {
-  font-size: 9px; font-weight: 600;
-  padding: 1px 5px; border-radius: var(--radius-full);
-  background: var(--color-surface-offset-2);
-  color: var(--color-text-muted);
-  line-height: 1.6;
-  white-space: nowrap;
-  display: flex; align-items: center; gap: 2px;
-}
-.due-date-badge .desktop-meta-icon {
-  display: inline-flex; align-items: center;
-  color: var(--color-text-faint);
-}
+  /* ── Priority badge ── */
+  .priority-badge {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    padding: 1px 4px;
+    border-radius: var(--radius-full);
+    line-height: 1.6;
+    white-space: nowrap;
+  }
+  .priority-badge.high   {
+    background: oklch(from var(--priority-high-color)   l c h / .12);
+    color: var(--priority-high-color);
+  }
+  .priority-badge.medium {
+    background: oklch(from var(--priority-medium-color) l c h / .12);
+    color: var(--priority-medium-color);
+  }
+  .priority-badge.low    {
+    background: oklch(from var(--priority-low-color)    l c h / .12);
+    color: var(--priority-low-color);
+  }
 
-/* ── Subtask progress ── */
-.subtask-progress {
-  font-size: 9px; font-weight: 700;
-  padding: 1px 5px; border-radius: var(--radius-full);
-  background: var(--color-surface-offset);
-  color: var(--color-text-muted);
-  line-height: 1.6;
-}
-.subtask-progress.done { color: var(--color-success); background: var(--color-success-highlight); }
+  [data-theme="dark"] .priority-badge.high   { background: #3f1515; color: var(--priority-high-color); }
+  [data-theme="dark"] .priority-badge.medium { background: #3b2e0e; color: var(--priority-medium-color); }
+  [data-theme="dark"] .priority-badge.low    { background: #0e2d1a; color: var(--priority-low-color); }
 
-/* ── Notes icon (SVG-based, shown in badge strip) ── */
-.notes-icon {
-  flex-shrink: 0;
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 16px; height: 16px;
-  color: var(--color-primary);
-  opacity: .7;
+  /* ── Tag chips ── */
+  .tag-chip {
+    font-size: 9px; font-weight: 600;
+    padding: 1px 4px; border-radius: var(--radius-full);
+    background: var(--color-surface-offset);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+    white-space: nowrap;
+  }
+
+  /* ── Due date badge ── */
+  .due-date-badge {
+    font-size: 9px; font-weight: 600;
+    padding: 1px 4px; border-radius: var(--radius-full);
+    background: var(--color-surface-offset-2);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+    white-space: nowrap;
+    display: flex; align-items: center; gap: 2px;
+  }
+  .due-date-badge .desktop-meta-icon {
+    display: inline-flex; align-items: center;
+    color: var(--color-text-faint);
+  }
+
+  /* ── Subtask progress ── */
+  .subtask-progress {
+    font-size: 9px; font-weight: 700;
+    padding: 1px 4px; border-radius: var(--radius-full);
+    background: var(--color-surface-offset);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+  .subtask-progress.done { color: var(--color-success); background: var(--color-success-highlight); }
+
+  /* ── Notes icon ── */
+  .notes-icon {
+    flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 14px; height: 14px;
+    color: var(--color-primary);
+    opacity: .65;
+  }
+
+} /* end @media desktop */
+
+/* ── Fallback for mobile (non-desktop) task card styles ── */
+@media (max-width: 767px) {
+  .task-card {
+    position: relative;
+    background: var(--color-surface-2);
+    border: 1px solid oklch(from var(--color-text) l c h / .08);
+    border-radius: var(--radius-md);
+    padding: 5px var(--space-2) 5px 8px;
+    cursor: pointer;
+    user-select: none;
+    box-shadow: inset 3px 0 0 var(--card-priority-color, var(--color-border));
+    transition:
+      background var(--transition-interactive),
+      box-shadow var(--transition-interactive),
+      border-color var(--transition-interactive);
+  }
+  .task-card.priority-high   { --card-priority-color: var(--priority-high-color); }
+  .task-card.priority-medium { --card-priority-color: var(--priority-medium-color); }
+  .task-card.priority-low    { --card-priority-color: var(--priority-low-color); }
+  .task-card:hover {
+    border-color: oklch(from var(--color-primary) l c h / .3);
+    box-shadow:
+      inset 3px 0 0 var(--card-priority-color, var(--color-border)),
+      var(--shadow-sm);
+  }
+  .task-card.dragging { opacity: .35; }
+  .task-top { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+  .task-meta { display: none; }
+  .task-title {
+    flex: 1; min-width: 0;
+    font-size: 12px; font-weight: 500; line-height: 1.3;
+    color: var(--color-text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .task-badges {
+    display: flex; align-items: center; gap: 3px; flex-shrink: 0;
+    opacity: 0; transition: opacity var(--transition-interactive);
+  }
+  .task-card:hover .task-badges { opacity: 1; }
+  .task-card.completed .task-title { text-decoration: line-through; color: var(--color-text-faint); }
+  .task-card.completed { opacity: .6; }
+  .task-check {
+    flex-shrink: 0; width: 15px; height: 15px;
+    border-radius: var(--radius-full); background: none;
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--color-border);
+    transition: border-color var(--transition-interactive), background var(--transition-interactive);
+  }
+  .task-check::after { content: ''; display: block; width: 5px; height: 5px; border-radius: var(--radius-full); }
+  .task-check.checked { border-color: var(--color-primary); background: var(--color-primary); }
+  .task-check.checked::after { background: #fff; }
+  .priority-badge {
+    font-size: 9px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    padding: 1px 5px; border-radius: var(--radius-full); line-height: 1.6; white-space: nowrap;
+  }
+  .priority-badge.high   { background: oklch(from var(--priority-high-color)   l c h / .12); color: var(--priority-high-color); }
+  .priority-badge.medium { background: oklch(from var(--priority-medium-color) l c h / .12); color: var(--priority-medium-color); }
+  .priority-badge.low    { background: oklch(from var(--priority-low-color)    l c h / .12); color: var(--priority-low-color); }
+  [data-theme="dark"] .priority-badge.high   { background: #3f1515; color: var(--priority-high-color); }
+  [data-theme="dark"] .priority-badge.medium { background: #3b2e0e; color: var(--priority-medium-color); }
+  [data-theme="dark"] .priority-badge.low    { background: #0e2d1a; color: var(--priority-low-color); }
+  .tag-chip {
+    font-size: 9px; font-weight: 600; padding: 1px 5px; border-radius: var(--radius-full);
+    background: var(--color-surface-offset); color: var(--color-text-muted); line-height: 1.6; white-space: nowrap;
+  }
+  .due-date-badge {
+    font-size: 9px; font-weight: 600; padding: 1px 5px; border-radius: var(--radius-full);
+    background: var(--color-surface-offset-2); color: var(--color-text-muted); line-height: 1.6;
+    white-space: nowrap; display: flex; align-items: center; gap: 2px;
+  }
+  .due-date-badge .desktop-meta-icon { display: inline-flex; align-items: center; color: var(--color-text-faint); }
+  .subtask-progress {
+    font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: var(--radius-full);
+    background: var(--color-surface-offset); color: var(--color-text-muted); line-height: 1.6;
+  }
+  .subtask-progress.done { color: var(--color-success); background: var(--color-success-highlight); }
+  .notes-icon {
+    flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px; color: var(--color-primary); opacity: .7;
+  }
 }
 
 /* ── Inline add ── */
