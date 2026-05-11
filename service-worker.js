@@ -1,7 +1,7 @@
-const CACHE = 'todo-v2';
+const CACHE = 'todo-v3';
 const SHELL = [
   './', './index.html', './templates.html', './manifest.json',
-  './css/styles.css',
+  './css/styles.css', './css/mobile.css',
   './js/app.js', './js/board.js', './js/modal.js', './js/models.js',
   './js/store.js', './js/templates-app.js', './js/templates-engine.js',
   './js/templates-page.js', './js/firebase.js', './js/firebase-config.js'
@@ -26,23 +26,28 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
 
-  // Always bypass SW for Firebase, fonts, and external CDNs
   const url = e.request.url;
-  if (
-    url.includes('firebase') ||
-    url.includes('googleapis.com') ||
-    url.includes('gstatic.com') ||
-    url.includes('fontshare.com')
-  ) return;
 
-  // Network-first for JS and CSS so updates land immediately
-  const isAsset = url.endsWith('.js') || url.endsWith('.css');
+  // Bypass everything that isn't same-origin static files
+  if (!url.startsWith(self.location.origin)) return;
+
+  // Bypass navigation to non-HTML (let browser handle)
+  if (e.request.mode === 'navigate') {
+    e.respondWith(
+      fetch(e.request).catch(() => caches.match('./index.html'))
+    );
+    return;
+  }
+
+  // Network-first for JS/CSS so updates land immediately
+  const isAsset = /\.(js|css)$/.test(url.split('?')[0]);
   if (isAsset) {
     e.respondWith(
       fetch(e.request)
         .then(res => {
-          if (res.ok) {
-            caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+          if (res && res.ok) {
+            const copy = res.clone(); // clone BEFORE returning
+            caches.open(CACHE).then(c => c.put(e.request, copy));
           }
           return res;
         })
@@ -51,16 +56,17 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Cache-first for HTML and other static assets
+  // Cache-first for everything else (images, manifest, etc.)
   e.respondWith(
     caches.match(e.request).then(cached => {
-      const network = fetch(e.request).then(res => {
-        if (res.ok && url.startsWith(self.location.origin)) {
-          caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+      if (cached) return cached;
+      return fetch(e.request).then(res => {
+        if (res && res.ok) {
+          const copy = res.clone(); // clone BEFORE returning
+          caches.open(CACHE).then(c => c.put(e.request, copy));
         }
         return res;
-      }).catch(() => cached || caches.match('./index.html'));
-      return cached || network;
+      }).catch(() => caches.match('./index.html'));
     })
   );
 });
