@@ -1,1 +1,1 @@
-# read from patched file
+$(cat /tmp/styles_patched.css)
