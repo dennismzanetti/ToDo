@@ -101,25 +101,24 @@
     padding-bottom: 0;
   }
 
-  /* Version footer: sits below the tab bar, in the safe-area strip */
+  /* Version footer: sits ABOVE the tab bar */
   .version-footer {
     position: fixed;
-    bottom: 0;
+    bottom: calc(56px + var(--safe-bottom));  /* sits just above the tab bar */
     left: 0; right: 0;
-    z-index: 59;                          /* below tab bar (z-index: 60) */
-    height: calc(56px + var(--safe-bottom));
+    z-index: 59;
+    height: auto;
+    padding: 4px var(--space-4);
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
-    padding-bottom: calc(var(--safe-bottom) + 3px);
-    pointer-events: none;                 /* don't block taps on tab bar */
+    pointer-events: none;
     font-size: 9px;
     color: var(--color-text-faint);
     opacity: .75;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    padding-inline: var(--space-4);
     background: none;
     border: none;
   }
@@ -175,7 +174,7 @@
     transform: scale(1.1);
   }
 
-  /* Popover tooltip — hidden by default, shown when .visible */
+  /* Popover tooltip — opens UPWARD, above the version bar and tab bar */
   .version-msg-popover {
     position: absolute;
     bottom: calc(100% + 6px);
