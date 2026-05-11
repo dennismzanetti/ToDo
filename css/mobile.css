@@ -112,7 +112,7 @@
     align-items: flex-end;
     justify-content: center;
     padding-bottom: calc(var(--safe-bottom) + 3px);
-    pointer-events: none;                 /* don’t block taps on tab bar */
+    pointer-events: none;                 /* don't block taps on tab bar */
     font-size: 9px;
     color: var(--color-text-faint);
     opacity: .75;
@@ -132,6 +132,100 @@
 
   .templates-view {
     padding-bottom: calc(56px + var(--safe-bottom) + var(--space-8));
+  }
+
+  /* ── Version badge mobile layout ───────────────────────────────────────────── */
+  .version-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    pointer-events: auto;
+  }
+
+  .version-sep {
+    opacity: .5;
+  }
+
+  /* Info icon button */
+  .version-info-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .version-info-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: var(--radius-full);
+    background: oklch(from var(--color-primary) l c h / .15);
+    color: var(--color-primary);
+    border: none;
+    cursor: pointer;
+    pointer-events: auto;
+    padding: 0;
+    transition: background var(--transition-interactive), transform var(--transition-interactive);
+    flex-shrink: 0;
+  }
+
+  .version-info-btn[aria-expanded="true"] {
+    background: oklch(from var(--color-primary) l c h / .28);
+    transform: scale(1.1);
+  }
+
+  /* Popover tooltip — hidden by default, shown when .visible */
+  .version-msg-popover {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    min-width: 160px;
+    max-width: 240px;
+    white-space: normal;
+    text-align: center;
+    background: var(--color-surface-2);
+    color: var(--color-text);
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1.4;
+    padding: 5px 8px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-md);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 160ms ease, transform 160ms ease;
+    z-index: 100;
+  }
+
+  /* Arrow caret pointing down toward the button */
+  .version-msg-popover::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--color-border);
+  }
+
+  .version-msg-popover::before {
+    content: '';
+    position: absolute;
+    top: calc(100% - 1px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--color-surface-2);
+    z-index: 1;
+  }
+
+  .version-msg-popover.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
   }
 }
 
@@ -636,6 +730,10 @@
   .mobile-nav-arrow:active { background: var(--color-surface-offset); }
   .today-btn:active,
   .mobile-add-btn:active   { background: var(--color-surface-dynamic); }
+  .version-info-btn:active {
+    background: oklch(from var(--color-primary) l c h / .35);
+    transform: scale(.92);
+  }
 }
 
 /* ── Minimum touch-target sizing on touch devices ───────────────────────────── */
