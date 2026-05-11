@@ -505,13 +505,38 @@ function renderDesktopBoard(tasks) {
   board.appendChild(addRow);
 
   // ── 3. Span row ──
+  // Background cells sit at z-index 0 so per-column colors show through.
+  // Span cards are positioned on top at z-index 1.
   const spanRow = document.createElement('div');
   spanRow.className = 'board-span-row';
+
+  // One background cell per column to carry the correct bg color
+  allKeys.forEach((key, colIndex) => {
+    let isWeekend = false;
+    let isToday = false;
+    let dayName = 'no-date';
+    if (key !== 'no-date') {
+      const day = days[colIndex - 1];
+      const dayIdx = day.getDay();
+      isWeekend = dayIdx === 0 || dayIdx === 6;
+      isToday   = key === todayKey;
+      dayName   = DAYS[dayIdx].toLowerCase();
+    }
+    const bg = document.createElement('div');
+    bg.className = 'span-row-bg-cell' +
+      (key === 'no-date' ? ' no-date'    : '') +
+      (isWeekend         ? ' is-weekend' : '') +
+      (isToday           ? ' is-today'   : '');
+    bg.dataset.col = dayName;
+    spanRow.appendChild(bg);
+  });
+
   spanTasks.forEach(({ task, visibleKeys }) => {
     const startIdx = allKeys.indexOf(visibleKeys[0]);
     const endIdx   = allKeys.indexOf(visibleKeys[visibleKeys.length - 1]);
     const card = buildSpanCard(task, visibleKeys.length);
     card.style.gridColumn = `${startIdx + 1} / ${endIdx + 2}`;
+    card.style.zIndex = '1';
     spanRow.appendChild(card);
   });
   board.appendChild(spanRow);
@@ -683,16 +708,14 @@ function showInlineAdd(col, addArea, colKey, addBtn) {
 // ── Drag & Drop (desktop only) ────────────────────────────────────────────────
 
 let dragId = null;
-let dragOverWrap = null; // track which column-body-wrap is highlighted
+let dragOverWrap = null;
 
 function bindDragAndDrop(bodyRow) {
-  // ── Card drag events ──
   bodyRow.querySelectorAll('.task-card[draggable]').forEach(card => {
     card.addEventListener('dragstart', e => {
       dragId = card.dataset.taskId;
       card.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
-      // Set drag image so the ghost doesn't look broken
       e.dataTransfer.setData('text/plain', dragId);
     });
     card.addEventListener('dragend', () => {
@@ -702,7 +725,6 @@ function bindDragAndDrop(bodyRow) {
     });
   });
 
-  // ── Column drop zones: use column-body-wrap so empty columns are always droppable ──
   bodyRow.querySelectorAll('.column-body-wrap').forEach(wrap => {
     wrap.addEventListener('dragover', e => {
       if (!dragId) return;
@@ -715,7 +737,6 @@ function bindDragAndDrop(bodyRow) {
       }
     });
 
-    // Use dragenter/dragleave counter trick to avoid child-element flicker
     let enterCount = 0;
     wrap.addEventListener('dragenter', e => {
       if (!dragId) return;
@@ -743,7 +764,6 @@ function bindDragAndDrop(bodyRow) {
       const task   = currentTasks.find(t => t.id === dragId);
       if (!task) return;
 
-      // Don't re-save if dropped on same column
       const currentKeys = taskDisplayKeys(task);
       if (currentKeys.length === 1 && currentKeys[0] === colKey) return;
 
