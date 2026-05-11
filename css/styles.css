@@ -323,7 +323,7 @@ a { color: inherit; text-decoration: none; }
   overflow: hidden;
 }
 
-/* ── BOARD LAYOUT ───────────────────────────────────────────────────── */
+/* ── BOARD LAYOUT ─────────────────────────────────────────────────── */
 .board {
   flex: 1;
   min-height: 0;
@@ -397,15 +397,40 @@ a { color: inherit; text-decoration: none; }
 .board-add-cell.is-today   { background: oklch(from var(--color-primary) l c h / .04); }
 
 /* ── Span row ── */
+/*
+  The span row uses a stacking approach:
+  - .span-row-bg-cell elements sit at z-index 0 and fill each column with its bg color
+  - .span-card elements are positioned on top at z-index 1
+  We need position:relative on the row so bg cells can use position:absolute,
+  but grid still controls the span-card placement.
+*/
 .board-span-row {
   flex-shrink: 0;
-  padding: var(--space-2) var(--space-2) var(--space-1);
+  position: relative;
   min-height: 44px;
   background: var(--color-bg);
   border-bottom: 1px solid var(--color-border);
   align-items: center;
+  padding: var(--space-2) var(--space-2) var(--space-1);
 }
 .board-span-row:empty { min-height: 0; padding: 0; border-bottom: none; }
+
+/* Background cells: absolutely fill each grid cell using CSS grid placement */
+.span-row-bg-cell {
+  position: absolute;
+  top: 0; bottom: 0;
+  /* Each cell covers its 1/8 column via inline left/width set in JS,
+     OR we use the grid-column trick: make them part of the same grid
+     by keeping the row as a grid and using grid-column on each cell */
+  background: var(--col-body-bg);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Override bg colors for special column types */
+.span-row-bg-cell.no-date    { background: var(--col-body-bg-alt); }
+.span-row-bg-cell.is-weekend { background: var(--weekend-body-bg); }
+.span-row-bg-cell.is-today   { background: oklch(from var(--color-primary) l c h / .04); }
 
 /* Span cards */
 .span-card {
@@ -415,6 +440,8 @@ a { color: inherit; text-decoration: none; }
   padding: var(--space-2) var(--space-3);
   cursor: pointer;
   transition: box-shadow var(--transition-interactive);
+  position: relative;
+  z-index: 1;
 }
 .span-card:hover { box-shadow: var(--shadow-md); }
 .span-card-inner { display: flex; align-items: center; gap: var(--space-2); overflow: hidden; white-space: nowrap; }
@@ -474,7 +501,7 @@ a { color: inherit; text-decoration: none; }
 .column-body::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 9999px; }
 .column-body.drag-over { background: oklch(from var(--color-primary) l c h / .08); }
 
-/* ── TASK CARDS ─────────────────────────────────────────────────────── */
+/* ── TASK CARDS ───────────────────────────────────────────────────── */
 .task-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -574,7 +601,7 @@ a { color: inherit; text-decoration: none; }
   font-size: 9px; color: var(--color-text-muted);
 }
 
-/* ── INLINE ADD ─────────────────────────────────────────────────────── */
+/* ── INLINE ADD ───────────────────────────────────────────────────── */
 .inline-add-form {
   display: flex; gap: var(--space-1);
   padding: var(--space-1);
@@ -600,7 +627,7 @@ a { color: inherit; text-decoration: none; }
 }
 .inline-confirm-btn:hover { background: var(--color-primary-hover); }
 
-/* ── NOTES TOOLTIP ──────────────────────────────────────────────────── */
+/* ── NOTES TOOLTIP ────────────────────────────────────────────────── */
 .notes-tooltip {
   position: fixed; z-index: 999;
   max-width: 280px;
@@ -618,7 +645,7 @@ a { color: inherit; text-decoration: none; }
 }
 .notes-tooltip.visible { opacity: 1; transform: translateY(0); }
 
-/* ── VERSION FOOTER ─────────────────────────────────────────────────── */
+/* ── VERSION FOOTER ───────────────────────────────────────────────── */
 .version-footer {
   position: fixed;
   bottom: var(--safe-bottom);
@@ -692,7 +719,7 @@ a { color: inherit; text-decoration: none; }
 }
 .modal-close:hover { background: var(--color-surface-offset); }
 
-/* ── MODAL BODY: two-column layout ─────────────────────────────────── */
+/* ── MODAL BODY: two-column layout ──────────────────────────────────── */
 .modal-body {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -710,7 +737,7 @@ a { color: inherit; text-decoration: none; }
   padding-left: var(--space-5);
 }
 
-/* ── FORM FIELDS ────────────────────────────────────────────────────── */
+/* ── FORM FIELDS ─────────────────────────────────────────────────── */
 .form-field {
   display: flex; flex-direction: column; gap: var(--space-2);
 }
@@ -768,14 +795,14 @@ a { color: inherit; text-decoration: none; }
   padding-right: var(--space-8);
 }
 
-/* ── FORM ROW (side-by-side fields) ────────────────────────────────── */
+/* ── FORM ROW (side-by-side fields) ─────────────────────────────────── */
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-3);
 }
 
-/* ── DATE SPAN ROW ──────────────────────────────────────────────────── */
+/* ── DATE SPAN ROW ───────────────────────────────────────────────── */
 .date-span-row {
   display: flex; align-items: center; gap: var(--space-2);
 }
@@ -796,7 +823,7 @@ a { color: inherit; text-decoration: none; }
   padding-top: var(--space-5); /* align with inputs accounting for label height */
 }
 
-/* ── DATE + CLEAR BUTTON ROW ────────────────────────────────────────── */
+/* ── DATE + CLEAR BUTTON ROW ─────────────────────────────────────── */
 .date-clear-row {
   display: flex; align-items: center; gap: var(--space-2);
 }
@@ -814,7 +841,7 @@ a { color: inherit; text-decoration: none; }
 }
 .clear-date-btn:hover { background: var(--color-error-highlight); color: var(--color-error); }
 
-/* ── SUBTASK LIST ───────────────────────────────────────────────────── */
+/* ── SUBTASK LIST ─────────────────────────────────────────────────── */
 .subtask-list { display: flex; flex-direction: column; gap: var(--space-2); }
 .subtask-row, .subtask-item {
   display: flex; align-items: center; gap: var(--space-2);
@@ -901,7 +928,7 @@ a { color: inherit; text-decoration: none; }
 }
 .tag-add-input:focus { outline: none; border-color: var(--color-primary); }
 
-/* ── MODAL ACTIONS (footer) ─────────────────────────────────────────── */
+/* ── MODAL ACTIONS (footer) ──────────────────────────────────────── */
 .modal-actions {
   display: flex;
   align-items: center;
@@ -922,7 +949,7 @@ a { color: inherit; text-decoration: none; }
   border-top: 1px solid var(--color-divider);
 }
 
-/* ── BUTTONS ────────────────────────────────────────────────────────── */
+/* ── BUTTONS ──────────────────────────────────────────────────────── */
 .primary-btn {
   padding: var(--space-2) var(--space-5);
   border-radius: var(--radius-lg);
@@ -948,7 +975,7 @@ a { color: inherit; text-decoration: none; }
 }
 .danger-btn:hover { background: var(--color-error); color: #fff; }
 
-/* ── TEMPLATES VIEW ─────────────────────────────────────────────────── */
+/* ── TEMPLATES VIEW ──────────────────────────────────────────────── */
 .templates-view {
   flex: 1;
   display: flex;
@@ -1014,12 +1041,12 @@ a { color: inherit; text-decoration: none; }
 .template-empty h3 { color: var(--color-text); font-size: var(--text-lg); }
 .template-empty p { max-width: 36ch; font-size: var(--text-sm); }
 
-/* ── SCROLLBAR ──────────────────────────────────────────────────────── */
+/* ── SCROLLBAR ───────────────────────────────────────────────────── */
 ::-webkit-scrollbar       { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 9999px; }
 
-/* ── RESPONSIVE (tablet) ────────────────────────────────────────────── */
+/* ── RESPONSIVE (tablet) ─────────────────────────────────────────── */
 @media (max-width: 768px) {
   .topbar { padding-inline: var(--space-3); gap: var(--space-2); }
   .brand-name { font-size: 1rem; }
@@ -1027,9 +1054,9 @@ a { color: inherit; text-decoration: none; }
   .templates-view { padding: var(--space-4) var(--space-4) calc(var(--footer-h) + var(--safe-bottom) + var(--space-8)); }
 }
 
-/* ══════════════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════════════════════
    MOBILE BOARD VIEW  (< 768px)
-   ══════════════════════════════════════════════════════════════════════ */
+   ══════════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
 
   /* Make body scrollable — the mobile board is a normal document flow */
