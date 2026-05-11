@@ -56,80 +56,80 @@
   <!-- Board view -->
   <main id="board" class="board view active"></main>
 
-  <!-- Task edit modal -->
+   <!-- Task edit modal -->
   <div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
     <div class="modal">
       <div class="modal-header">
-        <h2 id="modal-title">Edit Task</h2>
-        <button class="icon-btn" id="modal-close" aria-label="Close modal">
+        <h2 class="modal-title" id="modal-title">Edit Task</h2>
+        <button class="modal-close" id="modal-close" aria-label="Close modal">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
-      <form id="task-form" class="task-form" novalidate>
+      <form id="task-form" novalidate>
         <input type="hidden" id="edit-task-id" />
         <div class="modal-body">
-          <div class="modal-col modal-col-left">
-            <label class="form-field">
+          <div class="form-grid">
+            <label class="form-field full-width">
               <span>Title <span class="required">*</span></span>
               <input type="text" id="edit-title" placeholder="Task title" required />
             </label>
-            <div class="form-field">
-              <span class="field-label">Do On <span class="hint">(day(s) shown on board)</span></span>
+
+            <div class="form-field full-width">
+              <span>Do On <span class="hint">(day(s) shown on board)</span></span>
               <div class="date-span-row">
-                <div class="date-span-field">
-                  <label class="span-label" for="edit-do-on-from">From</label>
+                <div>
+                  <label for="edit-do-on-from">From</label>
                   <input type="date" id="edit-do-on-from" />
                 </div>
-                <div class="date-span-sep">&#8594;</div>
-                <div class="date-span-field">
-                  <label class="span-label" for="edit-do-on-to">To</label>
+                <div class="date-span-arrow" aria-hidden="true">&#8594;</div>
+                <div>
+                  <label for="edit-do-on-to">To</label>
                   <input type="date" id="edit-do-on-to" />
                 </div>
               </div>
             </div>
-            <div class="form-row">
-              <label class="form-field">
-                <span>Priority</span>
-                <select id="edit-priority">
-                  <option value="low">Low</option>
-                  <option value="medium" selected>Medium</option>
-                  <option value="high">High</option>
-                </select>
-              </label>
-              <div class="form-field">
-                <span class="field-label">Due Date <span class="hint">(deadline)</span></span>
-                <div class="date-clear-row">
-                  <input type="date" id="edit-due-date" />
-                  <button type="button" class="clear-date-btn" id="clear-due-date" aria-label="Clear due date" title="Clear due date">&times;</button>
-                </div>
+
+            <label class="form-field">
+              <span>Priority</span>
+              <select id="edit-priority">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+              </select>
+            </label>
+
+            <div class="form-field">
+              <span>Due Date <span class="hint">(deadline)</span></span>
+              <div class="tag-input-wrap">
+                <input type="date" id="edit-due-date" />
+                <button type="button" class="tag-chip-removable" id="clear-due-date" aria-label="Clear due date" title="Clear due date">Clear</button>
               </div>
             </div>
-            <label class="form-field">
+
+            <label class="form-field full-width">
               <span>Tags <span class="hint">(comma separated)</span></span>
               <input type="text" id="edit-tags" placeholder="e.g. work, urgent" />
             </label>
-          </div>
-          <div class="modal-col modal-col-right">
-            <label class="form-field form-field-grow">
+
+            <label class="form-field full-width">
               <span>Notes</span>
               <textarea id="edit-notes" placeholder="Add any notes or details..."></textarea>
             </label>
-            <div class="form-field form-field-grow">
-              <span class="field-label">Subtasks</span>
-              <div id="subtask-list" class="subtask-list"></div>
+
+            <div class="form-field full-width">
+              <span>Subtasks</span>
+              <div class="subtask-list" id="edit-subtasks"></div>
               <div class="subtask-add-row">
-                <input type="text" id="new-subtask-input" placeholder="Add a subtask..." />
-                <button type="button" class="secondary-btn" id="add-subtask-btn">Add</button>
+                <input type="text" class="subtask-input" id="new-subtask-input" placeholder="Add a subtask..." />
+                <button type="button" class="subtask-add-btn" id="add-subtask-btn">Add</button>
               </div>
             </div>
           </div>
         </div>
         <div class="modal-actions">
-          <button type="button" class="danger-btn" id="delete-task-btn">Delete task</button>
-          <div class="modal-actions-right">
-            <button type="button" class="secondary-btn" id="modal-cancel">Cancel</button>
-            <button type="submit" class="primary-btn">Save</button>
-          </div>
+          <button type="button" class="btn btn-ghost" id="task-delete-btn">Delete</button>
+          <button type="button" class="btn btn-ghost" id="modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="task-save-btn">Save</button>
         </div>
       </form>
     </div>
