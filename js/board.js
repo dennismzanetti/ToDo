@@ -15,7 +15,7 @@ const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov
 
 const ICONS = {
   chevronRight: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>`,
-  calendar: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+  calendar: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
   note: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`
 };
 
@@ -588,19 +588,15 @@ function renderDesktopBoard(tasks) {
   bindDragAndDrop(bodyRow);
 }
 
-function metaHtml(task) {
+// Build the extra-badges html (tags, subtask progress) shown on hover
+function hoverBadgesHtml(task) {
   const subtasksDone  = (task.subtasks || []).filter(s => s.completed).length;
   const subtasksTotal = (task.subtasks || []).length;
   const progressHtml  = subtasksTotal > 0
     ? `<span class="subtask-progress${subtasksDone === subtasksTotal ? ' done' : ''}">${subtasksDone}/${subtasksTotal}</span>`
     : '';
   const tagsHtml = (task.tags || []).map(t => `<span class="tag-chip">${escHtml(t)}</span>`).join('');
-  let dueDateHtml = '';
-  if (task.dueDate) {
-    const d = task.dueDate.toDate ? task.dueDate.toDate() : new Date(task.dueDate);
-    dueDateHtml = `<span class="due-date-badge" title="Due date">📅 ${MONTHS[d.getMonth()]} ${d.getDate()}</span>`;
-  }
-  return `${tagsHtml}${dueDateHtml}${progressHtml}`;
+  return `${tagsHtml}${progressHtml}`;
 }
 
 function buildTaskCard(task) {
@@ -611,8 +607,15 @@ function buildTaskCard(task) {
   card.draggable = true;
 
   const notesIcon = task.notes && task.notes.trim()
-    ? `<span class="notes-icon" aria-label="Has notes">📝</span>`
+    ? `<span class="notes-icon" aria-label="Has notes">${ICONS.note}</span>`
     : '';
+
+  // Due date badge — always visible
+  let dueDateHtml = '';
+  if (task.dueDate) {
+    const d = task.dueDate.toDate ? task.dueDate.toDate() : new Date(task.dueDate);
+    dueDateHtml = `<span class="due-date-badge" title="Due date"><span class="desktop-meta-icon">${ICONS.calendar}</span>${MONTHS[d.getMonth()]} ${d.getDate()}</span>`;
+  }
 
   card.innerHTML = `
     <div class="task-top">
@@ -620,9 +623,10 @@ function buildTaskCard(task) {
       <span class="task-title">${escHtml(task.title)}</span>
       ${notesIcon}
     </div>
-    <div class="task-meta">
+    <div class="task-card-meta">
       <span class="priority-badge ${priority}">${priority}</span>
-      ${metaHtml(task)}
+      ${dueDateHtml}
+      <span class="task-badges">${hoverBadgesHtml(task)}</span>
     </div>`;
 
   card.querySelector('[data-check]').addEventListener('click', e => {
@@ -641,15 +645,22 @@ function buildSpanCard(task, spanDays) {
   card.dataset.taskId = task.id;
 
   const notesIcon = task.notes && task.notes.trim()
-    ? `<span class="notes-icon" aria-label="Has notes">📝</span>`
+    ? `<span class="notes-icon" aria-label="Has notes">${ICONS.note}</span>`
     : '';
+
+  let dueDateHtml = '';
+  if (task.dueDate) {
+    const d = task.dueDate.toDate ? task.dueDate.toDate() : new Date(task.dueDate);
+    dueDateHtml = `<span class="due-date-badge" title="Due date"><span class="desktop-meta-icon">${ICONS.calendar}</span>${MONTHS[d.getMonth()]} ${d.getDate()}</span>`;
+  }
 
   card.innerHTML = `
     <div class="span-card-inner">
       <button class="task-check${task.completed ? ' checked' : ''}" aria-label="${task.completed ? 'Mark incomplete' : 'Mark complete'}" data-check></button>
       <span class="task-title">${escHtml(task.title)}</span>
       <span class="priority-badge ${priority}">${priority}</span>
-      ${metaHtml(task)}
+      ${dueDateHtml}
+      ${hoverBadgesHtml(task)}
       ${notesIcon}
       <span class="span-days-badge">${spanDays}d</span>
     </div>`;
