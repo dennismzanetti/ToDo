@@ -18,17 +18,19 @@
 
 /* ── Bottom navigation bar on mobile ───────────────────────────────────────── */
 @media (max-width: 479px) {
-  /* Fixed bottom tab bar */
+
+  /* ── Tab bar sits above the version strip ── */
   .main-nav {
     position: fixed;
-    bottom: 0; left: 0; right: 0;
+    bottom: calc(20px + var(--safe-bottom)); /* lifted above the version strip */
+    left: 0; right: 0;
     z-index: 60;
-    height: calc(56px + var(--safe-bottom));
-    padding-bottom: var(--safe-bottom);
+    height: 56px;
     padding-left: var(--safe-left);
     padding-right: var(--safe-right);
     background: var(--topbar-bg);
     border-top: 1px solid var(--topbar-border);
+    border-bottom: 1px solid var(--topbar-border);
     box-shadow: 0 -2px 12px rgba(0,0,0,.10);
     display: flex;
     justify-content: space-around;
@@ -92,45 +94,46 @@
     background: var(--color-primary);
   }
 
-  /* Push board content above the tab bar */
+  /* Push scrollable content above the whole bottom chrome (tab bar + version strip) */
   .view.active {
-    padding-bottom: calc(56px + var(--safe-bottom));
+    padding-bottom: calc(56px + 20px + var(--safe-bottom));
   }
 
   #board.view.active {
     padding-bottom: 0;
   }
 
-  /* Version footer: sits ABOVE the tab bar */
+  /* ── Version footer: distinct strip below the tab bar ── */
   .version-footer {
     position: fixed;
-    bottom: calc(56px + var(--safe-bottom));  /* sits just above the tab bar */
+    bottom: 0;
     left: 0; right: 0;
-    z-index: 59;
-    height: auto;
-    padding: 4px var(--space-4);
+    z-index: 59;                          /* below tab bar (z-index 60) */
+    height: calc(20px + var(--safe-bottom));
+    padding-bottom: var(--safe-bottom);
     display: flex;
     align-items: center;
     justify-content: center;
+    background: var(--color-surface);     /* distinct background */
+    border-top: 1px solid var(--topbar-border);
     pointer-events: none;
     font-size: 9px;
     color: var(--color-text-faint);
-    opacity: .75;
+    opacity: .85;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    background: none;
-    border: none;
+    padding-inline: var(--space-4);
   }
 
-  /* Allow the link inside to still be tapped */
+  /* Allow links/buttons inside to be tapped */
   .version-footer .version-badge,
   .version-footer a {
     pointer-events: auto;
   }
 
   .templates-view {
-    padding-bottom: calc(56px + var(--safe-bottom) + var(--space-8));
+    padding-bottom: calc(56px + 20px + var(--safe-bottom) + var(--space-4));
   }
 
   /* ── Version badge mobile layout ───────────────────────────────────────────── */
@@ -174,10 +177,10 @@
     transform: scale(1.1);
   }
 
-  /* Popover tooltip — opens UPWARD, above the version bar and tab bar */
+  /* Popover opens upward, above both bars */
   .version-msg-popover {
     position: absolute;
-    bottom: calc(100% + 6px);
+    bottom: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%) translateY(4px);
     min-width: 160px;
@@ -199,7 +202,6 @@
     z-index: 100;
   }
 
-  /* Arrow caret pointing down toward the button */
   .version-msg-popover::after {
     content: '';
     position: absolute;
@@ -232,7 +234,6 @@
    TOPBAR — tighter, native-feeling iPhone header
    ══════════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
-  /* Shrink topbar height; safe-area padding is already handled in styles.css  */
   .topbar {
     --topbar-h: 50px;
     height: calc(50px + var(--safe-top));
@@ -240,18 +241,15 @@
     gap: var(--space-2);
   }
 
-  /* Tighten brand mark */
   .brand-name {
     font-size: 1.05rem;
     letter-spacing: -.025em;
   }
 
-  /* Hide the week navigator on mobile — day navigation lives in the board strip */
   .week-nav {
     display: none !important;
   }
 
-  /* Compact icon buttons */
   .icon-btn,
   .theme-toggle-btn {
     width: 36px;
@@ -259,13 +257,11 @@
     border-radius: var(--radius-md);
   }
 
-  /* Push theme toggle flush to the right edge */
   .topbar > .theme-toggle-btn:last-child {
     margin-left: auto;
   }
 }
 
-/* Extra-small phones: hide brand logo SVG, keep name only */
 @media (max-width: 374px) {
   .brand svg { display: none; }
   .brand-name { font-size: .95rem; }
@@ -275,7 +271,6 @@
    MODAL — full-screen bottom-sheet on mobile
    ══════════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
-  /* Overlay: no blur, simple dark scrim — faster to render on older iPhones */
   .modal-overlay {
     padding: 0;
     align-items: flex-end;
@@ -284,7 +279,6 @@
     -webkit-backdrop-filter: none;
   }
 
-  /* Sheet: slides up from the bottom, fills most of the screen */
   .modal {
     width: 100%;
     max-width: 100%;
