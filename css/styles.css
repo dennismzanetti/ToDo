@@ -398,33 +398,30 @@ a { color: inherit; text-decoration: none; }
 
 /* ── Span row ── */
 /*
-  The span row uses a stacking approach:
-  - .span-row-bg-cell elements sit at z-index 0 and fill each column with its bg color
-  - .span-card elements are positioned on top at z-index 1
-  We need position:relative on the row so bg cells can use position:absolute,
-  but grid still controls the span-card placement.
+  Each .span-row-bg-cell is placed via grid-column in JS so it fills exactly
+  its column — same technique used for the span cards above it.
+  z-index 0 keeps bg cells behind the z-index 1 span cards.
 */
 .board-span-row {
   flex-shrink: 0;
-  position: relative;
   min-height: 44px;
   background: var(--color-bg);
   border-bottom: 1px solid var(--color-border);
-  align-items: center;
+  align-items: stretch;
   padding: var(--space-2) var(--space-2) var(--space-1);
 }
 .board-span-row:empty { min-height: 0; padding: 0; border-bottom: none; }
 
-/* Background cells: absolutely fill each grid cell using CSS grid placement */
+/* Background cells: grid-placed, stretch to fill row height */
 .span-row-bg-cell {
-  position: absolute;
-  top: 0; bottom: 0;
-  /* Each cell covers its 1/8 column via inline left/width set in JS,
-     OR we use the grid-column trick: make them part of the same grid
-     by keeping the row as a grid and using grid-column on each cell */
+  /* position is static — the grid handles placement via grid-column set in JS */
   background: var(--col-body-bg);
   pointer-events: none;
   z-index: 0;
+  /* Bleed to cover the row padding so there are no color gaps */
+  margin-top: calc(-1 * var(--space-2));
+  margin-bottom: calc(-1 * var(--space-1));
+  align-self: stretch;
 }
 
 /* Override bg colors for special column types */
