@@ -1452,3 +1452,10 @@ a { color: inherit; text-decoration: none; }
   flex: 1;
 }
 .todo-empty
+
+.modal-overlay[hidden],
+.modal-backdrop[hidden],
+[hidden].modal-overlay,
+[hidden].modal-backdrop {
+  display: none !important;
+}
