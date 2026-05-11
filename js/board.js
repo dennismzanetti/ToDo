@@ -427,7 +427,7 @@ function showMobileInlineAdd(taskList, addArea, colKey, addBtn) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// DESKTOP BOARD (unchanged)
+// DESKTOP BOARD
 // ══════════════════════════════════════════════════════════════════════════════
 
 function renderDesktopBoard(tasks) {
@@ -458,7 +458,7 @@ function renderDesktopBoard(tasks) {
 
   board.innerHTML = '';
 
-  // ── Header row ──
+  // ── 1. Header row (day names + dates) ──
   const headerRow = document.createElement('div');
   headerRow.className = 'board-header-row';
 
@@ -487,7 +487,48 @@ function renderDesktopBoard(tasks) {
   });
   board.appendChild(headerRow);
 
-  // ── Span row ──
+  // ── 2. Add-task buttons row (immediately below headers) ──
+  const addRow = document.createElement('div');
+  addRow.className = 'board-add-row';
+
+  // Store add areas keyed by column so we can wire them up after bodyRow is built
+  const addAreas = {};
+
+  allKeys.forEach((key, colIndex) => {
+    let isWeekend = false;
+    let isToday = false;
+    let dayName = 'no-date';
+
+    if (key !== 'no-date') {
+      const day = days[colIndex - 1];
+      const dayIdx = day.getDay();
+      isWeekend = dayIdx === 0 || dayIdx === 6;
+      isToday   = key === todayKey;
+      dayName   = DAYS[dayIdx].toLowerCase();
+    }
+
+    const cell = document.createElement('div');
+    cell.className = 'board-add-cell' +
+      (key === 'no-date' ? ' no-date' : '') +
+      (isWeekend ? ' is-weekend' : '') +
+      (isToday   ? ' is-today'   : '');
+    cell.dataset.col = dayName;
+
+    const addArea = document.createElement('div');
+    addArea.className = 'column-add';
+    const addBtn = document.createElement('button');
+    addBtn.className = 'add-task-btn';
+    addBtn.textContent = '+ Add task';
+    addArea.appendChild(addBtn);
+    cell.appendChild(addArea);
+    addRow.appendChild(cell);
+
+    addAreas[key] = { addArea, addBtn };
+  });
+
+  board.appendChild(addRow);
+
+  // ── 3. Span row (multi-day tasks, below add buttons) ──
   const spanRow = document.createElement('div');
   spanRow.className = 'board-span-row';
   spanTasks.forEach(({ task, visibleKeys }) => {
@@ -499,7 +540,7 @@ function renderDesktopBoard(tasks) {
   });
   board.appendChild(spanRow);
 
-  // ── Body row ──
+  // ── 4. Body row (task lists per column) ──
   const bodyRow = document.createElement('div');
   bodyRow.className = 'board-body-row';
 
@@ -524,14 +565,6 @@ function renderDesktopBoard(tasks) {
     col.dataset.colKey = key;
     col.dataset.col    = dayName;
 
-    const addArea = document.createElement('div');
-    addArea.className = 'column-add';
-    const addBtn = document.createElement('button');
-    addBtn.className = 'add-task-btn';
-    addBtn.textContent = '+ Add task';
-    addArea.appendChild(addBtn);
-    col.appendChild(addArea);
-
     const body = document.createElement('div');
     body.className = 'column-body';
     col.appendChild(body);
@@ -540,10 +573,17 @@ function renderDesktopBoard(tasks) {
       body.appendChild(buildTaskCard(task));
     });
 
-    addBtn.addEventListener('click', () => showInlineAdd(col, addArea, key, addBtn));
     bodyRow.appendChild(col);
   });
   board.appendChild(bodyRow);
+
+  // ── Wire up add buttons to their column bodies ──
+  allKeys.forEach(key => {
+    const { addArea, addBtn } = addAreas[key];
+    // Find the matching column-body-wrap
+    const col = bodyRow.querySelector(`[data-col-key="${key}"]`);
+    addBtn.addEventListener('click', () => showInlineAdd(col, addArea, key, addBtn));
+  });
 
   bindDragAndDrop();
 }
