@@ -1,5 +1,5 @@
 import { initStore, subscribe, subscribeTemplates } from './store.js';
-import { renderBoard, prevWeek, nextWeek, resetWeek } from './board.js';
+import { renderBoard, prevWeek, nextWeek, gotoToday } from './board.js';
 import { applyTemplates } from './templates-engine.js';
 
 // ── Theme ──────────────────────────────────────────────────────────────────
@@ -19,7 +19,6 @@ function applyTheme(t) {
 
 // Default to light; only switch to dark if system explicitly prefers dark
 applyTheme('light');
-// Still respect system changes if user hasn't manually toggled
 mq.addEventListener?.('change', () => { if (!manualTheme) applyTheme(mq.matches ? 'dark' : 'light'); });
 themeToggle?.addEventListener('click', () => {
   manualTheme = (root.getAttribute('data-theme') === 'dark') ? 'light' : 'dark';
@@ -30,7 +29,7 @@ themeToggle?.addEventListener('click', () => {
 let lastTasks = [];
 document.getElementById('prev-week')?.addEventListener('click', () => { prevWeek(); renderBoard(lastTasks); });
 document.getElementById('next-week')?.addEventListener('click', () => { nextWeek(); renderBoard(lastTasks); });
-document.getElementById('today-btn')?.addEventListener('click', () => { resetWeek(); renderBoard(lastTasks); });
+document.getElementById('today-btn')?.addEventListener('click', () => { gotoToday(); renderBoard(lastTasks); });
 
 // ── Store ─────────────────────────────────────────────────────────────────
 let tasksReady = false, templatesReady = false;
