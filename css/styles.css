@@ -398,9 +398,10 @@ a { color: inherit; text-decoration: none; }
 
 /* ── Span row ── */
 /*
-  Each .span-row-bg-cell is placed via grid-column in JS so it fills exactly
-  its column — same technique used for the span cards above it.
-  z-index 0 keeps bg cells behind the z-index 1 span cards.
+  .board-span-row is a grid (shared rule above) with 8 equal columns.
+  Each .span-row-bg-cell gets its grid-column set in JS so it sits in
+  exactly the right column. Span cards are placed the same way and sit
+  on top via z-index: 1.
 */
 .board-span-row {
   flex-shrink: 0;
@@ -414,7 +415,6 @@ a { color: inherit; text-decoration: none; }
 
 /* Background cells: grid-placed, stretch to fill row height */
 .span-row-bg-cell {
-  /* position is static — the grid handles placement via grid-column set in JS */
   background: var(--col-body-bg);
   pointer-events: none;
   z-index: 0;
