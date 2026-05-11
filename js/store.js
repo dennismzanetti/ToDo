@@ -12,19 +12,16 @@ let _templates = [];
 let _taskListeners = [];
 let _templateListeners = [];
 
-// Whether the first snapshot has arrived yet (used to know if we can replay)
 let _tasksReady     = false;
 let _templatesReady = false;
 
 export function subscribe(fn) {
   _taskListeners.push(fn);
-  // Replay current state immediately if store is already populated
   if (_tasksReady) fn([..._tasks]);
   return () => { _taskListeners = _taskListeners.filter(l => l !== fn); };
 }
 export function subscribeTemplates(fn) {
   _templateListeners.push(fn);
-  // Replay current state immediately if store is already populated
   if (_templatesReady) fn([..._templates]);
   return () => { _templateListeners = _templateListeners.filter(l => l !== fn); };
 }
@@ -68,11 +65,12 @@ export async function toggleComplete(id, completed) {
 }
 
 /**
- * reorderTask now accepts doOnFrom + doOnTo instead of dueDate for column placement.
+ * reorderTask({ order, doOnFrom, doOnTo })
+ * All fields optional except order.
  */
-export async function reorderTask(id, newOrder, doOnFrom, doOnTo) {
+export async function reorderTask(id, { order, doOnFrom, doOnTo }) {
   const { Timestamp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
-  const update = { order: newOrder, updatedAt: Timestamp.now() };
+  const update = { order, updatedAt: Timestamp.now() };
   if (doOnFrom !== undefined) update.doOnFrom = doOnFrom;
   if (doOnTo   !== undefined) update.doOnTo   = doOnTo;
   await updateDoc(doc(db, 'tasks', id), update);
