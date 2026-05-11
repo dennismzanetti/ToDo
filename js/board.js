@@ -505,12 +505,12 @@ function renderDesktopBoard(tasks) {
   board.appendChild(addRow);
 
   // ── 3. Span row ──
-  // Background cells sit at z-index 0 so per-column colors show through.
-  // Span cards are positioned on top at z-index 1.
+  // Background cells use grid-column placement (same as span cards) so each
+  // one fills exactly its column. Span cards are layered on top via z-index.
   const spanRow = document.createElement('div');
   spanRow.className = 'board-span-row';
 
-  // One background cell per column to carry the correct bg color
+  // One background cell per column — placed via grid-column
   allKeys.forEach((key, colIndex) => {
     let isWeekend = false;
     let isToday = false;
@@ -528,6 +528,8 @@ function renderDesktopBoard(tasks) {
       (isWeekend         ? ' is-weekend' : '') +
       (isToday           ? ' is-today'   : '');
     bg.dataset.col = dayName;
+    // Place this bg cell in its exact grid column
+    bg.style.gridColumn = `${colIndex + 1} / ${colIndex + 2}`;
     spanRow.appendChild(bg);
   });
 
