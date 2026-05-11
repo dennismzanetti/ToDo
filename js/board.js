@@ -209,14 +209,7 @@ function renderMobileBoard(tasks) {
   taskSection.className = 'mobile-section mobile-tasks-section';
   taskSection.dataset.colKey = activeDayKey;
 
-  const addArea = document.createElement('div');
-  addArea.className = 'mobile-add-area';
-  const addBtn = document.createElement('button');
-  addBtn.className = 'mobile-add-btn';
-  addBtn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>Add task</span>`;
-  addArea.appendChild(addBtn);
-  taskSection.appendChild(addArea);
-
+  // Task list first
   const taskList = document.createElement('div');
   taskList.className = 'mobile-task-list';
 
@@ -232,6 +225,16 @@ function renderMobileBoard(tasks) {
   }
 
   taskSection.appendChild(taskList);
+
+  // Add button below the task list
+  const addArea = document.createElement('div');
+  addArea.className = 'mobile-add-area';
+  const addBtn = document.createElement('button');
+  addBtn.className = 'mobile-add-btn';
+  addBtn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>Add task</span>`;
+  addArea.appendChild(addBtn);
+  taskSection.appendChild(addArea);
+
   board.appendChild(taskSection);
 
   addBtn.addEventListener('click', () => showMobileInlineAdd(taskList, addArea, activeDayKey, addBtn));
@@ -247,6 +250,13 @@ function renderMobileBoard(tasks) {
     ndLabel.textContent = 'No date';
     ndSection.appendChild(ndLabel);
 
+    const ndList = document.createElement('div');
+    ndList.className = 'mobile-task-list';
+    noDateTasks
+      .sort((a, b) => (a.order || 0) - (b.order || 0))
+      .forEach(t => ndList.appendChild(buildMobileTaskCard(t)));
+    ndSection.appendChild(ndList);
+
     const ndAddArea = document.createElement('div');
     ndAddArea.className = 'mobile-add-area mobile-add-area--small';
     const ndAddBtn = document.createElement('button');
@@ -255,12 +265,6 @@ function renderMobileBoard(tasks) {
     ndAddArea.appendChild(ndAddBtn);
     ndSection.appendChild(ndAddArea);
 
-    const ndList = document.createElement('div');
-    ndList.className = 'mobile-task-list';
-    noDateTasks
-      .sort((a, b) => (a.order || 0) - (b.order || 0))
-      .forEach(t => ndList.appendChild(buildMobileTaskCard(t)));
-    ndSection.appendChild(ndList);
     board.appendChild(ndSection);
 
     ndAddBtn.addEventListener('click', () => showMobileInlineAdd(ndList, ndAddArea, 'no-date', ndAddBtn));
