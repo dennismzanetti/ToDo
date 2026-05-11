@@ -5,7 +5,7 @@ import { Timestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-f
 
 let weekOffset = 0;
 let currentTasks = [];
-let mobileDayOffset = 0; // 0 = today, -1 = yesterday, etc.
+let mobileDayOffset = 0;
 
 const board     = document.getElementById('board');
 const weekLabel = document.getElementById('week-label');
@@ -13,7 +13,6 @@ const weekLabel = document.getElementById('week-label');
 const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-// ── Mobile detection ─────────────────────────────────────────────────────────
 function isMobile() {
   return window.innerWidth < 768;
 }
@@ -73,11 +72,9 @@ export function getDays() {
 }
 
 function getMobileDays() {
-  // Show 7 days centered on today+mobileDayOffset
   const center = new Date();
   center.setHours(0, 0, 0, 0);
   center.setDate(center.getDate() + mobileDayOffset);
-  // Build a strip of 7 days: 3 before, center, 3 after
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date(center);
     d.setDate(center.getDate() + (i - 3));
@@ -96,7 +93,6 @@ export function renderBoard(tasks) {
   }
 }
 
-// ── Re-render on resize ───────────────────────────────────────────────────────
 let _resizeTimer = null;
 window.addEventListener('resize', () => {
   clearTimeout(_resizeTimer);
@@ -119,11 +115,9 @@ function renderMobileBoard(tasks) {
   activeDay.setDate(today.getDate() + mobileDayOffset);
   const activeDayKey = toDateKey(activeDay);
 
-  // ── Day picker strip ──────────────────────────────────────────────────────
   const strip = document.createElement('div');
   strip.className = 'mobile-day-strip';
 
-  // Navigation arrows
   const prevBtn = document.createElement('button');
   prevBtn.className = 'mobile-nav-arrow';
   prevBtn.setAttribute('aria-label', 'Previous day');
@@ -136,7 +130,6 @@ function renderMobileBoard(tasks) {
   nextBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
   nextBtn.addEventListener('click', () => { mobileDayOffset++; renderMobileBoard(currentTasks); });
 
-  // Day pill buttons
   const pillsWrap = document.createElement('div');
   pillsWrap.className = 'mobile-day-pills';
 
@@ -162,7 +155,6 @@ function renderMobileBoard(tasks) {
   strip.appendChild(nextBtn);
   board.appendChild(strip);
 
-  // ── Active day heading ────────────────────────────────────────────────────
   const heading = document.createElement('div');
   heading.className = 'mobile-day-heading';
   const isActiveTodayDay = activeDayKey === todayKey;
@@ -172,7 +164,6 @@ function renderMobileBoard(tasks) {
     (isActiveTodayDay ? `<span class="mobile-today-chip">Today</span>` : '');
   board.appendChild(heading);
 
-  // ── Span tasks for active day ─────────────────────────────────────────────
   const spanTasksForDay = [];
   const singleTasksForDay = [];
 
@@ -187,10 +178,8 @@ function renderMobileBoard(tasks) {
     }
   });
 
-  // No-date tasks shown separately
   const noDateTasks = tasks.filter(t => taskDisplayKeys(t)[0] === 'no-date');
 
-  // ── Span section ─────────────────────────────────────────────────────────
   if (spanTasksForDay.length > 0) {
     const spanSection = document.createElement('div');
     spanSection.className = 'mobile-section';
@@ -198,18 +187,14 @@ function renderMobileBoard(tasks) {
     spanLabel.className = 'mobile-section-label';
     spanLabel.textContent = 'Multi-day';
     spanSection.appendChild(spanLabel);
-    spanTasksForDay.forEach(t => {
-      spanSection.appendChild(buildMobileSpanCard(t));
-    });
+    spanTasksForDay.forEach(t => spanSection.appendChild(buildMobileSpanCard(t)));
     board.appendChild(spanSection);
   }
 
-  // ── Tasks section ─────────────────────────────────────────────────────────
   const taskSection = document.createElement('div');
   taskSection.className = 'mobile-section mobile-tasks-section';
   taskSection.dataset.colKey = activeDayKey;
 
-  // Task list first
   const taskList = document.createElement('div');
   taskList.className = 'mobile-task-list';
 
@@ -226,7 +211,6 @@ function renderMobileBoard(tasks) {
 
   taskSection.appendChild(taskList);
 
-  // Add button below the task list
   const addArea = document.createElement('div');
   addArea.className = 'mobile-add-area';
   const addBtn = document.createElement('button');
@@ -234,12 +218,10 @@ function renderMobileBoard(tasks) {
   addBtn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>Add task</span>`;
   addArea.appendChild(addBtn);
   taskSection.appendChild(addArea);
-
   board.appendChild(taskSection);
 
   addBtn.addEventListener('click', () => showMobileInlineAdd(taskList, addArea, activeDayKey, addBtn));
 
-  // ── No-date section ───────────────────────────────────────────────────────
   if (noDateTasks.length > 0) {
     const ndSection = document.createElement('div');
     ndSection.className = 'mobile-section mobile-nodate-section';
@@ -264,13 +246,11 @@ function renderMobileBoard(tasks) {
     ndAddBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>Add</span>`;
     ndAddArea.appendChild(ndAddBtn);
     ndSection.appendChild(ndAddArea);
-
     board.appendChild(ndSection);
 
     ndAddBtn.addEventListener('click', () => showMobileInlineAdd(ndList, ndAddArea, 'no-date', ndAddBtn));
   }
 
-  // ── Swipe gesture ─────────────────────────────────────────────────────────
   attachMobileSwipe(board);
 }
 
@@ -306,7 +286,7 @@ function attachMobileSwipe(el) {
   }, { passive: true });
 }
 
-// ── Mobile card builders ──────────────────────────────────────────────────────
+// ── Mobile card builders ─────────────────────────────────────────────────────
 
 function buildMobileTaskCard(task) {
   const card = document.createElement('div');
@@ -462,7 +442,7 @@ function renderDesktopBoard(tasks) {
 
   board.innerHTML = '';
 
-  // ── 1. Header row (day names + dates) ──
+  // ── 1. Header row ──
   const headerRow = document.createElement('div');
   headerRow.className = 'board-header-row';
 
@@ -478,7 +458,6 @@ function renderDesktopBoard(tasks) {
     const dayIdx    = day.getDay();
     const isWeekend = dayIdx === 0 || dayIdx === 6;
     const dayName   = DAYS[dayIdx].toLowerCase();
-
     const hdr = document.createElement('div');
     hdr.className = 'column-header' +
       (isToday   ? ' is-today'   : '') +
@@ -491,18 +470,15 @@ function renderDesktopBoard(tasks) {
   });
   board.appendChild(headerRow);
 
-  // ── 2. Add-task buttons row (immediately below headers) ──
+  // ── 2. Add-task buttons row ──
   const addRow = document.createElement('div');
   addRow.className = 'board-add-row';
-
-  // Store add areas keyed by column so we can wire them up after bodyRow is built
   const addAreas = {};
 
   allKeys.forEach((key, colIndex) => {
     let isWeekend = false;
     let isToday = false;
     let dayName = 'no-date';
-
     if (key !== 'no-date') {
       const day = days[colIndex - 1];
       const dayIdx = day.getDay();
@@ -510,14 +486,12 @@ function renderDesktopBoard(tasks) {
       isToday   = key === todayKey;
       dayName   = DAYS[dayIdx].toLowerCase();
     }
-
     const cell = document.createElement('div');
     cell.className = 'board-add-cell' +
       (key === 'no-date' ? ' no-date' : '') +
       (isWeekend ? ' is-weekend' : '') +
       (isToday   ? ' is-today'   : '');
     cell.dataset.col = dayName;
-
     const addArea = document.createElement('div');
     addArea.className = 'column-add';
     const addBtn = document.createElement('button');
@@ -526,13 +500,11 @@ function renderDesktopBoard(tasks) {
     addArea.appendChild(addBtn);
     cell.appendChild(addArea);
     addRow.appendChild(cell);
-
     addAreas[key] = { addArea, addBtn };
   });
-
   board.appendChild(addRow);
 
-  // ── 3. Span row (multi-day tasks, below add buttons) ──
+  // ── 3. Span row ──
   const spanRow = document.createElement('div');
   spanRow.className = 'board-span-row';
   spanTasks.forEach(({ task, visibleKeys }) => {
@@ -544,7 +516,7 @@ function renderDesktopBoard(tasks) {
   });
   board.appendChild(spanRow);
 
-  // ── 4. Body row (task lists per column) ──
+  // ── 4. Body row ──
   const bodyRow = document.createElement('div');
   bodyRow.className = 'board-body-row';
 
@@ -553,7 +525,6 @@ function renderDesktopBoard(tasks) {
     let dayName = 'no-date';
     let isWeekend = false;
     let isToday = false;
-
     if (key !== 'no-date') {
       const day = days[colIndex - 1];
       const dayIdx = day.getDay();
@@ -561,7 +532,6 @@ function renderDesktopBoard(tasks) {
       isToday   = key === todayKey;
       dayName   = DAYS[dayIdx].toLowerCase();
     }
-
     col.className = 'column-body-wrap' +
       (key === 'no-date' ? ' no-date' : '') +
       (isWeekend ? ' is-weekend' : '') +
@@ -581,15 +551,13 @@ function renderDesktopBoard(tasks) {
   });
   board.appendChild(bodyRow);
 
-  // ── Wire up add buttons to their column bodies ──
   allKeys.forEach(key => {
     const { addArea, addBtn } = addAreas[key];
-    // Find the matching column-body-wrap
     const col = bodyRow.querySelector(`[data-col-key="${key}"]`);
     addBtn.addEventListener('click', () => showInlineAdd(col, addArea, key, addBtn));
   });
 
-  bindDragAndDrop();
+  bindDragAndDrop(bodyRow);
 }
 
 // ── Desktop card builders ─────────────────────────────────────────────────────
@@ -636,7 +604,6 @@ function buildTaskCard(task) {
     toggleComplete(task.id, !task.completed);
   });
   card.addEventListener('click', () => openModal(task));
-
   attachNoteTooltip(card, task.notes);
   return card;
 }
@@ -666,7 +633,6 @@ function buildSpanCard(task, spanDays) {
     toggleComplete(task.id, !task.completed);
   });
   card.addEventListener('click', () => openModal(task));
-
   attachNoteTooltip(card, task.notes);
   return card;
 }
@@ -717,58 +683,70 @@ function showInlineAdd(col, addArea, colKey, addBtn) {
 // ── Drag & Drop (desktop only) ────────────────────────────────────────────────
 
 let dragId = null;
+let dragOverWrap = null; // track which column-body-wrap is highlighted
 
-let touchDragId   = null;
-let touchClone    = null;
-let touchStartX   = 0;
-let touchStartY   = 0;
-let touchDragging = false;
-const TOUCH_DRAG_THRESHOLD = 12;
-
-let _scrollTop = 0;
-function lockBodyScroll() {
-  _scrollTop = window.scrollY;
-  document.body.style.overflow = 'hidden';
-  document.body.style.top = `-${_scrollTop}px`;
-}
-function unlockBodyScroll() {
-  document.body.style.overflow = '';
-  document.body.style.top = '';
-  window.scrollTo(0, _scrollTop);
-}
-
-function bindDragAndDrop() {
-  board.querySelectorAll('.task-card[draggable]').forEach(card => {
+function bindDragAndDrop(bodyRow) {
+  // ── Card drag events ──
+  bodyRow.querySelectorAll('.task-card[draggable]').forEach(card => {
     card.addEventListener('dragstart', e => {
       dragId = card.dataset.taskId;
       card.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
+      // Set drag image so the ghost doesn't look broken
+      e.dataTransfer.setData('text/plain', dragId);
     });
     card.addEventListener('dragend', () => {
       dragId = null;
       card.classList.remove('dragging');
-      board.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+      clearDragOver();
     });
-
-    // Touch drag
-    card.addEventListener('touchstart', handleTouchStart, { passive: true });
-    card.addEventListener('touchmove',  handleTouchMove,  { passive: false });
-    card.addEventListener('touchend',   handleTouchEnd,   { passive: true });
   });
 
-  board.querySelectorAll('.column-body').forEach(col => {
-    col.addEventListener('dragover', e => {
-      e.preventDefault();
-      col.classList.add('drag-over');
-    });
-    col.addEventListener('dragleave', () => col.classList.remove('drag-over'));
-    col.addEventListener('drop', async e => {
-      e.preventDefault();
-      col.classList.remove('drag-over');
+  // ── Column drop zones: use column-body-wrap so empty columns are always droppable ──
+  bodyRow.querySelectorAll('.column-body-wrap').forEach(wrap => {
+    wrap.addEventListener('dragover', e => {
       if (!dragId) return;
-      const colKey = col.closest('.column-body-wrap').dataset.colKey;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (dragOverWrap !== wrap) {
+        clearDragOver();
+        dragOverWrap = wrap;
+        wrap.classList.add('drag-over');
+      }
+    });
+
+    // Use dragenter/dragleave counter trick to avoid child-element flicker
+    let enterCount = 0;
+    wrap.addEventListener('dragenter', e => {
+      if (!dragId) return;
+      e.preventDefault();
+      enterCount++;
+      wrap.classList.add('drag-over');
+    });
+    wrap.addEventListener('dragleave', () => {
+      enterCount--;
+      if (enterCount <= 0) {
+        enterCount = 0;
+        wrap.classList.remove('drag-over');
+        if (dragOverWrap === wrap) dragOverWrap = null;
+      }
+    });
+
+    wrap.addEventListener('drop', async e => {
+      e.preventDefault();
+      enterCount = 0;
+      wrap.classList.remove('drag-over');
+      dragOverWrap = null;
+      if (!dragId) return;
+
+      const colKey = wrap.dataset.colKey;
       const task   = currentTasks.find(t => t.id === dragId);
       if (!task) return;
+
+      // Don't re-save if dropped on same column
+      const currentKeys = taskDisplayKeys(task);
+      if (currentKeys.length === 1 && currentKeys[0] === colKey) return;
+
       let doOnFrom = null, doOnTo = null;
       if (colKey !== 'no-date') {
         const d = dateKeyToDate(colKey);
@@ -784,78 +762,9 @@ function bindDragAndDrop() {
   });
 }
 
-function handleTouchStart(e) {
-  if (e.touches.length !== 1) return;
-  touchDragId   = this.dataset.taskId;
-  touchStartX   = e.touches[0].clientX;
-  touchStartY   = e.touches[0].clientY;
-  touchDragging = false;
-  touchClone    = null;
-}
-
-function handleTouchMove(e) {
-  if (!touchDragId) return;
-  const dx = e.touches[0].clientX - touchStartX;
-  const dy = e.touches[0].clientY - touchStartY;
-  const dist = Math.sqrt(dx * dx + dy * dy);
-  if (!touchDragging) {
-    const isMoreHoriz = Math.abs(dx) > Math.abs(dy);
-    if (dist < TOUCH_DRAG_THRESHOLD || !isMoreHoriz) return;
-    touchDragging = true;
-    lockBodyScroll();
-    const orig = this;
-    touchClone = orig.cloneNode(true);
-    const rect = orig.getBoundingClientRect();
-    touchClone.style.cssText = `
-      position:fixed;z-index:9999;pointer-events:none;
-      width:${rect.width}px;opacity:.9;
-      box-shadow:0 8px 32px oklch(.2 .01 80/.25);
-      transform:rotate(2deg) scale(1.03);
-      transition:none;
-      left:${rect.left}px;top:${rect.top}px;
-    `;
-    document.body.appendChild(touchClone);
-    orig.classList.add('touch-dragging');
-  }
-  if (touchDragging && touchClone) {
-    e.preventDefault();
-    touchClone.style.left = `${e.touches[0].clientX - touchClone.offsetWidth / 2}px`;
-    touchClone.style.top  = `${e.touches[0].clientY - touchClone.offsetHeight / 2}px`;
-    const cols = board.querySelectorAll('.column-body');
-    cols.forEach(c => c.classList.remove('drag-over'));
-    const elBelow = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
-    const overCol = elBelow && elBelow.closest('.column-body');
-    if (overCol) overCol.classList.add('drag-over');
-  }
-}
-
-async function handleTouchEnd(e) {
-  if (!touchDragId) return;
-  unlockBodyScroll();
-  if (touchClone) { touchClone.remove(); touchClone = null; }
-  board.querySelectorAll('.touch-dragging').forEach(c => c.classList.remove('touch-dragging'));
-  board.querySelectorAll('.drag-over').forEach(c => c.classList.remove('drag-over'));
-
-  if (touchDragging && e.changedTouches.length === 1) {
-    const elBelow = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-    const overCol = elBelow && elBelow.closest('.column-body-wrap');
-    if (overCol) {
-      const colKey = overCol.dataset.colKey;
-      let doOnFrom = null, doOnTo = null;
-      if (colKey !== 'no-date') {
-        const d = dateKeyToDate(colKey);
-        doOnFrom = Timestamp.fromDate(d);
-        doOnTo   = Timestamp.fromDate(d);
-      }
-      const colTasks = currentTasks.filter(t =>
-        taskDisplayKeys(t).includes(colKey) && t.id !== touchDragId
-      );
-      const minOrder = Math.min(0, ...colTasks.map(t => t.order || 0));
-      await reorderTask(touchDragId, { doOnFrom, doOnTo, order: minOrder - 1000 });
-    }
-  }
-  touchDragId   = null;
-  touchDragging = false;
+function clearDragOver() {
+  board.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+  dragOverWrap = null;
 }
 
 // ── Shared utils ──────────────────────────────────────────────────────────────
@@ -868,7 +777,7 @@ function escHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-// ── Week nav (desktop topbar controls) ───────────────────────────────────────
+// ── Week nav ──────────────────────────────────────────────────────────────
 export function prevWeek()  { weekOffset--;  renderBoard(currentTasks); }
 export function nextWeek()  { weekOffset++;  renderBoard(currentTasks); }
 export function gotoToday() { weekOffset = 0; mobileDayOffset = 0; renderBoard(currentTasks); }
