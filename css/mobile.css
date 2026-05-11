@@ -4,14 +4,14 @@
    ============================================================================= */
 
 /* ── Drag handle for bottom-sheet modal (iPhone) ───────────────────────────── */
-@media (max-width: 479px) {
+@media (max-width: 767px) {
   .modal::before {
     content: '';
     display: block;
-    width: 40px; height: 4px;
+    width: 36px; height: 4px;
     border-radius: var(--radius-full);
     background: var(--color-border);
-    margin: var(--space-3) auto 0;
+    margin: var(--space-2) auto 0;
     flex-shrink: 0;
   }
 }
@@ -73,6 +73,170 @@
   }
 }
 
+/* ══════════════════════════════════════════════════════════════════════════════
+   TOPBAR — tighter, native-feeling iPhone header
+   ══════════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+  /* Shrink topbar height; safe-area padding is already handled in styles.css  */
+  .topbar {
+    --topbar-h: 50px;
+    height: calc(50px + var(--safe-top));
+    padding-inline: var(--space-3);
+    gap: var(--space-2);
+  }
+
+  /* Tighten brand mark */
+  .brand-name {
+    font-size: 1.05rem;
+    letter-spacing: -.025em;
+  }
+
+  /* Hide the week navigator on mobile — day navigation lives in the board strip */
+  .week-nav {
+    display: none !important;
+  }
+
+  /* Compact icon buttons */
+  .icon-btn,
+  .theme-toggle-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+  }
+
+  /* Push theme toggle flush to the right edge */
+  .topbar > .theme-toggle-btn:last-child {
+    margin-left: auto;
+  }
+}
+
+/* Extra-small phones: hide brand logo SVG, keep name only */
+@media (max-width: 374px) {
+  .brand svg { display: none; }
+  .brand-name { font-size: .95rem; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   MODAL — full-screen bottom-sheet on mobile
+   ══════════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+  /* Overlay: no blur, simple dark scrim — faster to render on older iPhones */
+  .modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+    background: oklch(.1 .02 280 / .6);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  /* Sheet: slides up from the bottom, fills most of the screen */
+  .modal {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(96dvh - var(--safe-top));
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    /* Replace the desktop slideUp animation with a faster upward slide */
+    animation: sheetUp .22s cubic-bezier(.16,1,.3,1);
+    /* Bottom padding = home bar + a little breathing room */
+    padding-bottom: calc(var(--safe-bottom) + var(--space-4));
+    display: flex;
+    flex-direction: column;
+  }
+
+  @keyframes sheetUp {
+    from { transform: translateY(100%); opacity: 1; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+
+  /* Sticky header: tighter padding, larger title, bigger close target */
+  .modal-header {
+    padding: var(--space-3) var(--space-4);
+    gap: var(--space-3);
+    /* sticky is already set in styles.css */
+  }
+
+  .modal-title {
+    font-size: var(--text-base);
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  /* 44×44 close button (iOS HIG minimum) */
+  .modal-close {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-full);
+    flex-shrink: 0;
+  }
+
+  /* Scrollable body */
+  .modal-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: var(--space-3) var(--space-4) var(--space-2);
+    overscroll-behavior: contain;
+  }
+
+  /* Single-column form grid on narrow screens */
+  .modal-body .form-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  /* Date-span row: stack start / arrow / end vertically on mobile */
+  .date-span-row {
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+  .date-span-arrow { display: none; }
+
+  /* All text inputs: 16px min so iOS doesn't auto-zoom */
+  .modal-body input,
+  .modal-body textarea,
+  .modal-body select,
+  .subtask-input,
+  .template-add-task-input {
+    font-size: 16px;
+    min-height: 44px;
+  }
+  .modal-body textarea { min-height: 80px; }
+
+  /* Subtask items: taller for easy tapping */
+  .subtask-item {
+    min-height: 48px;
+    padding: var(--space-2) var(--space-3);
+  }
+  .subtask-item .task-check  { width: 24px; height: 24px; }
+  .subtask-item .task-check::after { width: 8px; height: 8px; }
+  .subtask-delete-btn        { width: 36px; height: 36px; }
+
+  /* Actions bar: taller buttons, full-width primary on mobile */
+  .modal-actions {
+    flex-shrink: 0;
+    padding: var(--space-3) var(--space-4);
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    justify-content: stretch;
+  }
+  .modal-actions .btn {
+    flex: 1 1 auto;
+    min-height: 48px;
+    font-size: var(--text-sm);
+    justify-content: center;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Tag chip inside modal: bigger remove target */
+  .tag-chip-removable button {
+    width: 20px; height: 20px;
+  }
+  .tag-input-wrap {
+    min-height: 48px;
+  }
+}
+
 /* ── Mobile board layout ───────────────────────────────────────────────────── */
 @media (max-width: 479px) {
   .mobile-day-strip {
@@ -120,9 +284,9 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-width: 64px;
+    min-width: 56px;
     min-height: 52px;
-    padding: var(--space-2) var(--space-3);
+    padding: var(--space-2) var(--space-2);
     border-radius: var(--radius-xl);
     border: 1px solid var(--color-border);
     background: var(--color-surface);
@@ -140,10 +304,13 @@
   }
 
   .mobile-day-heading {
-    padding: var(--space-4) var(--space-4) var(--space-2);
-    font-size: var(--text-lg);
+    padding: var(--space-3) var(--space-4) var(--space-2);
+    font-size: var(--text-base);
     font-weight: 700;
     color: var(--color-text);
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
   }
 
   .mobile-section {
@@ -176,7 +343,7 @@
     display: flex;
     align-items: stretch;
     gap: var(--space-2);
-    min-height: 76px;
+    min-height: 72px;
     padding: var(--space-2);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-xl);
@@ -197,9 +364,9 @@
     opacity: .95;
   }
 
-  .mobile-task-card.priority-high::before { background: #dc2626; }
+  .mobile-task-card.priority-high::before   { background: #dc2626; }
   .mobile-task-card.priority-medium::before { background: #d97706; }
-  .mobile-task-card.priority-low::before { background: #16a34a; }
+  .mobile-task-card.priority-low::before    { background: #16a34a; }
 
   .mobile-task-card.completed {
     opacity: .72;
@@ -220,9 +387,9 @@
   }
 
   .mobile-task-card .task-check {
-    width: 44px;
-    height: 44px;
-    margin-top: 0;
+    width: 30px;
+    height: 30px;
+    margin-top: 6px;
     border-width: 2px;
     background: color-mix(in oklab, var(--color-surface) 92%, transparent);
   }
@@ -238,7 +405,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 6px;
+    gap: 5px;
     padding: 2px 0;
   }
 
@@ -253,7 +420,7 @@
     flex: 1 1 auto;
     min-width: 0;
     font-size: var(--text-sm);
-    font-weight: 700;
+    font-weight: 600;
     color: var(--color-text);
     line-height: 1.3;
     word-break: break-word;
@@ -263,7 +430,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     min-width: 0;
   }
 
@@ -274,7 +441,7 @@
   .mobile-task-card .span-days-badge {
     font-size: 11px;
     line-height: 1.5;
-    padding: 2px 7px;
+    padding: 2px 6px;
   }
 
   .mobile-task-card .span-days-badge {
@@ -290,8 +457,8 @@
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     color: var(--color-text-muted);
   }
 
@@ -303,33 +470,36 @@
   }
 
   .mobile-card-arrow {
-    flex: 0 0 24px;
+    flex: 0 0 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--color-text-muted);
-    opacity: .85;
+    color: var(--color-text-faint);
     align-self: center;
   }
 
   .mobile-card-arrow svg {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     stroke-width: 2.4;
   }
 
   .mobile-span-card {
-    min-height: 72px;
+    min-height: 68px;
   }
 
   .mobile-empty-state {
-    padding: var(--space-4);
+    padding: var(--space-6) var(--space-4);
     border-radius: var(--radius-lg);
     background: var(--color-surface-2);
     color: var(--color-text-muted);
     text-align: center;
     font-size: var(--text-sm);
     border: 1px dashed var(--color-border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
   }
 
   .mobile-add-area {
@@ -342,11 +512,13 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: var(--space-2);
     border-radius: var(--radius-lg);
     border: 1px dashed var(--color-border);
     background: var(--color-surface-2);
     color: var(--color-text-muted);
     font-weight: 600;
+    font-size: var(--text-sm);
   }
 
   .mobile-inline-add-form {
@@ -364,6 +536,7 @@
     border: 1px solid var(--color-border);
     background: var(--color-surface-2);
     color: var(--color-text);
+    font-size: 16px; /* prevent iOS zoom */
   }
 
   .mobile-inline-confirm-btn {
@@ -380,8 +553,8 @@
 
 /* ── Active-state feedback for touch (iOS has no hover) ─────────────────────── */
 @media (hover: none) {
-  .task-card:active { box-shadow: var(--shadow-sm); transform: scale(.98); }
-  .span-card:active { box-shadow: var(--shadow-sm); transform: scale(.98); }
+  .task-card:active     { box-shadow: var(--shadow-sm); transform: scale(.98); }
+  .span-card:active     { box-shadow: var(--shadow-sm); transform: scale(.98); }
   .template-card:active { box-shadow: var(--shadow-sm); transform: scale(.98); }
   .mobile-task-card:active {
     transform: scale(.985);
@@ -399,39 +572,28 @@
     transform: none;
   }
   .secondary-btn:active,
-  .btn-ghost:active {
-    background: var(--color-surface-offset);
-  }
+  .btn-ghost:active { background: var(--color-surface-offset); }
   .danger-btn:active,
-  .btn-danger:active {
-    background: var(--color-error);
-    color: #fff;
-  }
+  .btn-danger:active { background: var(--color-error); color: #fff; }
   .nav-btn:active,
-  .mobile-day-pill:active {
-    background: rgba(0,0,0,.18) !important;
-  }
+  .mobile-day-pill:active { background: rgba(0,0,0,.18) !important; }
   .icon-btn:active,
-  .mobile-nav-arrow:active {
-    background: rgba(0,0,0,.22);
-  }
+  .theme-toggle-btn:active,
+  .modal-close:active,
+  .mobile-nav-arrow:active { background: rgba(0,0,0,.22); }
   .today-btn:active,
-  .mobile-add-btn:active {
-    background: rgba(0,0,0,.28);
-  }
+  .mobile-add-btn:active   { background: rgba(0,0,0,.28); }
 }
 
 /* ── Minimum touch-target sizing on touch devices ───────────────────────────── */
 @media (hover: none) {
-  .task-card { min-height: 52px; }
-  .add-task-btn { min-height: 52px; }
-  .span-card { min-height: 44px; display: flex; align-items: center; }
-  .subtask-remove { min-width: 44px; min-height: 44px; }
+  .task-card       { min-height: 52px; }
+  .add-task-btn    { min-height: 52px; }
+  .span-card       { min-height: 44px; display: flex; align-items: center; }
+  .subtask-remove  { min-width: 44px; min-height: 44px; }
   .mobile-day-pill,
   .mobile-nav-arrow,
   .mobile-add-btn,
   .mobile-inline-confirm-btn,
-  .mobile-task-card .task-check {
-    min-height: 44px;
-  }
+  .modal-close { min-height: 44px; }
 }
