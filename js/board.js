@@ -13,6 +13,12 @@ const weekLabel = document.getElementById('week-label');
 const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
+const ICONS = {
+  chevronRight: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>`,
+  calendar: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+  note: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`
+};
+
 function isMobile() {
   return window.innerWidth < 768;
 }
@@ -303,10 +309,10 @@ function buildMobileTaskCard(task) {
   let dueDateHtml = '';
   if (task.dueDate) {
     const d = task.dueDate.toDate ? task.dueDate.toDate() : new Date(task.dueDate);
-    dueDateHtml = `<span class="due-date-badge">📅 ${MONTHS[d.getMonth()]} ${d.getDate()}</span>`;
+    dueDateHtml = `<span class="due-date-badge"><span class="mobile-meta-icon">${ICONS.calendar}</span><span>${MONTHS[d.getMonth()]} ${d.getDate()}</span></span>`;
   }
   const notesIcon = task.notes && task.notes.trim()
-    ? `<span class="notes-icon" aria-label="Has notes">📝</span>` : '';
+    ? `<span class="mobile-notes-icon" aria-label="Has notes">${ICONS.note}</span>` : '';
 
   card.innerHTML = `
     <div class="mobile-card-left">
@@ -322,8 +328,8 @@ function buildMobileTaskCard(task) {
         ${tagsHtml}${dueDateHtml}${progressHtml}
       </div>
     </div>
-    <div class="mobile-card-arrow">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    <div class="mobile-card-arrow" aria-hidden="true">
+      ${ICONS.chevronRight}
     </div>`;
 
   card.querySelector('[data-check]').addEventListener('click', e => {
@@ -342,6 +348,8 @@ function buildMobileSpanCard(task) {
 
   const keys = taskDisplayKeys(task);
   const spanDays = keys.length;
+  const notesIcon = task.notes && task.notes.trim()
+    ? `<span class="mobile-notes-icon" aria-label="Has notes">${ICONS.note}</span>` : '';
 
   card.innerHTML = `
     <div class="mobile-card-left">
@@ -350,14 +358,15 @@ function buildMobileSpanCard(task) {
     <div class="mobile-card-body">
       <div class="mobile-card-title-row">
         <span class="task-title">${escHtml(task.title)}</span>
-        <span class="span-days-badge">${spanDays}d</span>
+        ${notesIcon}
       </div>
       <div class="mobile-card-meta">
         <span class="priority-badge ${priority}">${priority}</span>
+        <span class="span-days-badge">${spanDays}d</span>
       </div>
     </div>
-    <div class="mobile-card-arrow">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    <div class="mobile-card-arrow" aria-hidden="true">
+      ${ICONS.chevronRight}
     </div>`;
 
   card.querySelector('[data-check]').addEventListener('click', e => {
@@ -442,7 +451,6 @@ function renderDesktopBoard(tasks) {
 
   board.innerHTML = '';
 
-  // ── 1. Header row ──
   const headerRow = document.createElement('div');
   headerRow.className = 'board-header-row';
 
@@ -470,7 +478,6 @@ function renderDesktopBoard(tasks) {
   });
   board.appendChild(headerRow);
 
-  // ── 2. Add-task buttons row ──
   const addRow = document.createElement('div');
   addRow.className = 'board-add-row';
   const addAreas = {};
@@ -504,13 +511,9 @@ function renderDesktopBoard(tasks) {
   });
   board.appendChild(addRow);
 
-  // ── 3. Span row ──
-  // Background cells use grid-column placement (same as span cards) so each
-  // one fills exactly its column. Span cards are layered on top via z-index.
   const spanRow = document.createElement('div');
   spanRow.className = 'board-span-row';
 
-  // One background cell per column — placed via grid-column
   allKeys.forEach((key, colIndex) => {
     let isWeekend = false;
     let isToday = false;
@@ -528,7 +531,6 @@ function renderDesktopBoard(tasks) {
       (isWeekend         ? ' is-weekend' : '') +
       (isToday           ? ' is-today'   : '');
     bg.dataset.col = dayName;
-    // Place this bg cell in its exact grid column
     bg.style.gridColumn = `${colIndex + 1} / ${colIndex + 2}`;
     spanRow.appendChild(bg);
   });
@@ -543,7 +545,6 @@ function renderDesktopBoard(tasks) {
   });
   board.appendChild(spanRow);
 
-  // ── 4. Body row ──
   const bodyRow = document.createElement('div');
   bodyRow.className = 'board-body-row';
 
@@ -587,21 +588,15 @@ function renderDesktopBoard(tasks) {
   bindDragAndDrop(bodyRow);
 }
 
-// ── Desktop card builders ─────────────────────────────────────────────────────
-
-function metaHtml(task) {
+// Build the extra-badges html (tags, subtask progress) shown on hover
+function hoverBadgesHtml(task) {
   const subtasksDone  = (task.subtasks || []).filter(s => s.completed).length;
   const subtasksTotal = (task.subtasks || []).length;
   const progressHtml  = subtasksTotal > 0
     ? `<span class="subtask-progress${subtasksDone === subtasksTotal ? ' done' : ''}">${subtasksDone}/${subtasksTotal}</span>`
     : '';
   const tagsHtml = (task.tags || []).map(t => `<span class="tag-chip">${escHtml(t)}</span>`).join('');
-  let dueDateHtml = '';
-  if (task.dueDate) {
-    const d = task.dueDate.toDate ? task.dueDate.toDate() : new Date(task.dueDate);
-    dueDateHtml = `<span class="due-date-badge" title="Due date">📅 ${MONTHS[d.getMonth()]} ${d.getDate()}</span>`;
-  }
-  return `${tagsHtml}${dueDateHtml}${progressHtml}`;
+  return `${tagsHtml}${progressHtml}`;
 }
 
 function buildTaskCard(task) {
@@ -612,8 +607,15 @@ function buildTaskCard(task) {
   card.draggable = true;
 
   const notesIcon = task.notes && task.notes.trim()
-    ? `<span class="notes-icon" aria-label="Has notes">📝</span>`
+    ? `<span class="notes-icon" aria-label="Has notes">${ICONS.note}</span>`
     : '';
+
+  // Due date badge — always visible
+  let dueDateHtml = '';
+  if (task.dueDate) {
+    const d = task.dueDate.toDate ? task.dueDate.toDate() : new Date(task.dueDate);
+    dueDateHtml = `<span class="due-date-badge" title="Due date"><span class="desktop-meta-icon">${ICONS.calendar}</span>${MONTHS[d.getMonth()]} ${d.getDate()}</span>`;
+  }
 
   card.innerHTML = `
     <div class="task-top">
@@ -621,9 +623,10 @@ function buildTaskCard(task) {
       <span class="task-title">${escHtml(task.title)}</span>
       ${notesIcon}
     </div>
-    <div class="task-meta">
+    <div class="task-card-meta">
       <span class="priority-badge ${priority}">${priority}</span>
-      ${metaHtml(task)}
+      ${dueDateHtml}
+      <span class="task-badges">${hoverBadgesHtml(task)}</span>
     </div>`;
 
   card.querySelector('[data-check]').addEventListener('click', e => {
@@ -642,15 +645,22 @@ function buildSpanCard(task, spanDays) {
   card.dataset.taskId = task.id;
 
   const notesIcon = task.notes && task.notes.trim()
-    ? `<span class="notes-icon" aria-label="Has notes">📝</span>`
+    ? `<span class="notes-icon" aria-label="Has notes">${ICONS.note}</span>`
     : '';
+
+  let dueDateHtml = '';
+  if (task.dueDate) {
+    const d = task.dueDate.toDate ? task.dueDate.toDate() : new Date(task.dueDate);
+    dueDateHtml = `<span class="due-date-badge" title="Due date"><span class="desktop-meta-icon">${ICONS.calendar}</span>${MONTHS[d.getMonth()]} ${d.getDate()}</span>`;
+  }
 
   card.innerHTML = `
     <div class="span-card-inner">
       <button class="task-check${task.completed ? ' checked' : ''}" aria-label="${task.completed ? 'Mark incomplete' : 'Mark complete'}" data-check></button>
       <span class="task-title">${escHtml(task.title)}</span>
       <span class="priority-badge ${priority}">${priority}</span>
-      ${metaHtml(task)}
+      ${dueDateHtml}
+      ${hoverBadgesHtml(task)}
       ${notesIcon}
       <span class="span-days-badge">${spanDays}d</span>
     </div>`;
@@ -663,8 +673,6 @@ function buildSpanCard(task, spanDays) {
   attachNoteTooltip(card, task.notes);
   return card;
 }
-
-// ── Desktop inline add ────────────────────────────────────────────────────────
 
 function showInlineAdd(col, addArea, colKey, addBtn) {
   addBtn.style.display = 'none';
@@ -706,8 +714,6 @@ function showInlineAdd(col, addArea, colKey, addBtn) {
     setTimeout(() => { if (!confirmBtn.matches(':focus')) cancel(); }, 150);
   });
 }
-
-// ── Drag & Drop (desktop only) ────────────────────────────────────────────────
 
 let dragId = null;
 let dragOverWrap = null;
@@ -789,8 +795,6 @@ function clearDragOver() {
   dragOverWrap = null;
 }
 
-// ── Shared utils ──────────────────────────────────────────────────────────────
-
 function escHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;')
@@ -799,7 +803,6 @@ function escHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-// ── Week nav ──────────────────────────────────────────────────────────────
 export function prevWeek()  { weekOffset--;  renderBoard(currentTasks); }
 export function nextWeek()  { weekOffset++;  renderBoard(currentTasks); }
 export function gotoToday() { weekOffset = 0; mobileDayOffset = 0; renderBoard(currentTasks); }
