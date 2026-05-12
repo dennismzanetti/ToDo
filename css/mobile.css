@@ -437,8 +437,23 @@
   }
 }
 
-/* ── Mobile board layout ───────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════════
+   MOBILE BOARD LAYOUT
+   Override the desktop .board grid so children stack vertically
+   ══════════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 479px) {
+
+  /* ── Critical fix: cancel desktop 8-column grid, stack children vertically ── */
+  .board--mobile {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: unset !important;
+    grid-template-rows: unset !important;
+    align-items: stretch;
+    padding-top: 0 !important; /* strip is sticky, no extra push needed */
+    min-height: calc(100dvh - calc(52px + var(--safe-top)));
+  }
+
   .mobile-day-strip {
     position: sticky;
     /* Sit flush below the topbar (52px) + its safe-area top inset */
