@@ -438,13 +438,14 @@
    ══════════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 479px) {
 
-  /* ── Critical fix: cancel desktop 8-column grid, stack children vertically ── */
+  /* ── Critical fix: cancel desktop 8-column grid AND desktop padding-top ── */
   .board--mobile {
     display: flex !important;
     flex-direction: column !important;
     grid-template-columns: unset !important;
     grid-template-rows: unset !important;
     align-items: stretch;
+    /* Zero out the 57px desktop padding-top set on .board in styles.css */
     padding-top: 0 !important;
     min-height: calc(100dvh - calc(52px + var(--safe-top)));
   }
@@ -513,13 +514,6 @@
     border-color: var(--color-primary);
   }
 
-  /*
-   * The strip is sticky at top = topbar (52px + safe-top) and is ~73px tall.
-   * The heading sits directly below the strip in normal flow — no extra
-   * offset is needed on initial render. We only need scroll-margin-top so
-   * that if the heading is scrolled to programmatically it clears both
-   * the topbar AND the sticky strip.
-   */
   .mobile-day-heading {
     padding: var(--space-4) var(--space-4) var(--space-2);
     font-size: var(--text-base);
