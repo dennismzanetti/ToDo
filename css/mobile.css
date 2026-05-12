@@ -604,17 +604,23 @@
     padding-top: 2px;
   }
 
+  /* ── Mobile check button: larger touch target ── */
   .mobile-task-card .task-check {
     width: 30px;
     height: 30px;
     margin-top: 6px;
     border-width: 2px;
+    border-radius: var(--radius-md);
     background: color-mix(in oklab, var(--color-surface) 92%, transparent);
   }
 
-  .mobile-task-card .task-check::after {
-    width: 10px;
-    height: 10px;
+  /* Scale the checkmark to fit the 30x30 box */
+  .mobile-task-card .task-check.checked::after {
+    width: 14px;
+    height: 8px;
+    border-left-width: 2.5px;
+    border-bottom-width: 2.5px;
+    transform: rotate(-45deg) translate(1px, -2px);
   }
 
   .mobile-card-body {
