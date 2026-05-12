@@ -336,9 +336,17 @@ function buildMobileTaskCard(task) {
       ${ICONS.chevronRight}
     </div>`;
 
-  card.querySelector('[data-check]').addEventListener('click', e => {
+  const checkBtn = card.querySelector('[data-check]');
+  checkBtn.addEventListener('click', e => {
     e.stopPropagation();
-    toggleComplete(task.id, !task.completed);
+    const nowCompleted = !task.completed;
+    // Optimistic UI — update DOM immediately before Firebase round-trip
+    checkBtn.classList.toggle('checked', nowCompleted);
+    checkBtn.setAttribute('aria-label', nowCompleted ? 'Mark incomplete' : 'Mark complete');
+    card.classList.toggle('completed', nowCompleted);
+    const titleEl = card.querySelector('.task-title');
+    if (titleEl) titleEl.style.textDecoration = nowCompleted ? 'line-through' : '';
+    toggleComplete(task.id, nowCompleted);
   });
   card.addEventListener('click', () => openModal(task));
   return card;
@@ -373,9 +381,17 @@ function buildMobileSpanCard(task) {
       ${ICONS.chevronRight}
     </div>`;
 
-  card.querySelector('[data-check]').addEventListener('click', e => {
+  const checkBtn = card.querySelector('[data-check]');
+  checkBtn.addEventListener('click', e => {
     e.stopPropagation();
-    toggleComplete(task.id, !task.completed);
+    const nowCompleted = !task.completed;
+    // Optimistic UI — update DOM immediately before Firebase round-trip
+    checkBtn.classList.toggle('checked', nowCompleted);
+    checkBtn.setAttribute('aria-label', nowCompleted ? 'Mark incomplete' : 'Mark complete');
+    card.classList.toggle('completed', nowCompleted);
+    const titleEl = card.querySelector('.task-title');
+    if (titleEl) titleEl.style.textDecoration = nowCompleted ? 'line-through' : '';
+    toggleComplete(task.id, nowCompleted);
   });
   card.addEventListener('click', () => openModal(task));
   return card;
