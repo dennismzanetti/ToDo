@@ -3,7 +3,7 @@
    Loaded after styles.css on both index.html and templates.html
    ============================================================================= */
 
-/* ── Drag handle for bottom-sheet modal (iPhone) ───────────────────────────────── */
+/* ── Drag handle for bottom-sheet modal (iPhone) ──────────────────────────────────── */
 @media (max-width: 767px) {
   .modal::before {
     content: '';
@@ -16,7 +16,7 @@
   }
 }
 
-/* ── Bottom navigation bar on mobile ──────────────────────────────────────────── */
+/* ── Bottom navigation bar on mobile ───────────────────────────────────────────────── */
 @media (max-width: 479px) {
 
   /* ── Tab bar sits above the version strip ── */
@@ -185,9 +185,9 @@
   }
 }
 
-/* ══════════════════════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════════════════════════════
    TOPBAR — 3-zone grid layout on mobile
-   ══════════════════════════════════════════════════════════════════════════════ */
+   ══════════════════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
   .topbar {
     --topbar-h: 52px;
@@ -285,9 +285,9 @@
   }
 }
 
-/* ══════════════════════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════════════════════════════
    MODAL — full-screen bottom-sheet on mobile
-   ══════════════════════════════════════════════════════════════════════════════ */
+   ══════════════════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
   .modal-overlay {
     padding: 0;
@@ -412,9 +412,9 @@
   }
 }
 
-/* ══════════════════════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════════════════════════════
    MOBILE BOARD LAYOUT
-   ══════════════════════════════════════════════════════════════════════════════ */
+   ══════════════════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 479px) {
 
   .board--mobile {
@@ -423,12 +423,13 @@
     grid-template-columns: unset !important;
     grid-template-rows: unset !important;
     align-items: stretch;
-    padding-top: var(--space-3) !important;
+    padding-top: 0 !important;
     min-height: calc(100dvh - calc(52px + var(--safe-top)));
   }
 
   :root {
     --day-strip-h: 76px;
+    --day-heading-h: 60px;
   }
 
   .mobile-day-strip {
@@ -495,24 +496,23 @@
     border-color: var(--color-primary);
   }
 
-  /* ── Day heading — static, in normal flow below the sticky day strip ── */
-  #mobile-day-heading.mobile-day-heading {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-3);
-    padding: var(--space-4) var(--space-5) var(--space-3);
+  /* ── Day heading — sticky just below the day strip ── */
+  .mobile-day-heading {
+    position: sticky;
+    top: calc(52px + var(--safe-top) + var(--day-strip-h));
+    z-index: 19;
+    background: var(--color-bg);
+    padding-top: var(--space-6);
+    padding-right: var(--space-5);
+    padding-bottom: var(--space-3);
+    padding-left: var(--space-5);
     font-size: var(--text-lg);
     font-weight: 700;
     color: var(--color-text);
-    background: var(--color-bg);
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
     border-bottom: 1px solid var(--color-divider);
-    /* static positioning — no sticky/fixed/absolute */
-    position: static;
-  }
-
-  /* Hide on desktop — shown only by JS when mobile board renders */
-  #mobile-day-heading.mobile-day-heading[hidden] {
-    display: none !important;
   }
 
   .mobile-section {
@@ -776,7 +776,7 @@
   }
 }
 
-/* ── Active-state feedback for touch (iOS has no hover) ─────────────────────── */
+/* ── Active-state feedback for touch (iOS has no hover) ─────────────────────────────── */
 @media (hover: none) {
   .task-card:active     { box-shadow: var(--shadow-sm); transform: scale(.98); }
   .span-card:active     { box-shadow: var(--shadow-sm); transform: scale(.98); }
@@ -815,7 +815,7 @@
   .mobile-today-btn:active { background: var(--color-primary); color: var(--color-text-inverse); }
 }
 
-/* ── Minimum touch-target sizing on touch devices ─────────────────────────── */
+/* ── Minimum touch-target sizing on touch devices ───────────────────────────────────── */
 @media (hover: none) {
   .task-card       { min-height: 52px; }
   .add-task-btn    { min-height: 52px; }
