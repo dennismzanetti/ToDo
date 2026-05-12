@@ -450,6 +450,15 @@
     min-height: calc(100dvh - calc(52px + var(--safe-top)));
   }
 
+  /* ── Sticky day-strip variables ──────────────────────────────────────────────
+     The strip is ~76px tall (44px pills + 16px vertical padding + 1px border).
+     We expose this as a custom property so the heading offset stays in sync.
+     Adjust --day-strip-h if the strip height ever changes.
+  */
+  :root {
+    --day-strip-h: 76px;
+  }
+
   .mobile-day-strip {
     position: sticky;
     top: calc(52px + var(--safe-top));
@@ -514,6 +523,12 @@
     border-color: var(--color-primary);
   }
 
+  /* ── Day heading ─────────────────────────────────────────────────────────────
+     Add top padding equal to the sticky strip height so the heading is never
+     hidden under the strip when the page first renders or when the day changes.
+     The scroll-margin-top covers the case where the browser scrolls to this
+     element programmatically (e.g., anchor navigation).
+  */
   .mobile-day-heading {
     padding: var(--space-4) var(--space-4) var(--space-2);
     font-size: var(--text-base);
@@ -522,7 +537,8 @@
     display: flex;
     align-items: baseline;
     gap: var(--space-3);
-    scroll-margin-top: calc(52px + var(--safe-top) + 76px);
+    /* Keep the heading visible below both topbar (52px) and sticky strip (~76px) */
+    scroll-margin-top: calc(52px + var(--safe-top) + var(--day-strip-h));
   }
 
   .mobile-section {
@@ -532,7 +548,7 @@
     border-radius: var(--radius-xl);
     background: var(--color-surface);
     box-shadow: var(--shadow-sm);
-    scroll-margin-top: calc(52px + var(--safe-top) + 76px + var(--space-2));
+    scroll-margin-top: calc(52px + var(--safe-top) + var(--day-strip-h) + var(--space-2));
   }
 
   .mobile-section-label {
