@@ -111,7 +111,7 @@ window.addEventListener('resize', () => {
 
 function renderMobileBoard(tasks) {
   board.innerHTML = '';
-  board.className = 'board board--mobile';
+  board.className = 'board board--mobile view active';
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -121,6 +121,7 @@ function renderMobileBoard(tasks) {
   activeDay.setDate(today.getDate() + mobileDayOffset);
   const activeDayKey = toDateKey(activeDay);
 
+  // ── Day strip (prev arrow · pills · next arrow) ──────────────────────────
   const strip = document.createElement('div');
   strip.className = 'mobile-day-strip';
 
@@ -161,6 +162,22 @@ function renderMobileBoard(tasks) {
   strip.appendChild(nextBtn);
   board.appendChild(strip);
 
+  // ── Today bar — separate row beneath the strip, hidden when already on today ──
+  if (mobileDayOffset !== 0) {
+    const todayBar = document.createElement('div');
+    todayBar.className = 'mobile-today-bar';
+    const todayBarBtn = document.createElement('button');
+    todayBarBtn.className = 'mobile-today-bar-btn';
+    todayBarBtn.textContent = 'Today';
+    todayBarBtn.addEventListener('click', () => {
+      mobileDayOffset = 0;
+      renderMobileBoard(currentTasks);
+    });
+    todayBar.appendChild(todayBarBtn);
+    board.appendChild(todayBar);
+  }
+
+  // ── Day heading ──────────────────────────────────────────────────────────
   const heading = document.createElement('div');
   heading.className = 'mobile-day-heading';
   const isActiveTodayDay = activeDayKey === todayKey;

@@ -28,9 +28,9 @@
     height: 56px;
     padding-left: var(--safe-left);
     padding-right: var(--safe-right);
-    background: var(--topbar-bg);
-    border-top: 1px solid var(--topbar-border);
-    border-bottom: 1px solid var(--topbar-border);
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-divider);
+    border-bottom: 1px solid var(--color-divider);
     box-shadow: 0 -2px 12px rgba(0,0,0,.10);
     display: flex;
     justify-content: space-around;
@@ -54,7 +54,7 @@
     letter-spacing: .01em;
     border-radius: 0;
     background: none !important;
-    color: var(--topbar-text-muted);
+    color: var(--color-text-muted);
     min-height: 44px;
     gap: 3px;
     transition: color var(--transition-interactive);
@@ -97,11 +97,11 @@
   /*
    * All views get bottom padding to clear:
    *   56px tab bar + 44px version strip + safe-bottom
-   * The board view participates in normal document flow (it's not a fixed
-   * scroll container), so it needs the same treatment — do NOT zero it out.
+   * The board view (.view.active) participates in normal document flow.
    */
   .view.active,
-  #board.view.active {
+  #board.view.active,
+  .board--mobile {
     padding-bottom: calc(56px + 44px + var(--safe-bottom) + var(--space-4));
   }
 
@@ -119,7 +119,7 @@
     align-items: center;
     justify-content: center;
     background: var(--color-surface);
-    border-top: 1px solid var(--topbar-border);
+    border-top: 1px solid var(--color-divider);
     pointer-events: none;
   }
 
@@ -451,6 +451,44 @@
     background: color-mix(in oklab, var(--color-bg) 92%, transparent);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--color-divider);
+  }
+
+  /* ── Today bar — full-width row below the day strip ──────────────────────── */
+  .mobile-today-bar {
+    position: sticky;
+    top: calc(52px + var(--safe-top) + 68px); /* topbar + strip height */
+    z-index: 19;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-2) var(--space-3);
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-divider);
+  }
+
+  .mobile-today-bar-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    padding: 0 var(--space-6);
+    border-radius: var(--radius-full);
+    background: var(--color-primary-highlight);
+    color: var(--color-primary);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    letter-spacing: .01em;
+    border: 1px solid oklch(from var(--color-primary) l c h / .28);
+    transition: background var(--transition-interactive),
+                color var(--transition-interactive),
+                border-color var(--transition-interactive);
+  }
+
+  .mobile-today-bar-btn:hover,
+  .mobile-today-bar-btn:active {
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    border-color: var(--color-primary);
   }
 
   .mobile-nav-arrow {
@@ -787,7 +825,7 @@
   .mobile-nav-arrow:active { background: var(--color-surface-offset); }
   .today-btn:active,
   .today-btn--mobile:active,
-  .mobile-today-btn:active,
+  .mobile-today-bar-btn:active { background: var(--color-primary); color: var(--color-text-inverse); }
   .mobile-add-btn:active   { background: var(--color-surface-dynamic); }
 }
 
@@ -801,5 +839,6 @@
   .mobile-nav-arrow,
   .mobile-add-btn,
   .mobile-inline-confirm-btn,
+  .mobile-today-bar-btn,
   .modal-close { min-height: 44px; }
 }
