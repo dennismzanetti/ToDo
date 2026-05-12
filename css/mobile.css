@@ -439,9 +439,15 @@
 
 /* ── Mobile board layout ───────────────────────────────────────────────────── */
 @media (max-width: 479px) {
+
+  /* ── Board itself: push content below the fixed topbar ── */
+  #board.board--mobile {
+    padding-top: calc(52px + var(--safe-top));
+  }
+
   .mobile-day-strip {
     position: sticky;
-    /* Sit flush below the topbar (52px) + its safe-area top inset */
+    /* Sit flush below the topbar (52px + safe-top) */
     top: calc(52px + var(--safe-top));
     z-index: 20;
     display: flex;
@@ -453,7 +459,7 @@
     border-bottom: 1px solid var(--color-divider);
   }
 
-  /* ── Today bar — full-width row below the day strip ──────────────────────── */
+  /* ── Today bar — separate row beneath the day strip ──────────────────────── */
   .mobile-today-bar {
     position: sticky;
     top: calc(52px + var(--safe-top) + 68px); /* topbar + strip height */
