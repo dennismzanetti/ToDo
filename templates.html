@@ -77,59 +77,80 @@
   <!-- Template edit modal -->
   <div class="modal-overlay" id="tmpl-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="tmpl-modal-title" hidden>
     <div class="modal">
+
+      <!-- Sticky header -->
       <div class="modal-header">
-        <h2 class="modal-title-input" id="tmpl-modal-title">New Template</h2>
+        <h2 class="modal-title" id="tmpl-modal-title">New Template</h2>
         <button class="modal-close" id="tmpl-modal-close" aria-label="Close">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
+
+      <!-- Scrollable body -->
       <form id="tmpl-form" novalidate>
         <input type="hidden" id="tmpl-id" />
-        <div class="form-row">
-          <label class="form-label" for="tmpl-title">Title <span style="color:var(--color-error)">*</span></label>
-          <input class="form-input" type="text" id="tmpl-title" placeholder="Template title" required />
-        </div>
-        <div class="date-row">
-          <div class="form-row">
-            <label class="form-label" for="tmpl-priority">Priority</label>
-            <select class="form-select" id="tmpl-priority">
-              <option value="low">Low</option>
-              <option value="medium" selected>Medium</option>
-              <option value="high">High</option>
-            </select>
+
+        <div class="modal-body">
+          <div class="form-grid">
+
+            <!-- Title (full width) -->
+            <div class="form-field full-width">
+              <label for="tmpl-title">Title <span aria-hidden="true" style="color:var(--color-error)">*</span></label>
+              <input type="text" id="tmpl-title" placeholder="Template title" required autocomplete="off" />
+            </div>
+
+            <!-- Priority -->
+            <div class="form-field">
+              <label for="tmpl-priority">Priority</label>
+              <select id="tmpl-priority">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+
+            <!-- Recurrence -->
+            <div class="form-field">
+              <label for="tmpl-recurrence">Recurrence</label>
+              <select id="tmpl-recurrence">
+                <option value="daily">Daily (Mon–Fri)</option>
+                <option value="daily-all">Daily (every day)</option>
+                <option value="mon">Every Monday</option>
+                <option value="tue">Every Tuesday</option>
+                <option value="wed">Every Wednesday</option>
+                <option value="thu">Every Thursday</option>
+                <option value="fri">Every Friday</option>
+                <option value="sat">Every Saturday</option>
+                <option value="sun">Every Sunday</option>
+              </select>
+            </div>
+
+            <!-- Tags (full width) -->
+            <div class="form-field full-width">
+              <label for="tmpl-tags">Tags <span style="color:var(--color-text-faint);font-weight:400;text-transform:none;letter-spacing:0">(comma separated)</span></label>
+              <input type="text" id="tmpl-tags" placeholder="e.g. work, routine" autocomplete="off" />
+            </div>
+
+            <!-- Subtasks (full width) -->
+            <div class="form-field full-width">
+              <label>Subtasks</label>
+              <div id="tmpl-subtask-list" class="subtask-list"></div>
+              <div class="subtask-add-row">
+                <input class="subtask-input" type="text" id="tmpl-new-subtask" placeholder="Add a subtask…" autocomplete="off" />
+                <button type="button" class="subtask-add-btn" id="tmpl-add-subtask-btn">Add</button>
+              </div>
+            </div>
+
           </div>
-          <div class="form-row">
-            <label class="form-label" for="tmpl-recurrence">Recurrence</label>
-            <select class="form-select" id="tmpl-recurrence">
-              <option value="daily">Daily (Mon–Fri)</option>
-              <option value="daily-all">Daily (every day)</option>
-              <option value="mon">Every Monday</option>
-              <option value="tue">Every Tuesday</option>
-              <option value="wed">Every Wednesday</option>
-              <option value="thu">Every Thursday</option>
-              <option value="fri">Every Friday</option>
-              <option value="sat">Every Saturday</option>
-              <option value="sun">Every Sunday</option>
-            </select>
-          </div>
         </div>
-        <div class="form-row">
-          <label class="form-label" for="tmpl-tags">Tags <span style="color:var(--color-text-faint);font-weight:400">(comma separated)</span></label>
-          <input class="form-input" type="text" id="tmpl-tags" placeholder="e.g. work, routine" />
+
+        <!-- Sticky footer actions -->
+        <div class="modal-actions">
+          <button type="button" class="btn btn-danger" id="tmpl-delete-btn" hidden>Delete</button>
+          <button type="button" class="btn btn-ghost" id="tmpl-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save template</button>
         </div>
-        <div class="form-row">
-          <label class="form-label">Subtasks</label>
-          <div id="tmpl-subtask-list" class="subtask-list"></div>
-          <div class="subtask-add-row">
-            <input class="subtask-add-input" type="text" id="tmpl-new-subtask" placeholder="Add a subtask..." />
-            <button type="button" class="subtask-add-btn" id="tmpl-add-subtask-btn">Add</button>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="danger-btn" id="tmpl-delete-btn" hidden>Delete</button>
-          <button type="button" class="secondary-btn" id="tmpl-cancel">Cancel</button>
-          <button type="submit" class="primary-btn">Save template</button>
-        </div>
+
       </form>
     </div>
   </div>

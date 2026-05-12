@@ -3,22 +3,22 @@ import {
 } from './store.js';
 import { createSubtask, RECURRENCE_LABELS } from './models.js';
 
-const overlay = document.getElementById('tmpl-modal-overlay');
-const form = document.getElementById('tmpl-form');
-const tmplIdInput = document.getElementById('tmpl-id');
-const titleInput = document.getElementById('tmpl-title');
-const priorityInput = document.getElementById('tmpl-priority');
-const recurrenceInput = document.getElementById('tmpl-recurrence');
-const tagsInput = document.getElementById('tmpl-tags');
-const subtaskList = document.getElementById('tmpl-subtask-list');
-const newSubtaskInput = document.getElementById('tmpl-new-subtask');
-const addSubtaskBtn = document.getElementById('tmpl-add-subtask-btn');
-const deleteBtn = document.getElementById('tmpl-delete-btn');
-const cancelBtn = document.getElementById('tmpl-cancel');
-const closeBtn = document.getElementById('tmpl-modal-close');
-const modalTitle = document.getElementById('tmpl-modal-title');
+const overlay      = document.getElementById('tmpl-modal-overlay');
+const form         = document.getElementById('tmpl-form');
+const tmplIdInput  = document.getElementById('tmpl-id');
+const titleInput   = document.getElementById('tmpl-title');
+const priorityInput    = document.getElementById('tmpl-priority');
+const recurrenceInput  = document.getElementById('tmpl-recurrence');
+const tagsInput        = document.getElementById('tmpl-tags');
+const subtaskList      = document.getElementById('tmpl-subtask-list');
+const newSubtaskInput  = document.getElementById('tmpl-new-subtask');
+const addSubtaskBtn    = document.getElementById('tmpl-add-subtask-btn');
+const deleteBtn    = document.getElementById('tmpl-delete-btn');
+const cancelBtn    = document.getElementById('tmpl-cancel');
+const closeBtn     = document.getElementById('tmpl-modal-close');
+const modalTitle   = document.getElementById('tmpl-modal-title');
 const templatesList = document.getElementById('templates-list');
-const emptyState = document.getElementById('templates-empty');
+const emptyState    = document.getElementById('templates-empty');
 
 let pendingSubtasks = [];
 
@@ -32,7 +32,6 @@ export function initTemplatesPage() {
 function renderTemplatesList(templates) {
   templatesList.innerHTML = '';
 
-  // Use display style directly — avoids conflict with flex parent overriding hidden attr
   if (!templates.length) {
     emptyState.style.display = 'flex';
     return;
@@ -55,7 +54,7 @@ function renderTemplatesList(templates) {
         </div>
       </div>
       <div class="template-card-actions">
-        <button class="secondary-btn" style="padding:.4rem .8rem;font-size:var(--text-xs)" aria-label="Edit template">Edit</button>
+        <button class="btn btn-ghost" style="padding:.4rem .8rem;font-size:var(--text-xs)" aria-label="Edit template">Edit</button>
       </div>`;
     card.querySelector('button').addEventListener('click', (e) => {
       e.stopPropagation();
@@ -69,15 +68,20 @@ function renderTemplatesList(templates) {
 function openTemplateModal(tmpl) {
   pendingSubtasks = tmpl ? JSON.parse(JSON.stringify(tmpl.subtasks || [])) : [];
   modalTitle.textContent = tmpl ? 'Edit Template' : 'New Template';
-  tmplIdInput.value = tmpl?.id || '';
-  titleInput.value = tmpl?.title || '';
-  priorityInput.value = tmpl?.priority || 'medium';
-  recurrenceInput.value = tmpl?.recurrence || 'daily';
-  tagsInput.value = (tmpl?.tags || []).join(', ');
-  deleteBtn.hidden = !tmpl;
+  tmplIdInput.value      = tmpl?.id || '';
+  titleInput.value       = tmpl?.title || '';
+  priorityInput.value    = tmpl?.priority || 'medium';
+  recurrenceInput.value  = tmpl?.recurrence || 'daily';
+  tagsInput.value        = (tmpl?.tags || []).join(', ');
+  deleteBtn.hidden       = !tmpl;
   renderSubtasks();
   overlay.hidden = false;
-  titleInput.focus();
+  // slight delay so the sheet animation finishes before we scroll to top
+  requestAnimationFrame(() => {
+    const body = overlay.querySelector('.modal-body');
+    if (body) body.scrollTop = 0;
+    titleInput.focus();
+  });
 }
 
 function renderSubtasks() {
@@ -87,8 +91,10 @@ function renderSubtasks() {
     item.className = 'subtask-item';
     item.innerHTML = `
       <span style="flex:1">${esc(st.title)}</span>
-      <button type="button" class="subtask-remove" aria-label="Remove">&times;</button>`;
-    item.querySelector('.subtask-remove').addEventListener('click', () => {
+      <button type="button" class="subtask-delete-btn" aria-label="Remove subtask">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>`;
+    item.querySelector('.subtask-delete-btn').addEventListener('click', () => {
       pendingSubtasks.splice(i, 1);
       renderSubtasks();
     });
@@ -135,10 +141,10 @@ form.addEventListener('submit', async e => {
   if (!title) { titleInput.focus(); return; }
   const fields = {
     title,
-    priority: priorityInput.value,
+    priority:   priorityInput.value,
     recurrence: recurrenceInput.value,
-    tags: tagsInput.value.split(',').map(t => t.trim()).filter(Boolean),
-    subtasks: pendingSubtasks
+    tags:       tagsInput.value.split(',').map(t => t.trim()).filter(Boolean),
+    subtasks:   pendingSubtasks
   };
   const id = tmplIdInput.value;
   if (id) {

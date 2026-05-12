@@ -261,15 +261,17 @@
     -webkit-backdrop-filter: none;
   }
 
+  /* Sheet slides up from the bottom; flex column so header/body/footer stack cleanly */
   .modal {
     width: 100%;
     max-width: 100%;
-    max-height: calc(96dvh - var(--safe-top));
+    max-height: calc(92dvh - var(--safe-top));
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     animation: sheetUp .22s cubic-bezier(.16,1,.3,1);
-    padding-bottom: calc(var(--safe-bottom) + var(--space-4));
+    padding-bottom: 0;           /* footer handles its own safe-area padding */
     display: flex;
     flex-direction: column;
+    overflow: hidden;            /* clip children; body scrolls internally */
   }
 
   @keyframes sheetUp {
@@ -277,9 +279,17 @@
     to   { transform: translateY(0);    opacity: 1; }
   }
 
+  /* ── Sticky header ── */
   .modal-header {
+    flex-shrink: 0;
     padding: var(--space-3) var(--space-4);
     gap: var(--space-3);
+    border-bottom: 1px solid var(--color-divider);
+    /* re-apply sticky bg so it covers content scrolling behind it */
+    background: var(--color-surface-2);
+    position: sticky;
+    top: 0;
+    z-index: 1;
   }
 
   .modal-title {
@@ -295,51 +305,73 @@
     flex-shrink: 0;
   }
 
+  /* ── Scrollable form body ── */
   .modal-body {
     flex: 1 1 auto;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding: var(--space-3) var(--space-4) var(--space-2);
     overscroll-behavior: contain;
+    padding: var(--space-4) var(--space-4) var(--space-2);
   }
 
+  /* Single-column form grid on mobile */
   .modal-body .form-grid {
     grid-template-columns: 1fr;
-    gap: var(--space-3);
+    gap: var(--space-4);
   }
 
-  .date-span-row {
-    grid-template-columns: 1fr;
-    gap: var(--space-2);
-  }
-  .date-span-arrow { display: none; }
-
+  /* 16px prevents iOS auto-zoom on focus */
   .modal-body input,
   .modal-body textarea,
   .modal-body select,
-  .subtask-input,
-  .template-add-task-input {
-    font-size: 16px;
+  .subtask-input {
+    font-size: 16px !important;
     min-height: 44px;
   }
   .modal-body textarea { min-height: 80px; }
 
+  /* Subtask row sizing */
   .subtask-item {
     min-height: 48px;
     padding: var(--space-2) var(--space-3);
   }
-  .subtask-item .task-check  { width: 24px; height: 24px; }
-  .subtask-item .task-check::after { width: 8px; height: 8px; }
-  .subtask-delete-btn        { width: 36px; height: 36px; }
+  .subtask-delete-btn { width: 40px; height: 40px; }
 
+  /* Add-subtask row */
+  .subtask-add-row {
+    padding-top: var(--space-2);
+    gap: var(--space-2);
+  }
+  .subtask-add-btn {
+    min-height: 44px;
+    padding: 0 var(--space-4);
+  }
+
+  /* ── Sticky footer actions ── */
   .modal-actions {
     flex-shrink: 0;
     padding: var(--space-3) var(--space-4);
+    padding-bottom: calc(var(--space-3) + var(--safe-bottom));
     gap: var(--space-2);
+    border-top: 1px solid var(--color-divider);
+    background: var(--color-surface-2);
+    /* Stack: delete left, cancel + save right */
+    display: flex;
     flex-wrap: wrap;
-    justify-content: stretch;
+    align-items: center;
+    justify-content: flex-end;
   }
-  .modal-actions .btn {
+
+  /* Delete sits on the left, pushes cancel+save to the right */
+  .modal-actions .btn-danger {
+    margin-right: auto;
+    min-height: 48px;
+    padding: 0 var(--space-4);
+  }
+
+  /* Cancel and Save are equal-width side-by-side */
+  .modal-actions .btn-ghost,
+  .modal-actions .btn-primary {
     flex: 1 1 auto;
     min-height: 48px;
     font-size: var(--text-sm);
@@ -705,6 +737,7 @@
   .mobile-nav-arrow:active { background: var(--color-surface-offset); }
   .today-btn:active,
   .today-btn--mobile:active,
+  .mobile-today-btn:active,
   .mobile-add-btn:active   { background: var(--color-surface-dynamic); }
 }
 
@@ -713,7 +746,7 @@
   .task-card       { min-height: 52px; }
   .add-task-btn    { min-height: 52px; }
   .span-card       { min-height: 44px; display: flex; align-items: center; }
-  .subtask-remove  { min-width: 44px; min-height: 44px; }
+  .subtask-delete-btn { min-width: 44px; min-height: 44px; }
   .mobile-day-pill,
   .mobile-nav-arrow,
   .mobile-add-btn,
