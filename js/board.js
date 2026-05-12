@@ -23,7 +23,7 @@ function isMobile() {
   return window.innerWidth < 768;
 }
 
-// ── Tooltip singleton (desktop only) ─────────────────────────────────────────
+// ── Tooltip singleton (desktop only) ─────────────────────────────────────────────
 const tooltip = document.createElement('div');
 tooltip.className = 'notes-tooltip';
 tooltip.setAttribute('role', 'tooltip');
@@ -65,7 +65,7 @@ function attachNoteTooltip(el, notes) {
   }
 }
 
-// ── Week / date helpers ───────────────────────────────────────────────────────
+// ── Week / date helpers ─────────────────────────────────────────────────────
 
 export function getDays() {
   const today = new Date();
@@ -88,7 +88,7 @@ function getMobileDays() {
   });
 }
 
-// ── Main render entry point ───────────────────────────────────────────────────
+// ── Main render entry point ────────────────────────────────────────────────
 
 export function renderBoard(tasks) {
   currentTasks = tasks;
@@ -121,7 +121,7 @@ function renderMobileBoard(tasks) {
   activeDay.setDate(today.getDate() + mobileDayOffset);
   const activeDayKey = toDateKey(activeDay);
 
-  // ── Day strip (prev arrow · pills · next arrow) ──────────────────────────
+  // ── Day strip (prev arrow · pills · next arrow) ──────────────────────────────────
   const strip = document.createElement('div');
   strip.className = 'mobile-day-strip';
 
@@ -162,22 +162,7 @@ function renderMobileBoard(tasks) {
   strip.appendChild(nextBtn);
   board.appendChild(strip);
 
-  // ── Today bar — separate row beneath the strip, hidden when already on today ──
-  if (mobileDayOffset !== 0) {
-    const todayBar = document.createElement('div');
-    todayBar.className = 'mobile-today-bar';
-    const todayBarBtn = document.createElement('button');
-    todayBarBtn.className = 'mobile-today-bar-btn';
-    todayBarBtn.textContent = 'Today';
-    todayBarBtn.addEventListener('click', () => {
-      mobileDayOffset = 0;
-      renderMobileBoard(currentTasks);
-    });
-    todayBar.appendChild(todayBarBtn);
-    board.appendChild(todayBar);
-  }
-
-  // ── Day heading ──────────────────────────────────────────────────────────
+  // ── Day heading ──────────────────────────────────────────────────────────────────
   const heading = document.createElement('div');
   heading.className = 'mobile-day-heading';
   const isActiveTodayDay = activeDayKey === todayKey;
@@ -277,7 +262,7 @@ function renderMobileBoard(tasks) {
   attachMobileSwipe(board);
 }
 
-// ── Swipe handler ─────────────────────────────────────────────────────────────
+// ── Swipe handler ─────────────────────────────────────────────────────────────────
 let _swipeTouchStartX = 0;
 let _swipeTouchStartY = 0;
 let _swipeActive = false;
@@ -309,7 +294,7 @@ function attachMobileSwipe(el) {
   }, { passive: true });
 }
 
-// ── Mobile card builders ─────────────────────────────────────────────────────
+// ── Mobile card builders ──────────────────────────────────────────────────────────────
 
 function buildMobileTaskCard(task) {
   const card = document.createElement('div');
@@ -394,7 +379,7 @@ function buildMobileSpanCard(task) {
   return card;
 }
 
-// ── Mobile inline add ─────────────────────────────────────────────────────────
+// ── Mobile inline add ───────────────────────────────────────────────────────────────
 
 function showMobileInlineAdd(taskList, addArea, colKey, addBtn) {
   addBtn.style.display = 'none';
