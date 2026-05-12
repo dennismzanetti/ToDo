@@ -162,7 +162,7 @@ function renderMobileBoard(tasks) {
   strip.appendChild(nextBtn);
   board.appendChild(strip);
 
-  // ── Day heading — sticky below the day strip ─────────────────────────────────
+  // ── Day heading — static element below the sticky day strip ─────────────────────────────────
   const isActiveTodayDay = activeDayKey === todayKey;
   const dayHeading = document.createElement('div');
   dayHeading.id = 'mobile-day-heading';
@@ -337,18 +337,29 @@ function buildMobileTaskCard(task) {
     </div>`;
 
   const checkBtn = card.querySelector('[data-check]');
+
+  // Use touchend for check toggle on mobile — more reliable than click on iOS
+  // and avoids the double-fire issue with card's click handler.
+  let _checkTouched = false;
+  checkBtn.addEventListener('touchstart', () => { _checkTouched = true; }, { passive: true });
+  checkBtn.addEventListener('touchend', e => {
+    e.preventDefault(); // prevent the subsequent synthetic click from also hitting the card
+    e.stopPropagation();
+    _checkTouched = false;
+    applyCheckToggle(task, card, checkBtn);
+  });
+  // Fallback for non-touch (e.g. desktop at mobile width)
   checkBtn.addEventListener('click', e => {
     e.stopPropagation();
-    const nowCompleted = !task.completed;
-    // Optimistic UI — update DOM immediately before Firebase round-trip
-    checkBtn.classList.toggle('checked', nowCompleted);
-    checkBtn.setAttribute('aria-label', nowCompleted ? 'Mark incomplete' : 'Mark complete');
-    card.classList.toggle('completed', nowCompleted);
-    const titleEl = card.querySelector('.task-title');
-    if (titleEl) titleEl.style.textDecoration = nowCompleted ? 'line-through' : '';
-    toggleComplete(task.id, nowCompleted);
+    if (_checkTouched) return; // already handled by touchend
+    applyCheckToggle(task, card, checkBtn);
   });
-  card.addEventListener('click', () => openModal(task));
+
+  // Only open modal when tapping outside the check column
+  card.addEventListener('click', e => {
+    if (e.target.closest('.mobile-card-left')) return;
+    openModal(task);
+  });
   return card;
 }
 
@@ -382,19 +393,38 @@ function buildMobileSpanCard(task) {
     </div>`;
 
   const checkBtn = card.querySelector('[data-check]');
+
+  let _checkTouched = false;
+  checkBtn.addEventListener('touchstart', () => { _checkTouched = true; }, { passive: true });
+  checkBtn.addEventListener('touchend', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    _checkTouched = false;
+    applyCheckToggle(task, card, checkBtn);
+  });
   checkBtn.addEventListener('click', e => {
     e.stopPropagation();
-    const nowCompleted = !task.completed;
-    // Optimistic UI — update DOM immediately before Firebase round-trip
-    checkBtn.classList.toggle('checked', nowCompleted);
-    checkBtn.setAttribute('aria-label', nowCompleted ? 'Mark incomplete' : 'Mark complete');
-    card.classList.toggle('completed', nowCompleted);
-    const titleEl = card.querySelector('.task-title');
-    if (titleEl) titleEl.style.textDecoration = nowCompleted ? 'line-through' : '';
-    toggleComplete(task.id, nowCompleted);
+    if (_checkTouched) return;
+    applyCheckToggle(task, card, checkBtn);
   });
-  card.addEventListener('click', () => openModal(task));
+
+  card.addEventListener('click', e => {
+    if (e.target.closest('.mobile-card-left')) return;
+    openModal(task);
+  });
   return card;
+}
+
+// Shared optimistic-UI toggle helper
+function applyCheckToggle(task, card, checkBtn) {
+  const nowCompleted = !task.completed;
+  task.completed = nowCompleted; // mutate local ref so repeated taps work correctly
+  checkBtn.classList.toggle('checked', nowCompleted);
+  checkBtn.setAttribute('aria-label', nowCompleted ? 'Mark incomplete' : 'Mark complete');
+  card.classList.toggle('completed', nowCompleted);
+  const titleEl = card.querySelector('.task-title');
+  if (titleEl) titleEl.style.textDecoration = nowCompleted ? 'line-through' : '';
+  toggleComplete(task.id, nowCompleted);
 }
 
 // ── Mobile inline add ───────────────────────────────────────────────────────────────

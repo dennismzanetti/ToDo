@@ -602,25 +602,48 @@
     align-items: flex-start;
     justify-content: center;
     padding-top: 2px;
+    /* Prevent card-level click from firing when the check area is tapped */
+    isolation: isolate;
   }
 
-  /* ── Mobile check button: larger touch target ── */
+  /* ── Mobile check button: clearly visible 30×30 box ── */
   .mobile-task-card .task-check {
     width: 30px;
     height: 30px;
     margin-top: 6px;
-    border-width: 2px;
+    /* Visible unchecked border */
+    border: 2px solid var(--color-border);
     border-radius: var(--radius-md);
-    background: color-mix(in oklab, var(--color-surface) 92%, transparent);
+    /* Solid contrasting background so the box is always visible */
+    background: var(--color-surface-2);
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
   }
 
-  /* Scale the checkmark to fit the 30x30 box */
+  /* Checked state: filled with primary colour */
+  .mobile-task-card .task-check.checked {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  /* Scale the checkmark to fit the 30×30 box */
   .mobile-task-card .task-check.checked::after {
+    content: '';
+    display: block;
     width: 14px;
     height: 8px;
-    border-left-width: 2.5px;
-    border-bottom-width: 2.5px;
+    border-left: 2.5px solid #fff;
+    border-bottom: 2.5px solid #fff;
     transform: rotate(-45deg) translate(1px, -2px);
+  }
+
+  /* Hover/focus border accent (non-touch devices that also have mobile width) */
+  .mobile-task-card .task-check:not(.checked):hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-highlight);
   }
 
   .mobile-card-body {
@@ -796,6 +819,16 @@
   .mobile-today-btn.hidden {
     display: none;
   }
+
+  /* ── scroll-margin offsets: clear topbar + sticky day strip ── */
+  .mobile-day-heading,
+  .mobile-section {
+    scroll-margin-top: calc(52px + var(--safe-top) + var(--day-strip-h));
+  }
+
+  .mobile-section {
+    scroll-margin-top: calc(52px + var(--safe-top) + var(--day-strip-h) + var(--space-2));
+  }
 }
 
 /* ── Active-state feedback for touch (iOS has no hover) ─────────────────────────────── */
@@ -810,6 +843,10 @@
   }
   .mobile-task-card .task-check:active {
     background: var(--color-surface-offset);
+    transform: none;
+  }
+  .mobile-task-card .task-check.checked:active {
+    background: var(--color-primary-active);
     transform: none;
   }
   .primary-btn:active,
