@@ -121,7 +121,17 @@ function renderMobileBoard(tasks) {
   activeDay.setDate(today.getDate() + mobileDayOffset);
   const activeDayKey = toDateKey(activeDay);
 
-  // ── Day strip (prev arrow · pills · next arrow) ──────────────────────────────────
+  // ── Day heading (rendered FIRST so it sits above the sticky strip) ───────────────
+  const heading = document.createElement('div');
+  heading.className = 'mobile-day-heading';
+  const isActiveTodayDay = activeDayKey === todayKey;
+  heading.innerHTML =
+    `<span class="mobile-day-name${isActiveTodayDay ? ' is-today' : ''}">${DAYS[activeDay.getDay()]}</span>` +
+    `<span class="mobile-day-full">${MONTHS[activeDay.getMonth()]} ${activeDay.getDate()}, ${activeDay.getFullYear()}</span>` +
+    (isActiveTodayDay ? `<span class="mobile-today-chip">Today</span>` : '');
+  board.appendChild(heading);
+
+  // ── Day strip (prev arrow · pills · next arrow · today btn) — sticky ─────────────
   const strip = document.createElement('div');
   strip.className = 'mobile-day-strip';
 
@@ -157,20 +167,18 @@ function renderMobileBoard(tasks) {
     pillsWrap.appendChild(pill);
   });
 
+  // ── Today button (only shown when not on today) ──────────────────────────────────
+  const todayBtn = document.createElement('button');
+  todayBtn.className = 'mobile-today-btn' + (mobileDayOffset === 0 ? ' hidden' : '');
+  todayBtn.setAttribute('aria-label', 'Go to today');
+  todayBtn.textContent = 'Today';
+  todayBtn.addEventListener('click', () => { mobileDayOffset = 0; renderMobileBoard(currentTasks); });
+
   strip.appendChild(prevBtn);
   strip.appendChild(pillsWrap);
   strip.appendChild(nextBtn);
+  strip.appendChild(todayBtn);
   board.appendChild(strip);
-
-  // ── Day heading ──────────────────────────────────────────────────────────────────
-  const heading = document.createElement('div');
-  heading.className = 'mobile-day-heading';
-  const isActiveTodayDay = activeDayKey === todayKey;
-  heading.innerHTML =
-    `<span class="mobile-day-name${isActiveTodayDay ? ' is-today' : ''}">${DAYS[activeDay.getDay()]}</span>` +
-    `<span class="mobile-day-full">${MONTHS[activeDay.getMonth()]} ${activeDay.getDate()}, ${activeDay.getFullYear()}</span>` +
-    (isActiveTodayDay ? `<span class="mobile-today-chip">Today</span>` : '');
-  board.appendChild(heading);
 
   const spanTasksForDay = [];
   const singleTasksForDay = [];
@@ -752,8 +760,8 @@ function bindDragAndDrop(bodyRow) {
       if (!dragId) return;
       e.preventDefault();
       enterCount++;
-      wrap.classList.add('drag-over');
     });
+
     wrap.addEventListener('dragleave', () => {
       enterCount--;
       if (enterCount <= 0) {
@@ -766,35 +774,19 @@ function bindDragAndDrop(bodyRow) {
     wrap.addEventListener('drop', async e => {
       e.preventDefault();
       enterCount = 0;
-      wrap.classList.remove('drag-over');
-      dragOverWrap = null;
+      clearDragOver();
       if (!dragId) return;
-
-      const colKey = wrap.dataset.colKey;
-      const task   = currentTasks.find(t => t.id === dragId);
-      if (!task) return;
-
-      const currentKeys = taskDisplayKeys(task);
-      if (currentKeys.length === 1 && currentKeys[0] === colKey) return;
-
-      let doOnFrom = null, doOnTo = null;
-      if (colKey !== 'no-date') {
-        const d = dateKeyToDate(colKey);
-        doOnFrom = Timestamp.fromDate(d);
-        doOnTo   = Timestamp.fromDate(d);
-      }
-      const colTasks = currentTasks.filter(t =>
-        taskDisplayKeys(t).includes(colKey) && t.id !== dragId
-      );
-      const minOrder = Math.min(0, ...colTasks.map(t => t.order || 0));
-      await reorderTask(dragId, { doOnFrom, doOnTo, order: minOrder - 1000 });
+      const newKey = wrap.dataset.colKey;
+      await reorderTask(dragId, newKey, currentTasks);
     });
   });
 }
 
 function clearDragOver() {
-  board.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
-  dragOverWrap = null;
+  if (dragOverWrap) {
+    dragOverWrap.classList.remove('drag-over');
+    dragOverWrap = null;
+  }
 }
 
 function escHtml(str) {
@@ -804,7 +796,3 @@ function escHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
-
-export function prevWeek()  { weekOffset--;  renderBoard(currentTasks); }
-export function nextWeek()  { weekOffset++;  renderBoard(currentTasks); }
-export function gotoToday() { weekOffset = 0; mobileDayOffset = 0; renderBoard(currentTasks); }
