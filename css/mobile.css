@@ -97,7 +97,6 @@
   /*
    * All views get bottom padding to clear:
    *   56px tab bar + 44px version strip + safe-bottom
-   * The board view (.view.active) participates in normal document flow.
    */
   .view.active,
   #board.view.active,
@@ -110,7 +109,7 @@
     position: fixed;
     bottom: 0;
     left: 0; right: 0;
-    z-index: 59;                          /* below tab bar (z-index 60) */
+    z-index: 59;
     min-height: calc(44px + var(--safe-bottom));
     padding-bottom: var(--safe-bottom);
     padding-top: var(--space-2);
@@ -123,7 +122,6 @@
     pointer-events: none;
   }
 
-  /* Allow links/buttons inside to be tapped */
   .version-footer .version-badge,
   .version-footer a {
     pointer-events: auto;
@@ -133,7 +131,6 @@
     padding-bottom: calc(56px + 44px + var(--safe-bottom) + var(--space-4));
   }
 
-  /* ── Version badge: stacked two-line layout ── */
   .version-badge {
     display: flex;
     flex-direction: column;
@@ -144,7 +141,6 @@
     width: 100%;
   }
 
-  /* Top line: SHA link + commit message */
   .version-top-line {
     display: flex;
     align-items: center;
@@ -157,7 +153,6 @@
     max-width: 100%;
   }
 
-  /* Bottom line: date */
   .version-bottom-line {
     font-size: 10px;
     color: var(--color-text-faint);
@@ -182,7 +177,6 @@
     font-size: 11px;
   }
 
-  /* Hide the old popover elements if they somehow appear */
   .version-sep,
   .version-info-wrap,
   .version-info-btn,
@@ -192,8 +186,7 @@
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   TOPBAR — 3-zone grid layout on mobile so logo, title, and controls are
-   always on one line and fully visible (never truncated or overflowing)
+   TOPBAR — 3-zone grid layout on mobile
    ══════════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
   .topbar {
@@ -202,14 +195,12 @@
     padding-top: var(--safe-top);
     padding-inline: var(--space-3);
     gap: 0;
-
     display: grid;
     grid-template-columns: 36px 1fr auto;
     align-items: center;
     column-gap: var(--space-2);
   }
 
-  /* ── Zone 1: logo SVG ── */
   .brand {
     display: contents;
   }
@@ -221,7 +212,6 @@
     flex-shrink: 0;
   }
 
-  /* ── Zone 2: brand name ── */
   .brand-name {
     grid-column: 2;
     font-size: 1rem;
@@ -237,7 +227,6 @@
     display: none !important;
   }
 
-  /* 4-column grid so Today and theme-toggle each get a cell */
   .topbar {
     grid-template-columns: 28px 1fr auto auto;
     column-gap: var(--space-2);
@@ -282,7 +271,6 @@
   }
 }
 
-/* Hide the mobile Today button on desktop — it lives inside .week-nav there */
 @media (min-width: 768px) {
   .today-btn--mobile {
     display: none !important;
@@ -309,7 +297,6 @@
     -webkit-backdrop-filter: none;
   }
 
-  /* Sheet slides up from the bottom; flex column so header/body/footer stack cleanly */
   .modal {
     width: 100%;
     max-width: 100%;
@@ -327,7 +314,6 @@
     to   { transform: translateY(0);    opacity: 1; }
   }
 
-  /* ── Sticky header ── */
   .modal-header {
     flex-shrink: 0;
     padding: var(--space-3) var(--space-4);
@@ -352,7 +338,6 @@
     flex-shrink: 0;
   }
 
-  /* ── Scrollable form body ── */
   .modal-body {
     flex: 1 1 auto;
     overflow-y: auto;
@@ -361,13 +346,11 @@
     padding: var(--space-4) var(--space-4) var(--space-2);
   }
 
-  /* Single-column form grid on mobile */
   .modal-body .form-grid {
     grid-template-columns: 1fr;
     gap: var(--space-4);
   }
 
-  /* 16px prevents iOS auto-zoom on focus */
   .modal-body input,
   .modal-body textarea,
   .modal-body select,
@@ -377,14 +360,12 @@
   }
   .modal-body textarea { min-height: 80px; }
 
-  /* Subtask row sizing */
   .subtask-item {
     min-height: 48px;
     padding: var(--space-2) var(--space-3);
   }
   .subtask-delete-btn { width: 40px; height: 40px; }
 
-  /* Add-subtask row */
   .subtask-add-row {
     padding-top: var(--space-2);
     gap: var(--space-2);
@@ -394,7 +375,6 @@
     padding: 0 var(--space-4);
   }
 
-  /* ── Sticky footer actions ── */
   .modal-actions {
     flex-shrink: 0;
     padding: var(--space-3) var(--space-4);
@@ -434,11 +414,9 @@
 
 /* ══════════════════════════════════════════════════════════════════════════════
    MOBILE BOARD LAYOUT
-   Override the desktop .board grid so children stack vertically
    ══════════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 479px) {
 
-  /* ── Critical fix: cancel desktop 8-column grid AND desktop padding-top ── */
   .board--mobile {
     display: flex !important;
     flex-direction: column !important;
@@ -519,7 +497,7 @@
 
   /* ── Day heading ── */
   .mobile-day-heading {
-    padding-top: var(--space-4);
+    padding-top: var(--space-6);
     padding-right: var(--space-5);
     padding-bottom: var(--space-3);
     padding-left: var(--space-5);
@@ -770,7 +748,6 @@
     box-shadow: var(--shadow-sm);
   }
 
-  /* ── Today button in the day strip ── */
   .mobile-today-btn {
     flex: 0 0 auto;
     display: inline-flex;
