@@ -252,26 +252,9 @@
     /* Both are direct children of .topbar — place them in zone 3 */
   }
 
-  /*
-   * Because .brand uses display:contents, the DOM order in zone 3 is:
-   *   col 1 → logo svg  (via brand display:contents)
-   *   col 2 → span.brand-name  (via brand display:contents)
-   *   col 3 → .today-btn--mobile  (direct child)
-   *   col 3 → [data-theme-toggle]  (direct child)
-   *
-   * We place both right-side items in column 3 with a sub-flex container.
-   * Since they're siblings we use a wrapper approach via the :has() selector.
-   * Simpler: just explicitly assign them grid-column 3 and sub-flex via auto-flow.
-   */
-
   .today-btn--mobile {
     grid-column: 3;
     grid-row: 1;
-    /* Push theme toggle into the same cell using a sub-flex trick:
-       we'll use display:contents on today-btn and wrap both in a flex span
-       — but since we can't change HTML here, use absolute positioning within
-       the cell.  Cleanest solution: assign today btn col 3, theme toggle col 4
-       and add a 4th implicit column. */
   }
 
   /* Override: use a 4-column grid so Today and theme-toggle each get a cell */
@@ -370,7 +353,6 @@
     padding: var(--space-3) var(--space-4);
     gap: var(--space-3);
     border-bottom: 1px solid var(--color-divider);
-    /* re-apply sticky bg so it covers content scrolling behind it */
     background: var(--color-surface-2);
     position: sticky;
     top: 0;
@@ -440,21 +422,18 @@
     gap: var(--space-2);
     border-top: 1px solid var(--color-divider);
     background: var(--color-surface-2);
-    /* Stack: delete left, cancel + save right */
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: flex-end;
   }
 
-  /* Delete sits on the left, pushes cancel+save to the right */
   .modal-actions .btn-danger {
     margin-right: auto;
     min-height: 48px;
     padding: 0 var(--space-4);
   }
 
-  /* Cancel and Save are equal-width side-by-side */
   .modal-actions .btn-ghost,
   .modal-actions .btn-primary {
     flex: 1 1 auto;
@@ -477,7 +456,8 @@
 @media (max-width: 479px) {
   .mobile-day-strip {
     position: sticky;
-    top: 0;
+    /* Sit flush below the topbar (52px) + its safe-area top inset */
+    top: calc(52px + var(--safe-top));
     z-index: 20;
     display: flex;
     align-items: center;
