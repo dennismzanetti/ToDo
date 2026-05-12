@@ -30,6 +30,7 @@ let lastTasks = [];
 document.getElementById('prev-week')?.addEventListener('click', () => { prevWeek(); renderBoard(lastTasks); });
 document.getElementById('next-week')?.addEventListener('click', () => { nextWeek(); renderBoard(lastTasks); });
 document.getElementById('today-btn')?.addEventListener('click', () => { gotoToday(); renderBoard(lastTasks); });
+document.getElementById('today-btn-mobile')?.addEventListener('click', () => { gotoToday(); renderBoard(lastTasks); });
 
 // ── Store ─────────────────────────────────────────────────────────────────
 let tasksReady = false, templatesReady = false;

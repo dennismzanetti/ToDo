@@ -136,17 +136,6 @@ function renderMobileBoard(tasks) {
   nextBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
   nextBtn.addEventListener('click', () => { mobileDayOffset++; renderMobileBoard(currentTasks); });
 
-  // Today button — only show when not already on today
-  const isOnToday = mobileDayOffset === 0;
-  const mobileTodayBtn = document.createElement('button');
-  mobileTodayBtn.className = 'mobile-today-btn' + (isOnToday ? ' hidden' : '');
-  mobileTodayBtn.setAttribute('aria-label', 'Go to today');
-  mobileTodayBtn.textContent = 'Today';
-  mobileTodayBtn.addEventListener('click', () => {
-    mobileDayOffset = 0;
-    renderMobileBoard(currentTasks);
-  });
-
   const pillsWrap = document.createElement('div');
   pillsWrap.className = 'mobile-day-pills';
 
@@ -170,7 +159,6 @@ function renderMobileBoard(tasks) {
   strip.appendChild(prevBtn);
   strip.appendChild(pillsWrap);
   strip.appendChild(nextBtn);
-  strip.appendChild(mobileTodayBtn);
   board.appendChild(strip);
 
   const heading = document.createElement('div');
