@@ -237,11 +237,6 @@
     display: none !important;
   }
 
-  .today-btn--mobile {
-    grid-column: 3;
-    grid-row: 1;
-  }
-
   /* 4-column grid so Today and theme-toggle each get a cell */
   .topbar {
     grid-template-columns: 28px 1fr auto auto;
@@ -450,13 +445,12 @@
     grid-template-columns: unset !important;
     grid-template-rows: unset !important;
     align-items: stretch;
-    padding-top: 0 !important; /* strip is sticky, no extra push needed */
+    padding-top: 0 !important;
     min-height: calc(100dvh - calc(52px + var(--safe-top)));
   }
 
   .mobile-day-strip {
     position: sticky;
-    /* Sit flush below the topbar (52px) + its safe-area top inset */
     top: calc(52px + var(--safe-top));
     z-index: 20;
     display: flex;
@@ -466,44 +460,6 @@
     background: color-mix(in oklab, var(--color-bg) 92%, transparent);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--color-divider);
-  }
-
-  /* ── Today bar — full-width row below the day strip ──────────────────────── */
-  .mobile-today-bar {
-    position: sticky;
-    top: calc(52px + var(--safe-top) + 68px); /* topbar + strip height */
-    z-index: 19;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-2) var(--space-3);
-    background: var(--color-bg);
-    border-bottom: 1px solid var(--color-divider);
-  }
-
-  .mobile-today-bar-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    height: 36px;
-    padding: 0 var(--space-6);
-    border-radius: var(--radius-full);
-    background: var(--color-primary-highlight);
-    color: var(--color-primary);
-    font-size: var(--text-sm);
-    font-weight: 700;
-    letter-spacing: .01em;
-    border: 1px solid oklch(from var(--color-primary) l c h / .28);
-    transition: background var(--transition-interactive),
-                color var(--transition-interactive),
-                border-color var(--transition-interactive);
-  }
-
-  .mobile-today-bar-btn:hover,
-  .mobile-today-bar-btn:active {
-    background: var(--color-primary);
-    color: var(--color-text-inverse);
-    border-color: var(--color-primary);
   }
 
   .mobile-nav-arrow {
@@ -839,8 +795,7 @@
   .modal-close:active,
   .mobile-nav-arrow:active { background: var(--color-surface-offset); }
   .today-btn:active,
-  .today-btn--mobile:active,
-  .mobile-today-bar-btn:active { background: var(--color-primary); color: var(--color-text-inverse); }
+  .today-btn--mobile:active { background: var(--color-primary); color: var(--color-text-inverse); }
   .mobile-add-btn:active   { background: var(--color-surface-dynamic); }
 }
 
@@ -854,6 +809,5 @@
   .mobile-nav-arrow,
   .mobile-add-btn,
   .mobile-inline-confirm-btn,
-  .mobile-today-bar-btn,
   .modal-close { min-height: 44px; }
 }

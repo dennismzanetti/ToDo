@@ -1,4 +1,4 @@
-const CACHE = 'todo-v3';
+const CACHE = 'todo-v4';
 const SHELL = [
   './', './index.html', './templates.html', './manifest.json',
   './css/styles.css', './css/mobile.css',
@@ -46,7 +46,7 @@ self.addEventListener('fetch', e => {
       fetch(e.request)
         .then(res => {
           if (res && res.ok) {
-            const copy = res.clone(); // clone BEFORE returning
+            const copy = res.clone();
             caches.open(CACHE).then(c => c.put(e.request, copy));
           }
           return res;
@@ -62,7 +62,7 @@ self.addEventListener('fetch', e => {
       if (cached) return cached;
       return fetch(e.request).then(res => {
         if (res && res.ok) {
-          const copy = res.clone(); // clone BEFORE returning
+          const copy = res.clone();
           caches.open(CACHE).then(c => c.put(e.request, copy));
         }
         return res;
