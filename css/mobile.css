@@ -496,10 +496,9 @@
     border-color: var(--color-primary);
   }
 
-  /* ── Day heading — sticky just below the day strip ── */
+  /* ── Day heading — static element below the sticky day strip ── */
   .mobile-day-heading {
-    position: sticky;
-    top: calc(52px + var(--safe-top) + var(--day-strip-h));
+    position: static;
     z-index: 19;
     background: var(--color-bg);
     padding-top: var(--space-6);
