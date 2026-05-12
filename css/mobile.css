@@ -513,14 +513,22 @@
     border-color: var(--color-primary);
   }
 
+  /*
+   * The strip is sticky and ~72px tall (44px pills + top/bottom padding).
+   * Give the heading a matching padding-top so it is never hidden behind it
+   * on initial render, and give all sections a scroll-margin-top so that
+   * any programmatic scroll-into-view clears the strip too.
+   */
   .mobile-day-heading {
-    padding: var(--space-3) var(--space-4) var(--space-2);
+    padding: var(--space-4) var(--space-4) var(--space-2);
     font-size: var(--text-base);
     font-weight: 700;
     color: var(--color-text);
     display: flex;
     align-items: baseline;
     gap: var(--space-3);
+    /* Extra top breathing room so the sticky strip never overlaps */
+    margin-top: var(--space-2);
   }
 
   .mobile-section {
@@ -530,6 +538,8 @@
     border-radius: var(--radius-xl);
     background: var(--color-surface);
     box-shadow: var(--shadow-sm);
+    /* Ensure programmatic scrolls clear the sticky strip */
+    scroll-margin-top: calc(52px + var(--safe-top) + 76px + var(--space-2));
   }
 
   .mobile-section-label {
