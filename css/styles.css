@@ -311,7 +311,246 @@ a,button,[role="button"],input,textarea,select {
 }
 .today-btn:hover { background:var(--color-primary); color:var(--color-text-inverse); }
 
-/* ── DAY COLUMNS ── */
+/* ── DESKTOP BOARD GRID ── */
+/* The board element itself is the grid host */
+.board {
+  display: grid;
+  grid-template-columns: 160px repeat(7, 1fr);
+  grid-template-rows: auto auto auto 1fr;
+  min-height: calc(100dvh - var(--topbar-h) - 57px);
+  padding-top: 57px; /* height of .board-header */
+}
+
+/* Header row — sticky day names + dates */
+.board-header-row {
+  display: contents; /* children participate in parent grid */
+}
+.column-header {
+  padding: var(--space-3) var(--space-3) var(--space-2);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-divider);
+  border-right: 1px solid var(--color-divider);
+  position: sticky;
+  top: calc(var(--topbar-h) + 57px);
+  z-index: 20;
+}
+.column-header:last-child { border-right: none; }
+.column-header.no-date-header { background: var(--color-surface-offset); }
+.column-header.is-today { background: oklch(from var(--color-primary) l c h / .04); }
+.column-header.is-weekend { background: color-mix(in oklab, var(--color-bg) 60%, var(--color-surface)); }
+.col-day {
+  font-size: var(--text-xs); font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+.col-date {
+  font-family: var(--font-display); font-size: var(--text-lg);
+  font-weight: 700; color: var(--color-text); line-height: 1.1;
+  margin-top: var(--space-1);
+}
+.col-date.today { color: var(--color-primary); }
+.column-header.is-today .col-day { color: var(--color-primary); }
+
+/* Add-task row */
+.board-add-row { display: contents; }
+.board-add-cell {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-divider);
+  border-right: 1px solid var(--color-divider);
+  background: var(--color-surface);
+}
+.board-add-cell:last-child { border-right: none; }
+.board-add-cell.no-date { background: var(--color-surface-offset); }
+.board-add-cell.is-today { background: oklch(from var(--color-primary) l c h / .04); }
+.board-add-cell.is-weekend { background: color-mix(in oklab, var(--color-bg) 60%, var(--color-surface)); }
+.column-add { display: flex; }
+.add-task-btn {
+  display: flex; align-items: center; gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-md); font-size: var(--text-xs);
+  font-weight: 600; color: var(--color-text-faint);
+  transition: background var(--transition-interactive), color var(--transition-interactive);
+}
+.add-task-btn:hover { background: var(--color-surface-offset); color: var(--color-primary); }
+
+/* Span row (multi-day tasks) */
+.board-span-row {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: 160px repeat(7, 1fr);
+  min-height: 0;
+  border-bottom: 1px solid var(--color-divider);
+  position: relative;
+}
+.board-span-row:empty { display: none; }
+.span-row-bg-cell {
+  border-right: 1px solid var(--color-divider);
+  background: var(--color-bg);
+}
+.span-row-bg-cell:last-child { border-right: none; }
+.span-row-bg-cell.no-date    { background: var(--color-surface-offset); }
+.span-row-bg-cell.is-today   { background: oklch(from var(--color-primary) l c h / .03); }
+.span-row-bg-cell.is-weekend { background: color-mix(in oklab, var(--color-bg) 80%, var(--color-surface)); }
+
+/* Body row — scrollable task columns */
+.board-body-row {
+  display: contents;
+}
+.column-body-wrap {
+  display: flex; flex-direction: column;
+  border-right: 1px solid var(--color-divider);
+  background: var(--color-bg);
+  min-height: 200px;
+  transition: background var(--transition-interactive);
+}
+.column-body-wrap:last-child { border-right: none; }
+.column-body-wrap.no-date    { background: var(--color-surface-offset); }
+.column-body-wrap.is-today   { background: oklch(from var(--color-primary) l c h / .03); }
+.column-body-wrap.is-weekend { background: color-mix(in oklab, var(--color-bg) 80%, var(--color-surface)); }
+.column-body-wrap.drag-over  { background: oklch(from var(--color-primary) l c h / .08); outline: 2px dashed oklch(from var(--color-primary) l c h / .4); outline-offset: -3px; }
+.column-body {
+  flex: 1; padding: var(--space-2);
+  display: flex; flex-direction: column; gap: var(--space-2);
+}
+
+/* ── TASK CARDS (desktop) ── */
+.task-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer; position: relative;
+  transition: box-shadow var(--transition-interactive), border-color var(--transition-interactive), opacity var(--transition-interactive), transform var(--transition-interactive);
+}
+.task-card:hover { box-shadow: var(--shadow-sm); border-color: oklch(from var(--color-primary) l c h / .35); }
+.task-card.completed { opacity: .5; }
+.task-card.dragging  { opacity: .4; transform: scale(.97); box-shadow: var(--shadow-md); }
+.task-card.priority-high   { border-left: 3px solid var(--priority-high-color); }
+.task-card.priority-medium { border-left: 3px solid var(--priority-medium-color); }
+.task-card.priority-low    { border-left: 3px solid var(--priority-low-color); }
+
+.task-top {
+  display: flex; align-items: flex-start; gap: var(--space-2);
+}
+.task-check {
+  flex-shrink: 0; width: 16px; height: 16px; margin-top: 2px;
+  border: 1.5px solid var(--color-border); border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: background var(--transition-interactive), border-color var(--transition-interactive);
+}
+.task-check:hover { border-color: var(--color-primary); background: var(--color-primary-highlight); }
+.task-check.checked {
+  background: var(--color-primary); border-color: var(--color-primary);
+}
+.task-check.checked::after {
+  content: '';
+  display: block; width: 9px; height: 5px;
+  border-left: 2px solid #fff; border-bottom: 2px solid #fff;
+  transform: rotate(-45deg) translate(1px, -1px);
+}
+.task-title {
+  flex: 1; font-size: var(--text-sm); font-weight: 500;
+  color: var(--color-text); line-height: 1.35; word-break: break-word;
+}
+.task-card.completed .task-title { text-decoration: line-through; color: var(--color-text-muted); }
+.notes-icon {
+  flex-shrink: 0; color: var(--color-text-faint); margin-top: 2px;
+  display: inline-flex; align-items: center;
+}
+.task-card.has-notes .notes-icon { color: var(--color-primary); opacity: .6; }
+.task-card-meta {
+  display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-1);
+  margin-top: var(--space-1);
+}
+.task-badges { display: inline-flex; align-items: center; flex-wrap: wrap; gap: var(--space-1); }
+.due-date-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: var(--text-xs); color: var(--color-text-muted);
+  font-weight: 500;
+}
+.desktop-meta-icon { display: inline-flex; align-items: center; color: var(--color-text-faint); }
+
+/* Span card (multi-day, lives in board-span-row) */
+.span-card {
+  align-self: center;
+  margin: var(--space-1) var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.span-card:hover { box-shadow: var(--shadow-md); border-color: oklch(from var(--color-primary) l c h / .35); }
+.span-card.priority-high   { border-left: 3px solid var(--priority-high-color); }
+.span-card.priority-medium { border-left: 3px solid var(--priority-medium-color); }
+.span-card.priority-low    { border-left: 3px solid var(--priority-low-color); }
+.span-card.completed { opacity: .5; }
+.span-card-inner {
+  display: flex; align-items: center; gap: var(--space-2);
+  flex-wrap: wrap; min-width: 0;
+}
+.span-days-badge {
+  display: inline-flex; align-items: center;
+  padding: 1px var(--space-2); border-radius: var(--radius-full);
+  font-size: var(--text-xs); font-weight: 700;
+  background: var(--color-surface-offset); color: var(--color-text-muted);
+  border: 1px solid var(--color-border); white-space: nowrap;
+}
+
+/* ── INLINE ADD (desktop) ── */
+.inline-add-form {
+  display: flex; gap: var(--space-1); align-items: center;
+  padding: var(--space-1) 0;
+}
+.inline-add-input {
+  flex: 1; padding: var(--space-1) var(--space-2);
+  background: var(--color-surface-2); border: 1.5px solid var(--color-primary);
+  border-radius: var(--radius-md); font-size: var(--text-sm); color: var(--color-text);
+  box-shadow: 0 0 0 3px oklch(from var(--color-primary) l c h / .12);
+}
+.inline-add-input::placeholder { color: var(--color-text-faint); }
+.inline-add-input:focus { outline: none; }
+.inline-confirm-btn {
+  flex-shrink: 0; width: 28px; height: 28px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--color-primary); color: var(--color-text-inverse);
+  border-radius: var(--radius-md); font-size: var(--text-sm); font-weight: 700;
+  transition: background var(--transition-interactive), transform var(--transition-interactive);
+}
+.inline-confirm-btn:hover  { background: var(--color-primary-hover); }
+.inline-confirm-btn:active { background: var(--color-primary-active); transform: scale(.95); }
+
+/* ── NOTES TOOLTIP (desktop) ── */
+.notes-tooltip {
+  position: fixed; z-index: 9999;
+  max-width: 280px; padding: var(--space-2) var(--space-3);
+  background: var(--color-surface-offset-2);
+  border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--text-xs); color: var(--color-text);
+  line-height: 1.5; pointer-events: none;
+  opacity: 0; transform: translateY(4px);
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+.notes-tooltip.visible { opacity: 1; transform: translateY(0); }
+
+/* ── SHARED BADGES (used on both desktop & mobile) ── */
+.priority-dot { width:6px; height:6px; border-radius:var(--radius-full); flex-shrink:0; }
+.priority-dot.high   { background:var(--priority-high-color); }
+.priority-dot.medium { background:var(--priority-medium-color); }
+.priority-dot.low    { background:var(--priority-low-color); }
+.tag-chip {
+  display:inline-flex; align-items:center;
+  padding: 1px var(--space-2); border-radius:var(--radius-full);
+  font-size:var(--text-xs); font-weight:600;
+  background:var(--color-surface-offset); color:var(--color-text-muted); border:1px solid var(--color-border);
+}
+.subtask-progress { font-size:var(--text-xs); color:var(--color-text-faint); font-weight:500; }
+.subtask-progress.done { color: var(--color-success); }
+
+/* OLD .day-col / .todo-item rules kept for back-compat in case referenced elsewhere */
 .board-grid {
   display:grid; grid-template-columns:repeat(7, 1fr); gap:0;
   min-height: calc(100dvh - var(--topbar-h) - 60px);
@@ -339,8 +578,6 @@ a,button,[role="button"],input,textarea,select {
 }
 .add-todo-btn:hover { background:var(--color-surface-offset); color:var(--color-text-muted); }
 .add-todo-btn svg { flex-shrink:0; }
-
-/* ── TODO ITEMS ── */
 .todo-item {
   background:var(--color-surface); border:1px solid var(--color-border);
   border-radius:var(--radius-md); padding: var(--space-2) var(--space-3);
@@ -352,17 +589,6 @@ a,button,[role="button"],input,textarea,select {
 .todo-item-title { font-size:var(--text-sm); font-weight:500; color:var(--color-text); line-height:1.35; }
 .todo-item.completed .todo-item-title { text-decoration:line-through; color:var(--color-text-muted); }
 .todo-item-meta { display:flex; align-items:center; flex-wrap:wrap; gap:var(--space-1); margin-top:var(--space-1); }
-.priority-dot { width:6px; height:6px; border-radius:var(--radius-full); flex-shrink:0; }
-.priority-dot.high   { background:var(--priority-high-color); }
-.priority-dot.medium { background:var(--priority-medium-color); }
-.priority-dot.low    { background:var(--priority-low-color); }
-.tag-chip {
-  display:inline-flex; align-items:center;
-  padding: 1px var(--space-2); border-radius:var(--radius-full);
-  font-size:var(--text-xs); font-weight:600;
-  background:var(--color-surface-offset); color:var(--color-text-muted); border:1px solid var(--color-border);
-}
-.subtask-progress { font-size:var(--text-xs); color:var(--color-text-faint); font-weight:500; }
 .todo-item-delete {
   position:absolute; top:var(--space-1); right:var(--space-1);
   display:inline-flex; align-items:center; justify-content:center;
