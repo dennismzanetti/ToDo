@@ -3,7 +3,7 @@
    Loaded after styles.css on both index.html and templates.html
    ============================================================================= */
 
-/* ── Drag handle for bottom-sheet modal (iPhone) ───────────────────────────── */
+/* ── Drag handle for bottom-sheet modal (iPhone) ───────────────────────────────── */
 @media (max-width: 767px) {
   .modal::before {
     content: '';
@@ -16,7 +16,7 @@
   }
 }
 
-/* ── Bottom navigation bar on mobile ───────────────────────────────────────── */
+/* ── Bottom navigation bar on mobile ──────────────────────────────────────────── */
 @media (max-width: 479px) {
 
   /* ── Tab bar sits above the version strip ── */
@@ -423,7 +423,7 @@
     grid-template-columns: unset !important;
     grid-template-rows: unset !important;
     align-items: stretch;
-    padding-top: 0 !important;
+    padding-top: var(--space-3) !important;
     min-height: calc(100dvh - calc(52px + var(--safe-top)));
   }
 
@@ -495,19 +495,25 @@
     border-color: var(--color-primary);
   }
 
-  /* ── Day heading ── */
-  .mobile-day-heading {
-    padding-top: var(--space-6);
-    padding-right: var(--space-5);
-    padding-bottom: var(--space-3);
-    padding-left: var(--space-5);
-    font-size: var(--text-lg);
-    font-weight: 700;
-    color: var(--color-text);
+  /* ── Day heading — static element outside the scrolling board ── */
+  #mobile-day-heading.mobile-day-heading {
     display: flex;
     align-items: baseline;
     gap: var(--space-3);
-    scroll-margin-top: calc(52px + var(--safe-top) + var(--day-strip-h));
+    padding: var(--space-4) var(--space-5) var(--space-3);
+    font-size: var(--text-lg);
+    font-weight: 700;
+    color: var(--color-text);
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-divider);
+    position: sticky;
+    top: calc(52px + var(--safe-top) + var(--day-strip-h));
+    z-index: 19;
+  }
+
+  /* Hide on desktop — shown only by JS when mobile board renders */
+  #mobile-day-heading.mobile-day-heading[hidden] {
+    display: none !important;
   }
 
   .mobile-section {
@@ -517,7 +523,6 @@
     border-radius: var(--radius-xl);
     background: var(--color-surface);
     box-shadow: var(--shadow-sm);
-    scroll-margin-top: calc(52px + var(--safe-top) + var(--day-strip-h) + var(--space-2));
   }
 
   .mobile-section-label {
@@ -811,7 +816,7 @@
   .mobile-today-btn:active { background: var(--color-primary); color: var(--color-text-inverse); }
 }
 
-/* ── Minimum touch-target sizing on touch devices ───────────────────────────── */
+/* ── Minimum touch-target sizing on touch devices ─────────────────────────── */
 @media (hover: none) {
   .task-card       { min-height: 52px; }
   .add-task-btn    { min-height: 52px; }

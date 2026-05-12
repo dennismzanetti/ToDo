@@ -9,6 +9,7 @@ let mobileDayOffset = 0;
 
 const board     = document.getElementById('board');
 const weekLabel = document.getElementById('week-label');
+const mobileDayHeading = document.getElementById('mobile-day-heading');
 
 const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -162,15 +163,15 @@ function renderMobileBoard(tasks) {
   strip.appendChild(nextBtn);
   board.appendChild(strip);
 
-  // ── Day heading ──────────────────────────────────────────────────────────────────
-  const heading = document.createElement('div');
-  heading.className = 'mobile-day-heading';
-  const isActiveTodayDay = activeDayKey === todayKey;
-  heading.innerHTML =
-    `<span class="mobile-day-name${isActiveTodayDay ? ' is-today' : ''}">${DAYS[activeDay.getDay()]}</span>` +
-    `<span class="mobile-day-full">${MONTHS[activeDay.getMonth()]} ${activeDay.getDate()}, ${activeDay.getFullYear()}</span>` +
-    (isActiveTodayDay ? `<span class="mobile-today-chip">Today</span>` : '');
-  board.appendChild(heading);
+  // ── Day heading — written to the static element outside the board ─────────────────
+  if (mobileDayHeading) {
+    const isActiveTodayDay = activeDayKey === todayKey;
+    mobileDayHeading.innerHTML =
+      `<span class="mobile-day-name${isActiveTodayDay ? ' is-today' : ''}">${DAYS[activeDay.getDay()]}</span>` +
+      `<span class="mobile-day-full">${MONTHS[activeDay.getMonth()]} ${activeDay.getDate()}, ${activeDay.getFullYear()}</span>` +
+      (isActiveTodayDay ? `<span class="mobile-today-chip">Today</span>` : '');
+    mobileDayHeading.hidden = false;
+  }
 
   const spanTasksForDay = [];
   const singleTasksForDay = [];
@@ -426,6 +427,9 @@ function showMobileInlineAdd(taskList, addArea, colKey, addBtn) {
 // ══════════════════════════════════════════════════════════════════════════════
 
 function renderDesktopBoard(tasks) {
+  // Hide the mobile heading element on desktop
+  if (mobileDayHeading) mobileDayHeading.hidden = true;
+
   board.className = 'board';
   const days     = getDays();
   const todayKey = toDateKey(new Date());
