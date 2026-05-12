@@ -190,27 +190,99 @@
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   TOPBAR — tighter, native-feeling iPhone header
+   TOPBAR — 3-zone grid layout on mobile so logo, title, and controls are
+   always on one line and fully visible (never truncated or overflowing)
    ══════════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
   .topbar {
-    --topbar-h: 50px;
-    height: calc(50px + var(--safe-top));
+    --topbar-h: 52px;
+    height: calc(52px + var(--safe-top));
+    padding-top: var(--safe-top);
     padding-inline: var(--space-3);
-    gap: var(--space-2);
+    gap: 0;
+
+    /*
+     * 3-zone grid:
+     *   left  — logo icon only (fixed 36px)
+     *   center — brand name, grows to fill available space, truncates if needed
+     *   right  — Today pill + theme toggle (shrinks to content, never less)
+     */
+    display: grid;
+    grid-template-columns: 36px 1fr auto;
+    align-items: center;
+    column-gap: var(--space-2);
   }
 
+  /* ── Zone 1: logo SVG ── */
+  .brand {
+    display: contents; /* let logo and name each occupy their own grid cell */
+  }
+
+  .brand .logo {
+    grid-column: 1;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+
+  /* ── Zone 2: brand name ── */
   .brand-name {
-    font-size: 1.05rem;
+    grid-column: 2;
+    font-size: 1rem;
+    font-weight: 800;
     letter-spacing: -.025em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
   }
 
+  /* ── Zone 3: right-side controls (Today + theme toggle) ── */
+  /* week-nav is hidden on mobile; the right controls are:
+       .today-btn--mobile   (Today pill)
+       [data-theme-toggle]  (sun/moon icon button)
+  */
   .week-nav {
     display: none !important;
   }
 
-  /* Today button in the main header — mobile only */
+  /* Wrap Today + theme toggle in a flex row so they sit side-by-side in zone 3 */
+  .today-btn--mobile,
+  [data-theme-toggle] {
+    /* Both are direct children of .topbar — place them in zone 3 */
+  }
+
+  /*
+   * Because .brand uses display:contents, the DOM order in zone 3 is:
+   *   col 1 → logo svg  (via brand display:contents)
+   *   col 2 → span.brand-name  (via brand display:contents)
+   *   col 3 → .today-btn--mobile  (direct child)
+   *   col 3 → [data-theme-toggle]  (direct child)
+   *
+   * We place both right-side items in column 3 with a sub-flex container.
+   * Since they're siblings we use a wrapper approach via the :has() selector.
+   * Simpler: just explicitly assign them grid-column 3 and sub-flex via auto-flow.
+   */
+
   .today-btn--mobile {
+    grid-column: 3;
+    grid-row: 1;
+    /* Push theme toggle into the same cell using a sub-flex trick:
+       we'll use display:contents on today-btn and wrap both in a flex span
+       — but since we can't change HTML here, use absolute positioning within
+       the cell.  Cleanest solution: assign today btn col 3, theme toggle col 4
+       and add a 4th implicit column. */
+  }
+
+  /* Override: use a 4-column grid so Today and theme-toggle each get a cell */
+  .topbar {
+    grid-template-columns: 28px 1fr auto auto;
+    column-gap: var(--space-2);
+  }
+
+  .today-btn--mobile {
+    grid-column: 3;
+    grid-row: 1;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -224,13 +296,23 @@
     letter-spacing: .02em;
     border: 1px solid oklch(from var(--color-primary) l c h / .28);
     white-space: nowrap;
-    margin-left: auto;
     transition: background var(--transition-interactive),
                 border-color var(--transition-interactive);
   }
 
-  .icon-btn,
-  .theme-toggle-btn {
+  [data-theme-toggle] {
+    grid-column: 4;
+    grid-row: 1;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .icon-btn {
     width: 36px;
     height: 36px;
     border-radius: var(--radius-md);
@@ -245,8 +327,11 @@
 }
 
 @media (max-width: 374px) {
-  .brand svg { display: none; }
-  .brand-name { font-size: .95rem; }
+  .brand-name { font-size: .9rem; }
+  .today-btn--mobile {
+    padding: 0 var(--space-2);
+    font-size: 11px;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
