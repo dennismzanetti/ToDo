@@ -445,19 +445,10 @@
     grid-template-columns: unset !important;
     grid-template-rows: unset !important;
     align-items: stretch;
-    /* Zero out the 57px desktop padding-top set on .board in styles.css */
     padding-top: 0 !important;
     min-height: calc(100dvh - calc(52px + var(--safe-top)));
   }
 
-  /* ── Sticky day-strip variables ──────────────────────────────────────────────
-     The strip contains:
-       - padding-top:    var(--space-3)  = 12px
-       - pills:          min-height 52px
-       - padding-bottom: var(--space-2)  =  8px
-       - border-bottom:                  =  1px
-     Total actual height: ~73px. We use 76px to give a small safety buffer.
-  */
   :root {
     --day-strip-h: 76px;
   }
@@ -528,10 +519,10 @@
 
   /* ── Day heading ── */
   .mobile-day-heading {
-    padding-top: var(--space-3);
-    padding-right: var(--space-4);
-    padding-bottom: var(--space-2);
-    padding-left: var(--space-4);
+    padding-top: var(--space-4);
+    padding-right: var(--space-5);
+    padding-bottom: var(--space-3);
+    padding-left: var(--space-5);
     font-size: var(--text-lg);
     font-weight: 700;
     color: var(--color-text);
