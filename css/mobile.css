@@ -449,17 +449,6 @@
     min-height: calc(100dvh - calc(52px + var(--safe-top)));
   }
 
-  /*
-   * The sticky day strip sits at top: (topbar-h + safe-top).
-   * Its rendered height is approximately:
-   *   padding-top(12px) + pill-height(52px) + padding-bottom(8px) + border(1px) = ~73px
-   * We give the board a matching padding-top so the first day heading
-   * is never hidden underneath the strip on initial render.
-   */
-  .board--mobile > :first-child {
-    padding-top: calc(52px + var(--safe-top) + 73px);
-  }
-
   .mobile-day-strip {
     position: sticky;
     top: calc(52px + var(--safe-top));
@@ -525,8 +514,11 @@
   }
 
   /*
-   * Day heading: the strip is sticky so headings scroll underneath it.
-   * scroll-margin-top ensures programmatic scrollIntoView() also clears it.
+   * The strip is sticky at top = topbar (52px + safe-top) and is ~73px tall.
+   * The heading sits directly below the strip in normal flow — no extra
+   * offset is needed on initial render. We only need scroll-margin-top so
+   * that if the heading is scrolled to programmatically it clears both
+   * the topbar AND the sticky strip.
    */
   .mobile-day-heading {
     padding: var(--space-4) var(--space-4) var(--space-2);
@@ -536,6 +528,7 @@
     display: flex;
     align-items: baseline;
     gap: var(--space-3);
+    scroll-margin-top: calc(52px + var(--safe-top) + 76px);
   }
 
   .mobile-section {
@@ -545,7 +538,6 @@
     border-radius: var(--radius-xl);
     background: var(--color-surface);
     box-shadow: var(--shadow-sm);
-    /* Ensure programmatic scrolls clear the sticky strip */
     scroll-margin-top: calc(52px + var(--safe-top) + 76px + var(--space-2));
   }
 
