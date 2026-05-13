@@ -334,13 +334,17 @@ a,button,[role="button"],input,textarea,select {
   The .board grid uses display:contents rows for header + body, and
   display:grid + grid-column:1/-1 for add-row and span-row so each
   occupies its own dedicated grid row without collapsing into the others.
+
+  NOTE: No padding-top on .board — the .board-header (week nav) is sticky
+  on the .board-view wrapper above the grid, so no offset is needed here.
+  Adding padding-top caused the sticky top calculations to be off by
+  --board-subnav-h, making the add-task row appear behind the column headers.
 */
 .board {
   display: grid;
   grid-template-columns: 160px repeat(7, 1fr);
   grid-template-rows: auto auto auto 1fr;
   min-height: calc(100dvh - var(--topbar-h) - var(--board-subnav-h));
-  padding-top: var(--board-subnav-h);
 }
 
 /* ── Header row — sticky day names + dates ── */
