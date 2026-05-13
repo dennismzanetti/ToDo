@@ -362,43 +362,142 @@
     flex-shrink: 0;
   }
 
+  /* ── Scrollable body ── */
   .modal-body {
     flex: 1 1 auto;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
-    padding: var(--space-4) var(--space-4) var(--space-2);
+    padding: var(--space-5) var(--space-4) var(--space-3);
   }
 
+  /* Single-column form grid */
   .modal-body .form-grid {
     grid-template-columns: 1fr;
-    gap: var(--space-4);
+    gap: var(--space-5);
   }
 
+  /* All inputs / selects / textareas: 16px prevents iOS zoom, 48px min-height */
   .modal-body input,
   .modal-body textarea,
   .modal-body select,
   .subtask-input {
     font-size: 16px !important;
-    min-height: 44px;
-  }
-  .modal-body textarea { min-height: 80px; }
-
-  .subtask-item {
     min-height: 48px;
-    padding: var(--space-2) var(--space-3);
+    padding: var(--space-3) var(--space-3);
   }
-  .subtask-delete-btn { width: 40px; height: 40px; }
+  .modal-body textarea {
+    min-height: 88px;
+    padding-top: var(--space-3);
+  }
 
-  .subtask-add-row {
-    padding-top: var(--space-2);
+  /* ── Date-span row (Do On): stack vertically on narrow screens ── */
+  .modal-body .date-span-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  /* Replace the horizontal arrow with a subtle "to" label */
+  .modal-body .date-span-arrow {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    height: auto;
+    padding: 0;
+    color: var(--color-text-faint);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+  .modal-body .date-span-arrow::before,
+  .modal-body .date-span-arrow::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--color-divider);
+  }
+
+  /* Each date sub-field fills full width */
+  .modal-body .date-span-row > div {
+    width: 100%;
+  }
+  .modal-body .date-span-row > div > label {
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-1);
+    display: block;
+  }
+
+  /* ── Due-date clear row: make clear button a proper 48px touch target ── */
+  .modal-body .date-clear-row {
+    display: flex;
+    align-items: center;
     gap: var(--space-2);
   }
-  .subtask-add-btn {
-    min-height: 44px;
-    padding: 0 var(--space-4);
+  .modal-body .date-clear-row input[type="date"] {
+    flex: 1;
+  }
+  .modal-body .clear-date-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    font-size: 1.1rem;
+    flex-shrink: 0;
   }
 
+  /* ── Priority group: taller buttons, larger text ── */
+  .modal-body .priority-group {
+    gap: var(--space-2);
+  }
+  .modal-body .priority-btn {
+    min-height: 48px;
+    font-size: var(--text-sm);
+    padding: var(--space-2) var(--space-2);
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  /* ── Tag input ── */
+  .modal-body .tag-input-wrap {
+    min-height: 48px;
+    padding: var(--space-2) var(--space-3);
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .tag-chip-removable button {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* ── Subtask list ── */
+  .subtask-item {
+    min-height: 52px;
+    padding: var(--space-3) var(--space-3);
+  }
+  .subtask-delete-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  /* ── Subtask add row: input fills width, button is pill ── */
+  .subtask-add-row {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+    padding-top: var(--space-2);
+  }
+  .subtask-add-btn {
+    min-height: 48px;
+    padding: 0 var(--space-4);
+    white-space: nowrap;
+  }
+
+  /* ── Modal actions footer ── */
   .modal-actions {
     flex-shrink: 0;
     padding: var(--space-3) var(--space-4);
@@ -426,13 +525,6 @@
     justify-content: center;
     display: flex;
     align-items: center;
-  }
-
-  .tag-chip-removable button {
-    width: 20px; height: 20px;
-  }
-  .tag-input-wrap {
-    min-height: 48px;
   }
 }
 
