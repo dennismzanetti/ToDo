@@ -901,7 +901,6 @@
 /* ── Minimum touch-target sizing on touch devices ───────────────────────────────────── */
 @media (hover: none) {
   .task-card       { min-height: 52px; }
-  .add-task-btn    { min-height: 52px; }
   .span-card       { min-height: 44px; display: flex; align-items: center; }
   .subtask-delete-btn { min-width: 44px; min-height: 44px; }
   .mobile-day-pill,
@@ -909,4 +908,54 @@
   .mobile-add-btn,
   .mobile-inline-confirm-btn,
   .modal-close { min-height: 44px; }
+
+  /*
+   * .add-task-btn lives inside .board-add-row which has a fixed 36px height.
+   * Applying the generic 52px min-height here blows the row open on touch
+   * devices. Cap it to fit within the row instead.
+   */
+  .board-add-cell .add-task-btn {
+    min-height: unset;
+    height: 100%;
+  }
+}
+
+/* ── Board add-row: keep inline-add-form contained within its column ─────────────────── */
+/*
+ * When showInlineAdd() inserts .inline-add-form inside .column-add,
+ * the input's default sizing can push the cell wider than its grid column.
+ * These rules ensure the form and its children are hard-clamped to the
+ * column width on all viewport sizes.
+ */
+.board-add-cell {
+  /* Already has overflow:hidden in styles.css — belt-and-suspenders */
+  min-width: 0;
+  max-width: 100%;
+}
+
+.column-add {
+  /* Prevent flex children from overflowing the column */
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.board-add-cell .inline-add-form {
+  /* Force the form to never exceed the cell width */
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.board-add-cell .inline-add-input {
+  /* width:0 + flex:1 lets the input fill available space without inflating it */
+  width: 0;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.board-add-cell .inline-confirm-btn {
+  flex-shrink: 0;
 }
