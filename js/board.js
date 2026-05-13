@@ -105,59 +105,6 @@ window.addEventListener('resize', () => {
   _resizeTimer = setTimeout(() => renderBoard(currentTasks), 150);
 });
 
-// ── Header Add Task button (desktop) ──────────────────────────────────────
-// Called from app.js after board is initialised.
-export function initHeaderAddBtn() {
-  const btn = document.getElementById('header-add-btn');
-  if (!btn) return;
-  btn.addEventListener('click', () => {
-    // Open an inline-add panel anchored to today's column (or no-date if today
-    // isn't visible). Falls back to today regardless of weekOffset.
-    const todayKey = toDateKey(new Date());
-    const days     = getDays();
-    const dayKeys  = days.map(toDateKey);
-    const targetKey = dayKeys.includes(todayKey) ? todayKey : todayKey;
-
-    // Find the matching column-body-wrap in the DOM
-    const wrap = board.querySelector(`[data-col-key="${targetKey}"]`);
-    if (!wrap) {
-      // today not visible (different week) — scroll there first, then add
-      weekOffset = 0;
-      renderDesktopBoard(currentTasks);
-      const wrapAfterRender = board.querySelector(`[data-col-key="${toDateKey(new Date())}"`);
-      if (wrapAfterRender) _triggerInlineAdd(wrapAfterRender, targetKey);
-      return;
-    }
-    _triggerInlineAdd(wrap, targetKey);
-  });
-}
-
-function _triggerInlineAdd(wrap, colKey) {
-  // Scroll the column into view
-  wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
-
-  // Reuse the same inline-add logic as the per-column button
-  // We need an addArea-like container to host the form. We'll inject it into
-  // the column-body temporarily.
-  const body = wrap.querySelector('.column-body');
-  if (!body) return;
-
-  // Avoid duplicate forms
-  if (body.querySelector('.inline-add-form')) return;
-
-  const fakeAddArea = document.createElement('div');
-  fakeAddArea.className = 'column-add header-triggered-add';
-  const fakeBtn = document.createElement('button');
-  fakeBtn.className = 'add-task-btn';
-  fakeBtn.style.display = 'none';
-  fakeAddArea.appendChild(fakeBtn);
-  body.insertBefore(fakeAddArea, body.firstChild);
-
-  showInlineAdd(wrap, fakeAddArea, colKey, fakeBtn, () => {
-    fakeAddArea.remove();
-  });
-}
-
 // ══════════════════════════════════════════════════════════════════════════════
 // MOBILE BOARD
 // ══════════════════════════════════════════════════════════════════════════════
@@ -174,7 +121,6 @@ function renderMobileBoard(tasks) {
   activeDay.setDate(today.getDate() + mobileDayOffset);
   const activeDayKey = toDateKey(activeDay);
 
-  // ── Day strip (prev arrow · pills · next arrow) ──────────────────────────────────
   const strip = document.createElement('div');
   strip.className = 'mobile-day-strip';
 
@@ -215,7 +161,6 @@ function renderMobileBoard(tasks) {
   strip.appendChild(nextBtn);
   board.appendChild(strip);
 
-  // ── Day heading — static element below the sticky day strip ─────────────────────────────────
   const isActiveTodayDay = activeDayKey === todayKey;
   const dayHeading = document.createElement('div');
   dayHeading.id = 'mobile-day-heading';
@@ -391,24 +336,20 @@ function buildMobileTaskCard(task) {
 
   const checkBtn = card.querySelector('[data-check]');
 
-  // Use touchend for check toggle on mobile — more reliable than click on iOS
-  // and avoids the double-fire issue with card's click handler.
   let _checkTouched = false;
   checkBtn.addEventListener('touchstart', () => { _checkTouched = true; }, { passive: true });
   checkBtn.addEventListener('touchend', e => {
-    e.preventDefault(); // prevent the subsequent synthetic click from also hitting the card
+    e.preventDefault();
     e.stopPropagation();
     _checkTouched = false;
     applyCheckToggle(task, card, checkBtn);
   });
-  // Fallback for non-touch (e.g. desktop at mobile width)
   checkBtn.addEventListener('click', e => {
     e.stopPropagation();
-    if (_checkTouched) return; // already handled by touchend
+    if (_checkTouched) return;
     applyCheckToggle(task, card, checkBtn);
   });
 
-  // Only open modal when tapping outside the check column
   card.addEventListener('click', e => {
     if (e.target.closest('.mobile-card-left')) return;
     openModal(task);
@@ -468,10 +409,9 @@ function buildMobileSpanCard(task) {
   return card;
 }
 
-// Shared optimistic-UI toggle helper
 function applyCheckToggle(task, card, checkBtn) {
   const nowCompleted = !task.completed;
-  task.completed = nowCompleted; // mutate local ref so repeated taps work correctly
+  task.completed = nowCompleted;
   checkBtn.classList.toggle('checked', nowCompleted);
   checkBtn.setAttribute('aria-label', nowCompleted ? 'Mark incomplete' : 'Mark complete');
   card.classList.toggle('completed', nowCompleted);
@@ -534,7 +474,7 @@ function renderDesktopBoard(tasks) {
   const allKeys  = ['no-date', ...dayKeys];
 
   weekLabel.textContent =
-    `${MONTHS[days[0].getMonth()]} ${days[0].getDate()} \u2013 ` +
+    `${MONTHS[days[0].getMonth()]} ${days[0].getDate()} – ` +
     `${MONTHS[days[6].getMonth()]} ${days[6].getDate()}, ${days[6].getFullYear()}`;
 
   const spanTasks   = [];
@@ -580,6 +520,39 @@ function renderDesktopBoard(tasks) {
     headerRow.appendChild(hdr);
   });
   board.appendChild(headerRow);
+
+  const addRow = document.createElement('div');
+  addRow.className = 'board-add-row';
+  const addAreas = {};
+
+  allKeys.forEach((key, colIndex) => {
+    let isWeekend = false;
+    let isToday = false;
+    let dayName = 'no-date';
+    if (key !== 'no-date') {
+      const day = days[colIndex - 1];
+      const dayIdx = day.getDay();
+      isWeekend = dayIdx === 0 || dayIdx === 6;
+      isToday   = key === todayKey;
+      dayName   = DAYS[dayIdx].toLowerCase();
+    }
+    const cell = document.createElement('div');
+    cell.className = 'board-add-cell' +
+      (key === 'no-date' ? ' no-date' : '') +
+      (isWeekend ? ' is-weekend' : '') +
+      (isToday   ? ' is-today'   : '');
+    cell.dataset.col = dayName;
+    const addArea = document.createElement('div');
+    addArea.className = 'column-add';
+    const addBtn = document.createElement('button');
+    addBtn.className = 'add-task-btn';
+    addBtn.textContent = '+ Add task';
+    addArea.appendChild(addBtn);
+    cell.appendChild(addArea);
+    addRow.appendChild(cell);
+    addAreas[key] = { addArea, addBtn };
+  });
+  board.appendChild(addRow);
 
   const spanRow = document.createElement('div');
   spanRow.className = 'board-span-row';
@@ -649,10 +622,15 @@ function renderDesktopBoard(tasks) {
   });
   board.appendChild(bodyRow);
 
+  allKeys.forEach(key => {
+    const { addArea, addBtn } = addAreas[key];
+    const col = bodyRow.querySelector(`[data-col-key="${key}"]`);
+    addBtn.addEventListener('click', () => showInlineAdd(col, addArea, key, addBtn));
+  });
+
   bindDragAndDrop(bodyRow);
 }
 
-// Build the extra-badges html (tags, subtask progress) shown on hover
 function hoverBadgesHtml(task) {
   const subtasksDone  = (task.subtasks || []).filter(s => s.completed).length;
   const subtasksTotal = (task.subtasks || []).length;
@@ -674,7 +652,6 @@ function buildTaskCard(task) {
     ? `<span class="notes-icon" aria-label="Has notes">${ICONS.note}</span>`
     : '';
 
-  // Due date badge — always visible
   let dueDateHtml = '';
   if (task.dueDate) {
     const d = task.dueDate.toDate ? task.dueDate.toDate() : new Date(task.dueDate);
@@ -733,4 +710,140 @@ function buildSpanCard(task, spanDays) {
     e.stopPropagation();
     toggleComplete(task.id, !task.completed);
   });
-  card.addEv
+  card.addEventListener('click', () => openModal(task));
+  attachNoteTooltip(card, task.notes);
+  return card;
+}
+
+function showInlineAdd(col, addArea, colKey, addBtn) {
+  addBtn.style.display = 'none';
+  const form = document.createElement('div');
+  form.className = 'inline-add-form';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'inline-add-input';
+  input.placeholder = 'Task title...';
+  input.style.fontSize = '16px';
+  const confirmBtn = document.createElement('button');
+  confirmBtn.type = 'button';
+  confirmBtn.className = 'inline-confirm-btn';
+  confirmBtn.textContent = '↵';
+  form.appendChild(input);
+  form.appendChild(confirmBtn);
+  addArea.insertBefore(form, addBtn);
+
+  requestAnimationFrame(() => input.focus());
+
+  const submit = async () => {
+    const title = input.value.trim();
+    if (!title) { cancel(); return; }
+    let doOnFrom = null;
+    if (colKey !== 'no-date') doOnFrom = Timestamp.fromDate(dateKeyToDate(colKey));
+    const colTasks = currentTasks.filter(t => taskDisplayKeys(t).includes(colKey));
+    const minOrder = Math.min(0, ...colTasks.map(t => t.order || 0));
+    await addTask({ title, doOnFrom, doOnTo: doOnFrom, order: minOrder - 1000 });
+    cancel();
+  };
+
+  const cancel = () => { form.remove(); addBtn.style.display = ''; };
+  confirmBtn.addEventListener('click', submit);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); submit(); }
+    if (e.key === 'Escape') cancel();
+  });
+  input.addEventListener('blur', () => {
+    setTimeout(() => { if (!confirmBtn.matches(':focus')) cancel(); }, 150);
+  });
+}
+
+let dragId = null;
+let dragOverWrap = null;
+
+function bindDragAndDrop(bodyRow) {
+  bodyRow.querySelectorAll('.task-card[draggable]').forEach(card => {
+    card.addEventListener('dragstart', e => {
+      dragId = card.dataset.taskId;
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', dragId);
+    });
+    card.addEventListener('dragend', () => {
+      dragId = null;
+      card.classList.remove('dragging');
+      clearDragOver();
+    });
+  });
+
+  bodyRow.querySelectorAll('.column-body-wrap').forEach(wrap => {
+    wrap.addEventListener('dragover', e => {
+      if (!dragId) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (dragOverWrap !== wrap) {
+        clearDragOver();
+        dragOverWrap = wrap;
+        wrap.classList.add('drag-over');
+      }
+    });
+
+    let enterCount = 0;
+    wrap.addEventListener('dragenter', e => {
+      if (!dragId) return;
+      e.preventDefault();
+      enterCount++;
+      wrap.classList.add('drag-over');
+    });
+    wrap.addEventListener('dragleave', () => {
+      enterCount--;
+      if (enterCount <= 0) {
+        enterCount = 0;
+        wrap.classList.remove('drag-over');
+        if (dragOverWrap === wrap) dragOverWrap = null;
+      }
+    });
+
+    wrap.addEventListener('drop', async e => {
+      e.preventDefault();
+      enterCount = 0;
+      wrap.classList.remove('drag-over');
+      dragOverWrap = null;
+      if (!dragId) return;
+
+      const colKey = wrap.dataset.colKey;
+      const task   = currentTasks.find(t => t.id === dragId);
+      if (!task) return;
+
+      const currentKeys = taskDisplayKeys(task);
+      if (currentKeys.length === 1 && currentKeys[0] === colKey) return;
+
+      let doOnFrom = null, doOnTo = null;
+      if (colKey !== 'no-date') {
+        const d = dateKeyToDate(colKey);
+        doOnFrom = Timestamp.fromDate(d);
+        doOnTo   = Timestamp.fromDate(d);
+      }
+      const colTasks = currentTasks.filter(t =>
+        taskDisplayKeys(t).includes(colKey) && t.id !== dragId
+      );
+      const minOrder = Math.min(0, ...colTasks.map(t => t.order || 0));
+      await reorderTask(dragId, { doOnFrom, doOnTo, order: minOrder - 1000 });
+    });
+  });
+}
+
+function clearDragOver() {
+  board.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+  dragOverWrap = null;
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+export function prevWeek()  { weekOffset--;  renderBoard(currentTasks); }
+export function nextWeek()  { weekOffset++;  renderBoard(currentTasks); }
+export function gotoToday() { weekOffset = 0; mobileDayOffset = 0; renderBoard(currentTasks); }
