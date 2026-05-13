@@ -34,14 +34,12 @@
 
   /*
    * Board sticky-layer heights
-   * --board-subnav-h : the .board-header bar (week nav) — 45px (reduced from 57px)
-   * --col-header-h   : a single .column-header cell
-   *                    padding-top(6) + day-label(~14) + space-1(4) + date(~24) + padding-bottom(6) ≈ 54px
-   *                    Keep this in sync if you change .column-header padding or font sizes.
-   * --add-row-h      : the .board-add-row sticky row height — 36px (min-height of .board-add-cell)
-   *                    Keep this in sync if you change .board-add-cell min-height.
+   * --board-subnav-h : the .board-header bar (week nav) — 0px on desktop
+   *                    (week nav lives in topbar; .board-header is hidden)
+   * --col-header-h   : a single .column-header cell — ~54px
+   * --add-row-h      : the .board-add-row sticky row height — 36px
    */
-  --board-subnav-h: 45px;
+  --board-subnav-h: 0px;
   --col-header-h:   54px;
   --add-row-h:      36px;
 
@@ -302,16 +300,17 @@ a,button,[role="button"],input,textarea,select {
 
 /* ── BOARD LAYOUT ── */
 .board-view { padding-top:var(--topbar-h); min-height:100dvh; }
+
+/*
+ * .board-header is rendered by JS inside <main> and contains the week-nav
+ * duplicate. On desktop the week-nav already lives in .topbar, so we hide
+ * this element entirely. --board-subnav-h is therefore 0px on desktop.
+ * On mobile, mobile.css also hides it (display:none) and corrects sticky offsets.
+ */
 .board-header {
-  display:flex; align-items:center; gap:var(--space-4);
-  /* Reduced vertical padding: was var(--space-4) top/bottom, now var(--space-2) */
-  padding: var(--space-2) var(--space-5);
-  background:var(--color-surface); border-bottom:1px solid var(--color-divider);
-  position:sticky; top:var(--topbar-h); z-index:50;
-  /* Enforce exact height to match --board-subnav-h token */
-  height: var(--board-subnav-h);
-  box-sizing: border-box;
+  display: none;
 }
+
 .week-nav { display:flex; align-items:center; gap:var(--space-2); }
 .week-nav-btn {
   display:inline-flex; align-items:center; justify-content:center;
@@ -332,10 +331,9 @@ a,button,[role="button"],input,textarea,select {
 /* ── DESKTOP BOARD GRID ── */
 /*
   Sticky layer stack (top → bottom, all relative to viewport top):
-    z=100  .topbar            fixed  top:0                                          (60px)
-    z=50   .board-header      sticky top:var(--topbar-h)                            (45px week nav)
-    z=20   .column-header     sticky top: topbar + board-subnav                     (day/date cells)
-    z=19   .board-add-row     sticky top: topbar + board-subnav + col-header-h      (add-task row)
+    z=100  .topbar            fixed  top:0                     (60px, contains week-nav)
+    z=20   .column-header     sticky top:var(--topbar-h)        (day/date cells, flush under topbar)
+    z=19   .board-add-row     sticky top: topbar + col-header-h (add-task row)
     z=1    .board-span-row    normal flow, margin-top offsets it below add-row
     z=0    .board-body-row    normal flow
 */
@@ -343,7 +341,7 @@ a,button,[role="button"],input,textarea,select {
   display: grid;
   grid-template-columns: 160px repeat(7, 1fr);
   grid-template-rows: auto auto auto 1fr;
-  min-height: calc(100dvh - var(--topbar-h) - var(--board-subnav-h));
+  min-height: calc(100dvh - var(--topbar-h));
 }
 
 /* ── Header row — sticky day names + dates ── */
@@ -351,13 +349,13 @@ a,button,[role="button"],input,textarea,select {
   display: contents;
 }
 .column-header {
-  /* Reduced padding: was var(--space-3) top / var(--space-2) bottom, now var(--space-2) / var(--space-1) */
   padding: var(--space-2) var(--space-3) var(--space-1);
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-divider);
   border-right: 1px solid var(--color-divider);
   position: sticky;
-  top: calc(var(--topbar-h) + var(--board-subnav-h));
+  /* board-subnav-h is 0px on desktop — column headers sit flush under the topbar */
+  top: var(--topbar-h);
   z-index: 20;
 }
 .column-header:last-child { border-right: none; }
@@ -385,7 +383,7 @@ a,button,[role="button"],input,textarea,select {
   border-bottom: 1px solid var(--color-divider);
   background: var(--color-surface);
   position: sticky;
-  top: calc(var(--topbar-h) + var(--board-subnav-h) + var(--col-header-h));
+  top: calc(var(--topbar-h) + var(--col-header-h));
   z-index: 19;
   box-shadow: 0 2px 4px oklch(from var(--color-text) l c h / .04);
 }
@@ -414,17 +412,6 @@ a,button,[role="button"],input,textarea,select {
 .add-task-btn:hover { background: var(--color-surface-offset); color: var(--color-primary); }
 
 /* ── Span row (multi-day tasks) ── */
-/*
-  .board-span-row is in normal document flow, immediately below the sticky
-  .board-add-row. The sticky add-row overlaps the top of the span row while
-  at rest (scroll=0).
-
-  FIX: Use margin-top instead of padding-top so the span row's border and
-  background cells start below the sticky add-row. margin-top pushes the
-  entire element (including its top border) down, whereas padding-top only
-  pushed the content — leaving the top portion of the row visible but empty
-  and being clipped behind the sticky bar.
-*/
 .board-span-row {
   display: grid;
   grid-column: 1 / -1;
@@ -432,8 +419,6 @@ a,button,[role="button"],input,textarea,select {
   min-height: 0;
   border-bottom: 1px solid var(--color-divider);
   position: relative;
-  /* Changed from padding-top to margin-top so the whole row, including
-     span cards, clears the sticky add-row at initial scroll position */
   margin-top: var(--add-row-h);
 }
 .board-span-row:empty { display: none; }
@@ -614,7 +599,7 @@ a,button,[role="button"],input,textarea,select {
 .day-header {
   padding: var(--space-3) var(--space-3) var(--space-2);
   border-bottom:1px solid var(--color-divider);
-  position:sticky; top: calc(var(--topbar-h) + var(--board-subnav-h));
+  position:sticky; top: var(--topbar-h);
   background:var(--color-surface); z-index:10;
 }
 .day-name { font-size:var(--text-xs); font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--color-text-muted); }
