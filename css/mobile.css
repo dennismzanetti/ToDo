@@ -269,6 +269,30 @@
     height: 36px;
     border-radius: var(--radius-md);
   }
+
+  /* ── Hide the .board-header subnav bar entirely on mobile.
+     The week-nav arrows are already hidden, but the bar itself still
+     occupies --board-subnav-h (45px) of space. Collapse it to nothing
+     so the column headers sit flush under the topbar. ── */
+  .board-header {
+    display: none !important;
+  }
+
+  /*
+   * With .board-header gone, every sticky offset that previously included
+   * var(--board-subnav-h) must be reduced by that amount.
+   *
+   * On mobile the topbar is 52px + safe-area, so:
+   *   column-header sticky top = topbar-h + safe-top  (no subnav)
+   *   add-row sticky top       = topbar-h + safe-top + col-header-h
+   */
+  .column-header {
+    top: calc(52px + var(--safe-top));
+  }
+
+  .board-add-row {
+    top: calc(52px + var(--safe-top) + var(--col-header-h));
+  }
 }
 
 @media (min-width: 768px) {
