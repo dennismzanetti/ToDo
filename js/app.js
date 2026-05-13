@@ -1,5 +1,5 @@
 import { initStore, subscribe, subscribeTemplates } from './store.js';
-import { renderBoard, prevWeek, nextWeek, gotoToday } from './board.js';
+import { renderBoard } from './board.js';
 import { applyTemplates } from './templates-engine.js';
 import { openModal } from './modal.js';
 
@@ -27,6 +27,7 @@ themeToggle?.addEventListener('click', () => {
 });
 
 // ── Week nav ──────────────────────────────────────────────────────────────
+import { prevWeek, nextWeek, gotoToday } from './board.js';
 let lastTasks = [];
 document.getElementById('prev-week')?.addEventListener('click', () => { prevWeek(); renderBoard(lastTasks); });
 document.getElementById('next-week')?.addEventListener('click', () => { nextWeek(); renderBoard(lastTasks); });
