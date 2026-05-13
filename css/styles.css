@@ -226,43 +226,71 @@ a,button,[role="button"],input,textarea,select {
   background: oklch(0 0 0 / .45);
   backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
   display:flex; align-items:center; justify-content:center;
-  z-index:200; padding:var(--space-4);
+  z-index:200; padding:var(--space-6);
 }
 .modal-overlay[hidden] { display:none; }
+
 .modal {
-  background:var(--color-surface);
-  border:1px solid var(--color-border);
-  border-radius:var(--radius-xl);
-  box-shadow:var(--shadow-lg);
-  width:100%; max-width:560px; max-height:90dvh;
-  overflow-y:auto; display:flex; flex-direction:column;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 640px;
+  max-height: 88dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* children handle their own scroll */
 }
+
 .modal-header {
-  display:flex; align-items:center; justify-content:space-between;
-  padding: var(--space-4) var(--space-5);
-  border-bottom:1px solid var(--color-divider);
-  position:sticky; top:0; background:var(--color-surface); z-index:1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--color-divider);
+  flex-shrink: 0;
 }
-.modal-title { font-family:var(--font-display); font-size:var(--text-lg); font-weight:700; letter-spacing:-.02em; color:var(--color-text); }
+.modal-title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  letter-spacing: -.02em;
+  color: var(--color-text);
+}
 .modal-close {
-  display:inline-flex; align-items:center; justify-content:center;
-  width:32px; height:32px; border-radius:var(--radius-md); color:var(--color-text-muted);
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px;
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
   transition: color var(--transition-interactive), background var(--transition-interactive);
 }
-.modal-close:hover { color:var(--color-text); background:var(--color-surface-offset); }
-.modal-body { padding:var(--space-5); display:flex; flex-direction:column; gap:var(--space-4); }
+.modal-close:hover { color: var(--color-text); background: var(--color-surface-offset); }
+
+/* Scrollable body */
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1); /* form-grid handles its own internal gap */
+}
+
+/* sticky footer */
 .modal-footer {
-  padding: var(--space-4) var(--space-5);
-  border-top:1px solid var(--color-divider);
-  display:flex; align-items:center; justify-content:flex-end; gap:var(--space-2);
-  position:sticky; bottom:0; background:var(--color-surface);
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--color-divider);
+  display: flex; align-items: center; justify-content: flex-end; gap: var(--space-2);
+  flex-shrink: 0;
 }
 
 /* ── MODAL FORM GRID ── */
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-4);
+  gap: var(--space-4) var(--space-5);
 }
 .form-grid .full-width {
   grid-column: 1 / -1;
@@ -333,12 +361,12 @@ a,button,[role="button"],input,textarea,select {
 
 /* Do-On date span row */
 .date-span-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end; /* align to baseline of inputs */
+  gap: var(--space-2);
 }
 .date-span-row > div {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
@@ -352,10 +380,13 @@ a,button,[role="button"],input,textarea,select {
 }
 .date-span-row input[type="date"] { width: 100%; }
 .date-span-arrow {
-  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px; /* match input height */
   color: var(--color-text-faint);
   font-size: var(--text-base);
-  padding-top: var(--space-5); /* align with inputs, accounting for the sub-label */
+  flex-shrink: 0;
 }
 
 /* Due-date row with clear button */
@@ -368,7 +399,7 @@ a,button,[role="button"],input,textarea,select {
 .clear-date-btn {
   flex-shrink: 0;
   display: inline-flex; align-items: center; justify-content: center;
-  width: 28px; height: 28px;
+  width: 32px; height: 32px;
   border-radius: var(--radius-md);
   font-size: 1rem; line-height: 1;
   color: var(--color-text-faint);
@@ -953,14 +984,21 @@ a,button,[role="button"],input,textarea,select {
 .tmpl-edit-btn:hover { background:var(--color-primary-highlight); color:var(--color-primary); border-color: oklch(from var(--color-primary) l c h / .3); }
 .tmpl-edit-btn:active { background:var(--color-surface-dynamic); }
 
-/* Modal actions footer */
+/* ── MODAL ACTIONS FOOTER ── */
 .modal-actions {
-  display:flex; align-items:center; justify-content:space-between; gap:var(--space-2);
-  padding: var(--space-4) var(--space-5);
-  border-top:1px solid var(--color-divider);
-  position:sticky; bottom:0; background:var(--color-surface); z-index:1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--color-divider);
+  flex-shrink: 0;
 }
-.modal-actions-right { display:flex; align-items:center; gap:var(--space-2); margin-left:auto; }
+.modal-actions-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
 
 /* ── VERSION FOOTER ── */
 .version-footer { padding: var(--space-3) var(--space-5); border-top:1px solid var(--color-divider); background:var(--color-surface); }
