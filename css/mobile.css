@@ -365,6 +365,7 @@
   /* ── Scrollable body ── */
   .modal-body {
     flex: 1 1 auto;
+    min-height: 0; /* critical: lets flex child shrink below content height so overflow-y:auto actually scrolls */
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
