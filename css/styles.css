@@ -38,9 +38,12 @@
    * --col-header-h   : a single .column-header cell
    *                    padding-top(12) + day-label(~14) + space-1(4) + date(~28) + padding-bottom(8) ≈ 66px
    *                    Keep this in sync if you change .column-header padding or font sizes.
+   * --add-row-h      : the .board-add-row sticky row height — 36px (min-height of .board-add-cell)
+   *                    Keep this in sync if you change .board-add-cell min-height.
    */
   --board-subnav-h: 57px;
   --col-header-h:   66px;
+  --add-row-h:      36px;
 
   /* Safe area insets (for iPhone notch / Dynamic Island) */
   --safe-top:    env(safe-area-inset-top,    0px);
@@ -161,6 +164,7 @@ html {
   -webkit-text-size-adjust: none; text-size-adjust: none;
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--topbar-h) + var(--board-subnav-h) + var(--col-header-h) + var(--add-row-h));
 }
 body {
   min-height: 100dvh;
@@ -339,6 +343,11 @@ a,button,[role="button"],input,textarea,select {
   on the .board-view wrapper above the grid, so no offset is needed here.
   Adding padding-top caused the sticky top calculations to be off by
   --board-subnav-h, making the add-task row appear behind the column headers.
+
+  The .column-body-wrap cells have padding-top: var(--add-row-h) to ensure
+  the first task row is not obscured by the sticky .board-add-row when at
+  the top of the scroll position. This is necessary because the add-row is
+  position:sticky and visually floats above the body rows.
 */
 .board {
   display: grid;
@@ -447,6 +456,14 @@ a,button,[role="button"],input,textarea,select {
   border-right: 1px solid var(--color-divider);
   background: var(--color-bg);
   min-height: 200px;
+  /*
+   * padding-top equal to --add-row-h prevents the first task card from
+   * being visually obscured by the sticky .board-add-row at the top of
+   * the scroll area. The add-row is position:sticky (not in flow above
+   * this element), so without this offset the first task would sit
+   * directly behind it.
+   */
+  padding-top: var(--add-row-h);
   transition: background var(--transition-interactive);
 }
 .column-body-wrap:last-child { border-right: none; }
