@@ -28,21 +28,20 @@
   --radius-full: 9999px;
   --transition-interactive: 180ms cubic-bezier(.16,1,.3,1);
 
-  /* Topbar height — week nav lives inside the topbar, so subbar-h is 0 */
-  --topbar-h:  60px;
-  --subbar-h:  0px;
-  --footer-h:  28px;
+  /* Topbar height — week nav is inside the topbar, no separate subbar */
+  --topbar-h: 60px;
+  --footer-h: 28px;
 
-  /* Sticky column headers sit directly below the topbar */
-  --sticky-col-header-top: var(--topbar-h);
+  /* Board column definition — shared by header row, span row, body row */
+  --board-cols: 160px repeat(7, 1fr);
 
-  /* Safe area insets (for iPhone notch / Dynamic Island) */
+  /* Safe area insets */
   --safe-top:    env(safe-area-inset-top,    0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left:   env(safe-area-inset-left,   0px);
   --safe-right:  env(safe-area-inset-right,  0px);
 
-  /* ── WARM INDIGO – Light surfaces (cream/linen) ── */
+  /* ── WARM INDIGO – Light surfaces ── */
   --color-bg:                 #f7f6f2;
   --color-surface:            #faf9f6;
   --color-surface-2:          #ffffff;
@@ -51,20 +50,14 @@
   --color-surface-dynamic:    #ddd8ef;
   --color-divider:            #e0ddf5;
   --color-border:             #d4d0ee;
-
-  /* Text */
   --color-text:         #1c1928;
   --color-text-muted:   #6b6880;
   --color-text-faint:   #b0adc4;
   --color-text-inverse: #f8f7ff;
-
-  /* Primary – indigo/violet */
   --color-primary:           #5b3ebd;
   --color-primary-hover:     #4a30a3;
   --color-primary-active:    #39248a;
   --color-primary-highlight: #ede8ff;
-
-  /* Semantic */
   --color-error:           #c53030;
   --color-error-hover:     #9b2c2c;
   --color-error-highlight: #fff5f5;
@@ -72,13 +65,9 @@
   --color-success-highlight: #f0fff4;
   --color-warning:         #c05621;
   --color-warning-highlight: #fffaf0;
-
-  /* Shadows */
   --shadow-sm: 0 1px 3px rgba(30,20,60,.08);
   --shadow-md: 0 4px 12px rgba(30,20,60,.10);
   --shadow-lg: 0 12px 32px rgba(30,20,60,.14);
-
-  /* Priority */
   --priority-high-color:   #c53030;
   --priority-medium-color: #c05621;
   --priority-low-color:    #276749;
@@ -212,42 +201,21 @@ a,button,[role="button"],input,textarea,select {
 }
 .icon-btn:hover { background:var(--color-surface-offset); color:var(--color-text); }
 
-/* ── HEADER ADD TASK BUTTON (desktop only) ── */
-.header-add-btn {
-  display: none; /* hidden by default; shown at desktop breakpoint below */
-}
+/* ── HEADER ADD TASK BUTTON ── */
+.header-add-btn { display: none; }
 @media (min-width: 768px) {
   .header-add-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
+    display: inline-flex; align-items: center; gap: var(--space-2);
     padding: var(--space-2) var(--space-4);
-    background: var(--color-primary);
-    color: var(--color-text-inverse);
-    border-radius: var(--radius-md);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    white-space: nowrap;
-    margin-left: auto;
+    background: var(--color-primary); color: var(--color-text-inverse);
+    border-radius: var(--radius-md); font-size: var(--text-sm); font-weight: 600;
+    white-space: nowrap; margin-left: auto;
     box-shadow: 0 1px 3px oklch(from var(--color-primary) .3 .15 h / .4);
-    transition: background var(--transition-interactive),
-                box-shadow var(--transition-interactive),
-                transform var(--transition-interactive);
+    transition: background var(--transition-interactive), box-shadow var(--transition-interactive), transform var(--transition-interactive);
   }
-  .header-add-btn:hover {
-    background: var(--color-primary-hover);
-    box-shadow: 0 3px 8px oklch(from var(--color-primary) .3 .15 h / .4);
-  }
-  .header-add-btn:active {
-    background: var(--color-primary-active);
-    box-shadow: none;
-    transform: scale(.98);
-  }
-  /* When header-add-btn is visible, remove auto-margin from icon-btn
-     so the theme toggle sits flush to the right */
-  .topbar .icon-btn[data-theme-toggle] {
-    margin-left: var(--space-2);
-  }
+  .header-add-btn:hover { background: var(--color-primary-hover); box-shadow: 0 3px 8px oklch(from var(--color-primary) .3 .15 h / .4); }
+  .header-add-btn:active { background: var(--color-primary-active); box-shadow: none; transform: scale(.98); }
+  .topbar .icon-btn[data-theme-toggle] { margin-left: var(--space-2); }
 }
 
 /* ── MODAL ── */
@@ -260,10 +228,8 @@ a,button,[role="button"],input,textarea,select {
 }
 .modal-overlay[hidden] { display:none; }
 .modal {
-  background:var(--color-surface);
-  border:1px solid var(--color-border);
-  border-radius:var(--radius-xl);
-  box-shadow:var(--shadow-lg);
+  background:var(--color-surface); border:1px solid var(--color-border);
+  border-radius:var(--radius-xl); box-shadow:var(--shadow-lg);
   width:100%; max-width:480px; max-height:90dvh;
   overflow-y:auto; display:flex; flex-direction:column;
 }
@@ -328,74 +294,58 @@ a,button,[role="button"],input,textarea,select {
 .btn-danger:hover { background:var(--color-error); color:#fff; border-color:var(--color-error); }
 .btn-danger:active { transform:scale(.98); }
 
-/* ── BOARD LAYOUT ── */
+/* ════════════════════════════════════════════════════════════════════════════
+   BOARD LAYOUT
+   ════════════════════════════════════════════════════════════════════════════
 
-/*
-  Stack (top → bottom):
-    1. .topbar        — fixed, z:100, height: --topbar-h (60px)
-                        Week nav is INSIDE the topbar — no separate subbar.
-    2. .board-view    — padding-top: --topbar-h so content starts below fixed bar
-    3. .column-header — sticky at top: --topbar-h (= --sticky-col-header-top)
-    4. .board (grid)  — normal flow
-*/
+   Structure (simplified):
+     <main class="board">
+       <div class="board-header-row">   ← display:grid, 8 columns, sticky
+         <div class="column-header"> × 8
+       <div class="board-span-row">     ← display:grid, 8 columns
+         span-row-bg-cell × 8  +  span-card overlays
+       <div class="board-body-row">     ← display:grid, 8 columns
+         <div class="column-body-wrap"> × 8
+
+   KEY INSIGHT: Each band (.board-header-row, .board-span-row, .board-body-row)
+   is its OWN grid with the same 8-column template. They stack vertically
+   inside .board which is a normal block/flex column — NOT a CSS grid.
+   This avoids the display:contents overlap bug entirely.
+   ════════════════════════════════════════════════════════════════════════════ */
 
 .board-view {
   padding-top: var(--topbar-h);
   min-height: 100dvh;
 }
 
-/* .board-header is kept for any legacy markup but is visually zero-height */
-.board-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  padding: 0 var(--space-5);
-  height: var(--subbar-h); /* 0px — week nav is in topbar */
-  background: var(--color-surface);
-  overflow: hidden;
-}
-.week-nav { display:flex; align-items:center; gap:var(--space-2); }
-.week-nav-btn {
-  display:inline-flex; align-items:center; justify-content:center;
-  width:32px; height:32px; border-radius:var(--radius-md); color:var(--color-text-muted);
-  transition: background var(--transition-interactive), color var(--transition-interactive);
-}
-.week-nav-btn:hover { background:var(--color-surface-offset); color:var(--color-text); }
-.week-label { font-size:var(--text-sm); font-weight:600; color:var(--color-text); min-width:160px; text-align:center; }
-.today-btn {
-  padding: var(--space-1) var(--space-3);
-  border-radius:var(--radius-md); font-size:var(--text-xs); font-weight:600;
-  color:var(--color-primary); background:var(--color-primary-highlight);
-  border:1px solid oklch(from var(--color-primary) l c h / .25);
-  transition: background var(--transition-interactive), color var(--transition-interactive);
-}
-.today-btn:hover { background:var(--color-primary); color:var(--color-text-inverse); }
-
-/* ── DESKTOP BOARD GRID ── */
+/* .board is a simple flex column — each band stacks in order */
 .board {
-  display: grid;
-  grid-template-columns: 160px repeat(7, 1fr);
-  grid-template-rows: auto auto 1fr;
+  display: flex;
+  flex-direction: column;
   min-height: calc(100dvh - var(--topbar-h));
 }
 
-/* Header row — sticky day names + dates */
+/* ── Header row — sticky, own 8-col grid ── */
 .board-header-row {
-  display: contents;
+  display: grid;
+  grid-template-columns: var(--board-cols);
+  position: sticky;
+  top: var(--topbar-h);   /* stick directly under the fixed topbar */
+  z-index: 20;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-divider);
 }
+
 .column-header {
   padding: var(--space-3) var(--space-3) var(--space-2);
   background: var(--color-surface);
-  border-bottom: 1px solid var(--color-divider);
   border-right: 1px solid var(--color-divider);
-  position: sticky;
-  top: var(--sticky-col-header-top); /* = --topbar-h = 60px */
-  z-index: 20;
 }
 .column-header:last-child { border-right: none; }
 .column-header.no-date-header { background: var(--color-surface-offset); }
 .column-header.is-today { background: oklch(from var(--color-primary) l c h / .04); }
 .column-header.is-weekend { background: color-mix(in oklab, var(--color-bg) 60%, var(--color-surface)); }
+
 .col-day {
   font-size: var(--text-xs); font-weight: 700;
   letter-spacing: .08em; text-transform: uppercase;
@@ -409,34 +359,39 @@ a,button,[role="button"],input,textarea,select {
 .col-date.today { color: var(--color-primary); }
 .column-header.is-today .col-day { color: var(--color-primary); }
 
-/* Span row (multi-day tasks) */
+/* ── Span row — own 8-col grid, relative so span cards can be positioned ── */
 .board-span-row {
   display: grid;
-  grid-column: 1 / -1;
-  grid-template-columns: 160px repeat(7, 1fr);
-  min-height: 0;
-  border-bottom: 1px solid var(--color-divider);
+  grid-template-columns: var(--board-cols);
   position: relative;
+  border-bottom: 1px solid var(--color-divider);
 }
-.board-span-row:empty { display: none; }
+.board-span-row:not(:has(.span-card)) { display: none; }
+
 .span-row-bg-cell {
   border-right: 1px solid var(--color-divider);
   background: var(--color-bg);
+  min-height: 36px;
 }
 .span-row-bg-cell:last-child { border-right: none; }
 .span-row-bg-cell.no-date    { background: var(--color-surface-offset); }
 .span-row-bg-cell.is-today   { background: oklch(from var(--color-primary) l c h / .03); }
 .span-row-bg-cell.is-weekend { background: color-mix(in oklab, var(--color-bg) 80%, var(--color-surface)); }
 
-/* Body row — scrollable task columns */
+/* ── Body row — own 8-col grid, grows to fill remaining height ── */
 .board-body-row {
-  display: contents;
+  display: grid;
+  grid-template-columns: var(--board-cols);
+  flex: 1;    /* stretch to fill .board's remaining height */
+  align-items: start;
 }
+
 .column-body-wrap {
   display: flex; flex-direction: column;
   border-right: 1px solid var(--color-divider);
   background: var(--color-bg);
   min-height: 200px;
+  height: 100%;
   transition: background var(--transition-interactive);
 }
 .column-body-wrap:last-child { border-right: none; }
@@ -444,12 +399,13 @@ a,button,[role="button"],input,textarea,select {
 .column-body-wrap.is-today   { background: oklch(from var(--color-primary) l c h / .03); }
 .column-body-wrap.is-weekend { background: color-mix(in oklab, var(--color-bg) 80%, var(--color-surface)); }
 .column-body-wrap.drag-over  { background: oklch(from var(--color-primary) l c h / .08); outline: 2px dashed oklch(from var(--color-primary) l c h / .4); outline-offset: -3px; }
+
 .column-body {
   flex: 1; padding: var(--space-2);
   display: flex; flex-direction: column; gap: var(--space-2);
 }
 
-/* Add-task footer at the bottom of each column — visible on column hover */
+/* Add-task footer — visible on column hover */
 .column-add {
   display: flex;
   padding: var(--space-1) var(--space-2) var(--space-2);
@@ -457,9 +413,8 @@ a,button,[role="button"],input,textarea,select {
   transition: opacity var(--transition-interactive);
 }
 .column-body-wrap:hover .column-add,
-.column-body-wrap:focus-within .column-add {
-  opacity: 1;
-}
+.column-body-wrap:focus-within .column-add { opacity: 1; }
+
 .add-task-btn {
   display: flex; align-items: center; gap: var(--space-1);
   padding: var(--space-1) var(--space-2);
@@ -469,7 +424,7 @@ a,button,[role="button"],input,textarea,select {
 }
 .add-task-btn:hover { background: var(--color-surface-offset); color: var(--color-primary); }
 
-/* ── TASK CARDS (desktop) ── */
+/* ── TASK CARDS ── */
 .task-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -485,9 +440,7 @@ a,button,[role="button"],input,textarea,select {
 .task-card.priority-medium { border-left: 3px solid var(--priority-medium-color); }
 .task-card.priority-low    { border-left: 3px solid var(--priority-low-color); }
 
-.task-top {
-  display: flex; align-items: flex-start; gap: var(--space-2);
-}
+.task-top { display: flex; align-items: flex-start; gap: var(--space-2); }
 .task-check {
   flex-shrink: 0; width: 16px; height: 16px; margin-top: 2px;
   border: 1.5px solid var(--color-border); border-radius: var(--radius-sm);
@@ -496,12 +449,9 @@ a,button,[role="button"],input,textarea,select {
   transition: background var(--transition-interactive), border-color var(--transition-interactive);
 }
 .task-check:hover { border-color: var(--color-primary); background: var(--color-primary-highlight); }
-.task-check.checked {
-  background: var(--color-primary); border-color: var(--color-primary);
-}
+.task-check.checked { background: var(--color-primary); border-color: var(--color-primary); }
 .task-check.checked::after {
-  content: '';
-  display: block; width: 9px; height: 5px;
+  content: ''; display: block; width: 9px; height: 5px;
   border-left: 2px solid #fff; border-bottom: 2px solid #fff;
   transform: rotate(-45deg) translate(1px, -1px);
 }
@@ -522,15 +472,14 @@ a,button,[role="button"],input,textarea,select {
 .task-badges { display: inline-flex; align-items: center; flex-wrap: wrap; gap: var(--space-1); }
 .due-date-badge {
   display: inline-flex; align-items: center; gap: 3px;
-  font-size: var(--text-xs); color: var(--color-text-muted);
-  font-weight: 500;
+  font-size: var(--text-xs); color: var(--color-text-muted); font-weight: 500;
 }
 .desktop-meta-icon { display: inline-flex; align-items: center; color: var(--color-text-faint); }
 
-/* Span card (multi-day, lives in board-span-row) */
+/* Span card */
 .span-card {
   align-self: center;
-  margin: var(--space-1) var(--space-1);
+  margin: var(--space-1);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
@@ -555,7 +504,7 @@ a,button,[role="button"],input,textarea,select {
   border: 1px solid var(--color-border); white-space: nowrap;
 }
 
-/* ── INLINE ADD (desktop) ── */
+/* ── INLINE ADD ── */
 .inline-add-form {
   display: flex; gap: var(--space-1); align-items: center;
   padding: var(--space-1) 0;
@@ -578,7 +527,7 @@ a,button,[role="button"],input,textarea,select {
 .inline-confirm-btn:hover  { background: var(--color-primary-hover); }
 .inline-confirm-btn:active { background: var(--color-primary-active); transform: scale(.95); }
 
-/* ── NOTES TOOLTIP (desktop) ── */
+/* ── NOTES TOOLTIP ── */
 .notes-tooltip {
   position: fixed; z-index: 9999;
   max-width: 280px; padding: var(--space-2) var(--space-3);
@@ -592,7 +541,7 @@ a,button,[role="button"],input,textarea,select {
 }
 .notes-tooltip.visible { opacity: 1; transform: translateY(0); }
 
-/* ── SHARED BADGES (used on both desktop & mobile) ── */
+/* ── SHARED BADGES ── */
 .priority-dot { width:6px; height:6px; border-radius:var(--radius-full); flex-shrink:0; }
 .priority-dot.high   { background:var(--priority-high-color); }
 .priority-dot.medium { background:var(--priority-medium-color); }
@@ -605,55 +554,6 @@ a,button,[role="button"],input,textarea,select {
 }
 .subtask-progress { font-size:var(--text-xs); color:var(--color-text-faint); font-weight:500; }
 .subtask-progress.done { color: var(--color-success); }
-
-/* OLD .day-col / .todo-item rules kept for back-compat in case referenced elsewhere */
-.board-grid {
-  display:grid; grid-template-columns:repeat(7, 1fr); gap:0;
-  min-height: calc(100dvh - var(--topbar-h) - 60px);
-}
-.day-col { border-right:1px solid var(--color-divider); display:flex; flex-direction:column; min-height:100%; }
-.day-col:last-child { border-right:none; }
-.day-header {
-  padding: var(--space-3) var(--space-3) var(--space-2);
-  border-bottom:1px solid var(--color-divider);
-  position:sticky; top: var(--sticky-col-header-top);
-  background:var(--color-surface); z-index:10;
-}
-.day-name { font-size:var(--text-xs); font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--color-text-muted); }
-.day-date { font-family:var(--font-display); font-size:var(--text-lg); font-weight:700; color:var(--color-text); line-height:1.1; margin-top:var(--space-1); }
-.day-col.today .day-name { color:var(--color-primary); }
-.day-col.today .day-date { color:var(--color-primary); }
-.day-col.today .day-header { background: oklch(from var(--color-primary) l c h / .04); }
-.day-body { flex:1; padding:var(--space-3); display:flex; flex-direction:column; gap:var(--space-2); }
-.add-todo-btn {
-  display:flex; align-items:center; gap:var(--space-2);
-  padding: var(--space-2); border-radius:var(--radius-md);
-  font-size:var(--text-xs); font-weight:600; color:var(--color-text-faint);
-  width:100%; text-align:left;
-  transition: background var(--transition-interactive), color var(--transition-interactive);
-}
-.add-todo-btn:hover { background:var(--color-surface-offset); color:var(--color-text-muted); }
-.add-todo-btn svg { flex-shrink:0; }
-.todo-item {
-  background:var(--color-surface); border:1px solid var(--color-border);
-  border-radius:var(--radius-md); padding: var(--space-2) var(--space-3);
-  cursor:pointer; position:relative;
-  transition: box-shadow var(--transition-interactive), border-color var(--transition-interactive), opacity var(--transition-interactive);
-}
-.todo-item:hover { box-shadow:var(--shadow-sm); border-color: oklch(from var(--color-primary) l c h / .3); }
-.todo-item.completed { opacity:.55; }
-.todo-item-title { font-size:var(--text-sm); font-weight:500; color:var(--color-text); line-height:1.35; }
-.todo-item.completed .todo-item-title { text-decoration:line-through; color:var(--color-text-muted); }
-.todo-item-meta { display:flex; align-items:center; flex-wrap:wrap; gap:var(--space-1); margin-top:var(--space-1); }
-.todo-item-delete {
-  position:absolute; top:var(--space-1); right:var(--space-1);
-  display:inline-flex; align-items:center; justify-content:center;
-  width:22px; height:22px; border-radius:var(--radius-sm);
-  color:var(--color-text-faint); opacity:0;
-  transition: opacity var(--transition-interactive), color var(--transition-interactive), background var(--transition-interactive);
-}
-.todo-item:hover .todo-item-delete { opacity:1; }
-.todo-item-delete:hover { color:var(--color-error); background:var(--color-error-highlight); }
 
 /* ── TEMPLATES PAGE ── */
 .templates-page { padding-top:var(--topbar-h); min-height:100dvh; background:var(--color-bg); }
@@ -790,7 +690,6 @@ a,button,[role="button"],input,textarea,select {
 .subtask-add-btn:hover { background:var(--color-primary-highlight); color:var(--color-primary); border-color: oklch(from var(--color-primary) l c h / .3); }
 .subtask-add-btn:active { background:var(--color-surface-dynamic); }
 
-/* Edit button on template card */
 .tmpl-edit-btn {
   display:inline-flex; align-items:center; gap:var(--space-1);
   padding: var(--space-1) var(--space-3);
@@ -802,7 +701,6 @@ a,button,[role="button"],input,textarea,select {
 .tmpl-edit-btn:hover { background:var(--color-primary-highlight); color:var(--color-primary); border-color: oklch(from var(--color-primary) l c h / .3); }
 .tmpl-edit-btn:active { background:var(--color-surface-dynamic); }
 
-/* Modal actions footer */
 .modal-actions {
   display:flex; align-items:center; justify-content:space-between; gap:var(--space-2);
   padding: var(--space-4) var(--space-5);
@@ -819,3 +717,21 @@ a,button,[role="button"],input,textarea,select {
 .version-top-line { display:flex; align-items:center; gap:var(--space-2); }
 .version-bottom-line { display:block; margin-top:2px; }
 .version-msg { color:var(--color-text-muted); }
+
+/* ── WEEK NAV (in topbar) ── */
+.week-nav { display:flex; align-items:center; gap:var(--space-2); }
+.week-nav-btn {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:32px; height:32px; border-radius:var(--radius-md); color:var(--color-text-muted);
+  transition: background var(--transition-interactive), color var(--transition-interactive);
+}
+.week-nav-btn:hover { background:var(--color-surface-offset); color:var(--color-text); }
+.week-label { font-size:var(--text-sm); font-weight:600; color:var(--color-text); min-width:160px; text-align:center; }
+.today-btn {
+  padding: var(--space-1) var(--space-3);
+  border-radius:var(--radius-md); font-size:var(--text-xs); font-weight:600;
+  color:var(--color-primary); background:var(--color-primary-highlight);
+  border:1px solid oklch(from var(--color-primary) l c h / .25);
+  transition: background var(--transition-interactive), color var(--transition-interactive);
+}
+.today-btn:hover { background:var(--color-primary); color:var(--color-text-inverse); }
