@@ -105,6 +105,22 @@ window.addEventListener('resize', () => {
   _resizeTimer = setTimeout(() => renderBoard(currentTasks), 150);
 });
 
+// ── ResizeObserver: keep --board-header-h in sync with the rendered header ──────────────────
+let _headerObserver = null;
+
+function observeHeaderHeight(headerRow) {
+  if (_headerObserver) _headerObserver.disconnect();
+  _headerObserver = new ResizeObserver(entries => {
+    for (const entry of entries) {
+      const h = Math.ceil(entry.borderBoxSize
+        ? entry.borderBoxSize[0].blockSize
+        : entry.contentRect.height);
+      document.documentElement.style.setProperty('--board-header-h', `${h}px`);
+    }
+  });
+  _headerObserver.observe(headerRow);
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 // MOBILE BOARD
 // ══════════════════════════════════════════════════════════════════════════════
@@ -521,6 +537,9 @@ function renderDesktopBoard(tasks) {
     headerRow.appendChild(hdr);
   });
   board.appendChild(headerRow);
+
+  // ── Wire up ResizeObserver so --board-header-h always matches real height ──
+  observeHeaderHeight(headerRow);
 
   // ── Span row ──────────────────────────────────────────────────────────────
   const spanRow = document.createElement('div');
