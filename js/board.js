@@ -23,7 +23,7 @@ function isMobile() {
   return window.innerWidth < 768;
 }
 
-// ── Tooltip singleton (desktop only) ─────────────────────────────────────────────
+// ── Tooltip singleton (desktop only) ────────────────────────────────────────────────────────────────────
 const tooltip = document.createElement('div');
 tooltip.className = 'notes-tooltip';
 tooltip.setAttribute('role', 'tooltip');
@@ -65,7 +65,7 @@ function attachNoteTooltip(el, notes) {
   }
 }
 
-// ── Week / date helpers ─────────────────────────────────────────────────────
+// ── Week / date helpers ───────────────────────────────────────────────────────────────────
 
 export function getDays() {
   const today = new Date();
@@ -88,7 +88,7 @@ function getMobileDays() {
   });
 }
 
-// ── Main render entry point ────────────────────────────────────────────────
+// ── Main render entry point ──────────────────────────────────────────────────────────────────
 
 export function renderBoard(tasks) {
   currentTasks = tasks;
@@ -262,7 +262,7 @@ function renderMobileBoard(tasks) {
   attachMobileSwipe(board);
 }
 
-// ── Swipe handler ─────────────────────────────────────────────────────────────────
+// ── Swipe handler ─────────────────────────────────────────────────────────────────────────────────────
 let _swipeTouchStartX = 0;
 let _swipeTouchStartY = 0;
 let _swipeActive = false;
@@ -294,7 +294,7 @@ function attachMobileSwipe(el) {
   }, { passive: true });
 }
 
-// ── Mobile card builders ──────────────────────────────────────────────────────────────
+// ── Mobile card builders ────────────────────────────────────────────────────────────────────────────────────
 
 function buildMobileTaskCard(task) {
   const card = document.createElement('div');
@@ -420,7 +420,7 @@ function applyCheckToggle(task, card, checkBtn) {
   toggleComplete(task.id, nowCompleted);
 }
 
-// ── Mobile inline add ───────────────────────────────────────────────────────────────
+// ── Mobile inline add ────────────────────────────────────────────────────────────────────────────────────
 
 function showMobileInlineAdd(taskList, addArea, colKey, addBtn) {
   addBtn.style.display = 'none';
@@ -494,6 +494,7 @@ function renderDesktopBoard(tasks) {
 
   board.innerHTML = '';
 
+  // ── Header row ────────────────────────────────────────────────────────────
   const headerRow = document.createElement('div');
   headerRow.className = 'board-header-row';
 
@@ -521,39 +522,7 @@ function renderDesktopBoard(tasks) {
   });
   board.appendChild(headerRow);
 
-  const addRow = document.createElement('div');
-  addRow.className = 'board-add-row';
-  const addAreas = {};
-
-  allKeys.forEach((key, colIndex) => {
-    let isWeekend = false;
-    let isToday = false;
-    let dayName = 'no-date';
-    if (key !== 'no-date') {
-      const day = days[colIndex - 1];
-      const dayIdx = day.getDay();
-      isWeekend = dayIdx === 0 || dayIdx === 6;
-      isToday   = key === todayKey;
-      dayName   = DAYS[dayIdx].toLowerCase();
-    }
-    const cell = document.createElement('div');
-    cell.className = 'board-add-cell' +
-      (key === 'no-date' ? ' no-date' : '') +
-      (isWeekend ? ' is-weekend' : '') +
-      (isToday   ? ' is-today'   : '');
-    cell.dataset.col = dayName;
-    const addArea = document.createElement('div');
-    addArea.className = 'column-add';
-    const addBtn = document.createElement('button');
-    addBtn.className = 'add-task-btn';
-    addBtn.textContent = '+ Add task';
-    addArea.appendChild(addBtn);
-    cell.appendChild(addArea);
-    addRow.appendChild(cell);
-    addAreas[key] = { addArea, addBtn };
-  });
-  board.appendChild(addRow);
-
+  // ── Span row ──────────────────────────────────────────────────────────────
   const spanRow = document.createElement('div');
   spanRow.className = 'board-span-row';
 
@@ -588,6 +557,7 @@ function renderDesktopBoard(tasks) {
   });
   board.appendChild(spanRow);
 
+  // ── Body row (columns with tasks + inline add footer) ────────────────────
   const bodyRow = document.createElement('div');
   bodyRow.className = 'board-body-row';
 
@@ -618,15 +588,21 @@ function renderDesktopBoard(tasks) {
       body.appendChild(buildTaskCard(task));
     });
 
+    // Inline add footer — hidden until column is hovered
+    const addArea = document.createElement('div');
+    addArea.className = 'column-add';
+    const addBtn = document.createElement('button');
+    addBtn.className = 'add-task-btn';
+    addBtn.setAttribute('aria-label', 'Add task');
+    addBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add task`;
+    addArea.appendChild(addBtn);
+    col.appendChild(addArea);
+
+    addBtn.addEventListener('click', () => showInlineAdd(col, addArea, key, addBtn));
+
     bodyRow.appendChild(col);
   });
   board.appendChild(bodyRow);
-
-  allKeys.forEach(key => {
-    const { addArea, addBtn } = addAreas[key];
-    const col = bodyRow.querySelector(`[data-col-key="${key}"]`);
-    addBtn.addEventListener('click', () => showInlineAdd(col, addArea, key, addBtn));
-  });
 
   bindDragAndDrop(bodyRow);
 }
