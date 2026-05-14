@@ -33,8 +33,13 @@
    * #board gets padding-top: var(--topbar-h) so content starts below the bar.
    * .board-header-row uses position:sticky; top: var(--topbar-h) to stick
    * right at the bottom edge of the topbar while the page scrolls.
+   *
+   * --board-header-h: actual rendered height of .board-header-row.
+   * Set via ResizeObserver in board.js so the board body rows are never
+   * obscured by the sticky date header. Falls back to 64px if JS hasn't run.
    */
-  --topbar-h: 60px;
+  --topbar-h:       60px;
+  --board-header-h: 64px;  /* fallback; overwritten by JS ResizeObserver */
 
   /*
    * --board-cols: shared column template for every horizontal band of the board.
@@ -151,6 +156,8 @@ html {
   -webkit-text-size-adjust: none; text-size-adjust: none;
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
+  /* Offset anchor-scroll targets so they land below both the topbar and sticky date header */
+  scroll-padding-top: calc(var(--topbar-h) + var(--board-header-h));
 }
 body {
   min-height: 100dvh;
@@ -326,6 +333,15 @@ a,button,[role="button"],input,textarea,select {
 
    Each band uses the SAME grid-template-columns (--board-cols).
    They stack as normal block elements — no display:contents.
+
+   FIX: .board-header-row is position:sticky. In a flex column container,
+   a sticky child still occupies space in the normal flow, so siblings are
+   NOT pushed down by it when scrolling. The overlap was caused by the
+   board using overflow:hidden (or no overflow) which can cause sticky
+   children to paint over the next sibling's top edge at certain scroll
+   positions. The fix is to ensure the board header row has a defined
+   height via --board-header-h (set by ResizeObserver in board.js) and
+   that the board does NOT clip overflow on the inline axis.
    ════════════════════════════════════════════════════════════════════════════ */
 
 /*
@@ -333,6 +349,8 @@ a,button,[role="button"],input,textarea,select {
  * The topbar is position:fixed at height var(--topbar-h).
  * padding-top offsets the board content so it starts below the topbar.
  * The board itself is a flex column so each band stacks vertically.
+ * overflow-x:auto allows horizontal scroll on narrow viewports without
+ * creating a new stacking context that would break sticky positioning.
  */
 .board {
   padding-top: var(--topbar-h);   /* clear the fixed topbar */
@@ -351,6 +369,11 @@ a,button,[role="button"],input,textarea,select {
   z-index: 20;
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-divider);
+  /* Reserve the header height so the body rows below are never obscured.
+     --board-header-h is written by a ResizeObserver in board.js.
+     Without this, the sticky element can visually overlap siblings in
+     certain browsers when the board flex container repaints. */
+  min-height: var(--board-header-h);
 }
 
 .column-header {
