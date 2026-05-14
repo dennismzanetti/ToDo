@@ -18,6 +18,20 @@ const deleteBtn       = document.getElementById('delete-task-btn');
 const cancelBtn       = document.getElementById('modal-cancel');
 const closeBtn        = document.getElementById('modal-close');
 
+// ── Priority segmented buttons ────────────────────────────────────────────────
+const priorityBtns = document.querySelectorAll('.priority-btn[data-priority]');
+
+function setPriority(val) {
+  priorityInput.value = val;
+  priorityBtns.forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.priority === val);
+  });
+}
+
+priority Btns.forEach(btn => {
+  btn.addEventListener('click', () => setPriority(btn.dataset.priority));
+});
+
 // ── Body scroll lock ─────────────────────────────────────────────────────────
 let _bodyScrollTop = 0;
 function lockBodyScroll() {
@@ -44,8 +58,8 @@ function showDeleteConfirm() {
   row.style.cssText = 'display:flex;gap:8px;align-items:center;animation:fadeIn .15s ease';
   row.innerHTML = `
     <span style="font-size:var(--text-xs);color:var(--color-text-muted);white-space:nowrap">Delete this task?</span>
-    <button type="button" class="danger-btn" id="confirm-delete-yes" style="padding:.35rem .8rem;min-height:36px">Yes, delete</button>
-    <button type="button" class="secondary-btn" id="confirm-delete-no" style="padding:.35rem .8rem;min-height:36px">Cancel</button>
+    <button type="button" class="btn btn-danger" id="confirm-delete-yes" style="padding:.35rem .8rem;min-height:36px">Yes, delete</button>
+    <button type="button" class="btn btn-ghost" id="confirm-delete-no" style="padding:.35rem .8rem;min-height:36px">Cancel</button>
   `;
   deleteBtn.parentElement.appendChild(row);
   deleteBtn.style.display = 'none';
@@ -68,7 +82,7 @@ clearDueDateBtn.addEventListener('click', () => {
 });
 
 function syncClearBtn() {
-  clearDueDateBtn.style.display = dueDateInput.value ? 'flex' : 'none';
+  clearDueDateBtn.style.display = dueDateInput.value ? 'inline-flex' : 'none';
 }
 
 dueDateInput.addEventListener('change', syncClearBtn);
@@ -77,9 +91,7 @@ let notesInput = null;
 document.addEventListener('DOMContentLoaded', () => {
   notesInput = document.getElementById('edit-notes');
 });
-if (!notesInput) {
-  notesInput = document.getElementById('edit-notes');
-}
+if (!notesInput) notesInput = document.getElementById('edit-notes');
 
 let currentTask     = null;
 let pendingSubtasks = [];
@@ -103,12 +115,12 @@ export function openModal(task) {
   pendingSubtasks = JSON.parse(JSON.stringify(t.subtasks || []));
 
   titleInput.value    = t.title    || '';
-  priorityInput.value = t.priority || 'medium';
   doOnFromInput.value = tsToInputVal(t.doOnFrom);
   doOnToInput.value   = tsToInputVal(t.doOnTo || t.doOnFrom);
   dueDateInput.value  = tsToInputVal(t.dueDate);
   tagsInput.value     = (t.tags || []).join(', ');
 
+  setPriority(t.priority || 'medium');
   syncClearBtn();
 
   notesInput = document.getElementById('edit-notes');
@@ -116,11 +128,9 @@ export function openModal(task) {
 
   doOnFromInput.addEventListener('change', enforceSpanOrder, { once: false });
 
-  // Reset any lingering delete confirmation
   const confirmRow = overlay.querySelector('.delete-confirm-row');
   if (confirmRow) confirmRow.remove();
 
-  // Dynamic title + hide Delete for new tasks
   const modalTitle = document.getElementById('modal-title');
   if (modalTitle) modalTitle.textContent = task ? 'Edit Task' : 'New Task';
   deleteBtn.style.display = task ? '' : 'none';
@@ -130,9 +140,7 @@ export function openModal(task) {
   lockBodyScroll();
 
   requestAnimationFrame(() => {
-    if (window.matchMedia('(hover: hover)').matches) {
-      titleInput.focus();
-    }
+    if (window.matchMedia('(hover: hover)').matches) titleInput.focus();
   });
 }
 
@@ -186,6 +194,7 @@ function closeModal() {
   subtaskList.innerHTML = '';
   doOnToInput.min = '';
   syncClearBtn();
+  setPriority('medium');
 }
 
 cancelBtn.addEventListener('click', closeModal);
