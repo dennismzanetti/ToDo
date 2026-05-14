@@ -28,13 +28,13 @@
   --radius-full: 9999px;
   --transition-interactive: 180ms cubic-bezier(.16,1,.3,1);
 
-  /* Topbar & subbar heights */
+  /* Topbar height — week nav lives inside the topbar, so subbar-h is 0 */
   --topbar-h:  60px;
-  --subbar-h:  49px; /* board-header (week nav) height */
+  --subbar-h:  0px;
   --footer-h:  28px;
 
-  /* Offsets for sticky children */
-  --sticky-col-header-top: calc(var(--topbar-h) + var(--subbar-h));
+  /* Sticky column headers sit directly below the topbar */
+  --sticky-col-header-top: var(--topbar-h);
 
   /* Safe area insets (for iPhone notch / Dynamic Island) */
   --safe-top:    env(safe-area-inset-top,    0px);
@@ -332,10 +332,11 @@ a,button,[role="button"],input,textarea,select {
 
 /*
   Stack (top → bottom):
-    1. .topbar          — fixed, z:100,  height: --topbar-h (60px)
-    2. .board-header    — sticky below topbar, z:50, height: ~--subbar-h (49px)
-    3. .column-header   — sticky below both, z:20
-    4. .board (grid)    — normal flow, no padding-top
+    1. .topbar        — fixed, z:100, height: --topbar-h (60px)
+                        Week nav is INSIDE the topbar — no separate subbar.
+    2. .board-view    — padding-top: --topbar-h so content starts below fixed bar
+    3. .column-header — sticky at top: --topbar-h (= --sticky-col-header-top)
+    4. .board (grid)  — normal flow
 */
 
 .board-view {
@@ -343,18 +344,15 @@ a,button,[role="button"],input,textarea,select {
   min-height: 100dvh;
 }
 
-/* Week-nav subbar — sticky just below the topbar */
+/* .board-header is kept for any legacy markup but is visually zero-height */
 .board-header {
   display: flex;
   align-items: center;
   gap: var(--space-4);
   padding: 0 var(--space-5);
-  height: var(--subbar-h);
+  height: var(--subbar-h); /* 0px — week nav is in topbar */
   background: var(--color-surface);
-  border-bottom: 1px solid var(--color-divider);
-  position: sticky;
-  top: var(--topbar-h);
-  z-index: 50;
+  overflow: hidden;
 }
 .week-nav { display:flex; align-items:center; gap:var(--space-2); }
 .week-nav-btn {
@@ -374,22 +372,16 @@ a,button,[role="button"],input,textarea,select {
 .today-btn:hover { background:var(--color-primary); color:var(--color-text-inverse); }
 
 /* ── DESKTOP BOARD GRID ── */
-/*
-  .board is the CSS grid host.
-  It sits in normal document flow directly after .board-header.
-  No padding-top needed — the subbar handles its own height.
-*/
 .board {
   display: grid;
   grid-template-columns: 160px repeat(7, 1fr);
-  /* rows: column-headers | span-tasks | body columns */
   grid-template-rows: auto auto 1fr;
-  min-height: calc(100dvh - var(--topbar-h) - var(--subbar-h));
+  min-height: calc(100dvh - var(--topbar-h));
 }
 
 /* Header row — sticky day names + dates */
 .board-header-row {
-  display: contents; /* children participate in parent grid */
+  display: contents;
 }
 .column-header {
   padding: var(--space-3) var(--space-3) var(--space-2);
@@ -397,8 +389,7 @@ a,button,[role="button"],input,textarea,select {
   border-bottom: 1px solid var(--color-divider);
   border-right: 1px solid var(--color-divider);
   position: sticky;
-  /* Stick below topbar + board-header (subbar) */
-  top: var(--sticky-col-header-top);
+  top: var(--sticky-col-header-top); /* = --topbar-h = 60px */
   z-index: 20;
 }
 .column-header:last-child { border-right: none; }
