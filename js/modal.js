@@ -28,7 +28,7 @@ function setPriority(val) {
   });
 }
 
-priority Btns.forEach(btn => {
+priorityBtns.forEach(btn => {
   btn.addEventListener('click', () => setPriority(btn.dataset.priority));
 });
 
