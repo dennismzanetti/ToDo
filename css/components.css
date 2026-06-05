@@ -1,7 +1,7 @@
 /* =============================================================================
    COMPONENTS.CSS — All UI components: modals, forms, buttons, task cards,
    badges, tooltips, inline-add, templates, priority selector, tag input,
-   subtasks, date picker, apply panel, build footer
+   subtasks, date picker, apply panel, build footer, tasks page
    Imported by styles.css
    ============================================================================= */
 
@@ -452,3 +452,143 @@
   opacity: .95;
 }
 .build-sha:hover { text-decoration: underline; opacity: 1; }
+
+/* ── TASKS PAGE ───────────────────────────────────────────────────────────── */
+.tasks-page {
+  max-width: var(--content-default);
+  margin-inline: auto;
+  padding: var(--space-8) var(--space-6) var(--space-16);
+}
+.tasks-page-header {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+.tasks-page-title {
+  font-family: var(--font-display); font-size: var(--text-xl); font-weight: 800;
+  letter-spacing: -.03em; color: var(--color-text);
+}
+.tasks-page-subtitle {
+  font-size: var(--text-sm); color: var(--color-text-muted); margin-top: var(--space-1);
+}
+
+/* Filter bar */
+.tasks-filter-bar {
+  display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+.tasks-search-wrap {
+  flex: 1; min-width: 180px;
+  position: relative; display: flex; align-items: center;
+}
+.tasks-search-icon {
+  position: absolute; left: var(--space-3);
+  color: var(--color-text-faint); pointer-events: none;
+  display: inline-flex; align-items: center;
+}
+.tasks-search-input {
+  width: 100%; padding: var(--space-2) var(--space-3) var(--space-2) calc(var(--space-3) + 20px);
+  background: var(--color-surface-2); border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); font-size: var(--text-sm); color: var(--color-text);
+  transition: border-color var(--transition-interactive), box-shadow var(--transition-interactive);
+}
+.tasks-search-input::placeholder { color: var(--color-text-faint); }
+.tasks-search-input:focus {
+  outline: none; border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px oklch(from var(--color-primary) l c h / .15);
+}
+.tasks-filter-divider {
+  width: 1px; height: 24px;
+  background: var(--color-divider); flex-shrink: 0;
+}
+.tasks-filter-group {
+  display: flex; align-items: center; gap: var(--space-1);
+}
+.tasks-filter-btn {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600;
+  color: var(--color-text-muted);
+  border: 1.5px solid transparent;
+  transition: background var(--transition-interactive), color var(--transition-interactive),
+              border-color var(--transition-interactive);
+}
+.tasks-filter-btn:hover { background: var(--color-surface-offset); color: var(--color-text); }
+.tasks-filter-btn.active {
+  background: var(--color-primary-highlight); color: var(--color-primary);
+  border-color: oklch(from var(--color-primary) l c h / .25);
+}
+.tasks-filter-btn.active[data-priority="high"]   { background: oklch(from var(--priority-high-color)   .95 .03 h); color: var(--priority-high-color);   border-color: oklch(from var(--priority-high-color)   l c h / .3); }
+.tasks-filter-btn.active[data-priority="medium"] { background: oklch(from var(--priority-medium-color) .95 .03 h); color: var(--priority-medium-color); border-color: oklch(from var(--priority-medium-color) l c h / .3); }
+.tasks-filter-btn.active[data-priority="low"]    { background: oklch(from var(--priority-low-color)    .95 .03 h); color: var(--priority-low-color);    border-color: oklch(from var(--priority-low-color)    l c h / .3); }
+[data-theme="dark"] .tasks-filter-btn.active[data-priority="high"]   { background: oklch(from var(--priority-high-color)   .15 .07 h); }
+[data-theme="dark"] .tasks-filter-btn.active[data-priority="medium"] { background: oklch(from var(--priority-medium-color) .15 .07 h); }
+[data-theme="dark"] .tasks-filter-btn.active[data-priority="low"]    { background: oklch(from var(--priority-low-color)    .15 .07 h); }
+
+/* Task list */
+.tasks-list {
+  display: flex; flex-direction: column;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-surface);
+}
+.tasks-list-row {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-divider);
+  cursor: pointer; position: relative;
+  transition: background var(--transition-interactive);
+}
+.tasks-list-row:last-child { border-bottom: none; }
+.tasks-list-row:hover { background: var(--color-surface-offset); }
+.tasks-list-row.completed { opacity: .55; }
+.tasks-list-row.completed .tasks-row-title { text-decoration: line-through; color: var(--color-text-muted); }
+
+.tasks-row-check { flex-shrink: 0; }
+.tasks-row-body  { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-1); }
+.tasks-row-title {
+  font-size: var(--text-sm); font-weight: 500; color: var(--color-text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.tasks-row-meta {
+  display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-1);
+}
+.tasks-row-actions { flex-shrink: 0; }
+
+/* tasks-list delete button — same look as task-card but always positioned inline */
+.tasks-list-row .task-delete-btn {
+  position: static;
+  opacity: 0;
+  flex-shrink: 0;
+}
+.tasks-list-row:hover .task-delete-btn { opacity: 1; }
+@media (hover: none) {
+  .tasks-list-row .task-delete-btn { opacity: .4; }
+}
+
+/* Tasks count badge */
+.tasks-count-badge {
+  display: inline-flex; align-items: center;
+  padding: 2px var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs); font-weight: 700;
+  background: var(--color-surface-offset); color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+
+/* Tasks empty state */
+.tasks-empty {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; padding: var(--space-16) var(--space-8);
+  color: var(--color-text-muted); gap: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+.tasks-empty svg { color: var(--color-text-faint); }
+.tasks-empty h3 { font-size: var(--text-lg); font-weight: 700; color: var(--color-text); }
+.tasks-empty p  { max-width: 36ch; font-size: var(--text-sm); }
