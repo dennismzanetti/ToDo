@@ -716,7 +716,8 @@ function buildTaskCard(task) {
     toggleComplete(task.id, !task.completed);
   });
 
-  // Move delete button into .task-top as a flex item so it is never clipped
+  // Move delete button into .task-top as a flex item so it's always
+  // visible on hover and never clipped by the card boundary.
   card.querySelector('.task-top').appendChild(buildDeleteBtn(task, card));
 
   card.addEventListener('click', e => {

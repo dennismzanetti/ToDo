@@ -105,7 +105,9 @@
 .task-card.priority-medium { border-left: 3px solid var(--priority-medium-color); }
 .task-card.priority-low    { border-left: 3px solid var(--priority-low-color); }
 
-.task-top { display: flex; align-items: flex-start; gap: var(--space-2); }
+.task-top {
+  display: flex; align-items: flex-start; gap: var(--space-2);
+}
 .task-check {
   flex-shrink: 0; width: 16px; height: 16px; margin-top: 2px;
   border: 1.5px solid var(--color-border); border-radius: var(--radius-sm);
@@ -142,9 +144,16 @@
 .desktop-meta-icon { display: inline-flex; align-items: center; color: var(--color-text-faint); }
 
 /* ── TASK CARD DELETE BUTTON ──────────────────────────────────────────────── */
+/*
+ * The delete button lives inside .task-top as a flex item (position: static).
+ * margin-left: auto pushes it to the far right of the row, after the title
+ * and notes icon, so it is never clipped by the card boundary.
+ */
 .task-delete-btn {
-  position: absolute; top: var(--space-2); right: var(--space-2);
-  width: 24px; height: 24px;
+  position: static;
+  flex-shrink: 0;
+  margin-left: auto;
+  width: 20px; height: 20px;
   display: inline-flex; align-items: center; justify-content: center;
   border-radius: var(--radius-sm);
   color: var(--color-text-faint);
