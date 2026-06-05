@@ -202,6 +202,7 @@
 /* ── SPAN CARD ────────────────────────────────────────────────────────────── */
 .span-card {
   align-self: center;
+  position: relative; /* anchors the absolutely-positioned delete button */
   margin: var(--space-1);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-md);
