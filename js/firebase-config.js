@@ -1,3 +1,10 @@
+/**
+ * firebase-config.js
+ * ------------------
+ * Raw Firebase project configuration object.
+ * Contains only the config values — no SDK initialization.
+ * Imported by firebase.js which performs the actual app initialization.
+ */
 export const firebaseConfig = {
   apiKey: 'AIzaSyBdPdFb-0hdzPZmIw_9nqshNqWg9PCMm2s',
   authDomain: 'todo-cbf89.firebaseapp.com',
