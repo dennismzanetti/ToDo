@@ -716,7 +716,8 @@ function buildTaskCard(task) {
     toggleComplete(task.id, !task.completed);
   });
 
-  card.appendChild(buildDeleteBtn(task, card));
+  // Move delete button into .task-top as a flex item so it is never clipped
+  card.querySelector('.task-top').appendChild(buildDeleteBtn(task, card));
 
   card.addEventListener('click', e => {
     if (e.target.closest('.task-delete-btn')) return;
