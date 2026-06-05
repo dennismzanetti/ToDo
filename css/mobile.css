@@ -511,7 +511,7 @@
     background: linear-gradient(180deg, var(--color-surface-2), var(--color-surface));
     box-shadow: var(--shadow-sm);
     transition: transform var(--transition-interactive), box-shadow var(--transition-interactive), background var(--transition-interactive), border-color var(--transition-interactive), opacity var(--transition-interactive);
-    overflow: hidden;
+    /* overflow:hidden removed — was clipping the delete confirm overlay */
     user-select: none;
     -webkit-tap-highlight-color: transparent;
   }
@@ -523,6 +523,7 @@
     width: 4px;
     background: var(--color-surface-dynamic);
     opacity: .95;
+    border-radius: var(--radius-xl) 0 0 var(--radius-xl);
   }
 
   .mobile-task-card.priority-high::before   { background: #dc2626; }
@@ -655,19 +656,53 @@
     color: var(--color-primary);
   }
 
+  /* ── Mobile card right column: arrow + delete button stacked ── */
+  .mobile-card-right {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-1);
+    padding: var(--space-1) 0;
+  }
+
   .mobile-card-arrow {
-    flex: 0 0 20px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--color-text-faint);
-    align-self: center;
   }
 
   .mobile-card-arrow svg {
     width: 16px;
     height: 16px;
     stroke-width: 2.4;
+  }
+
+  /* ── Delete button on mobile cards: always visible, sized for touch ── */
+  .mobile-task-card .task-delete-btn {
+    position: static;
+    width: 32px;
+    height: 32px;
+    opacity: 0.45;
+    border-radius: var(--radius-md);
+    color: var(--color-text-faint);
+    flex-shrink: 0;
+  }
+
+  .mobile-task-card .task-delete-btn:active {
+    opacity: 1;
+    color: var(--color-error);
+    background: var(--color-error-highlight);
+  }
+
+  /* ── Delete confirm overlay on mobile cards ── */
+  .mobile-task-card .task-delete-confirm {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-xl);
+    z-index: 10;
   }
 
   .mobile-span-card {
