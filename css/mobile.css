@@ -19,10 +19,10 @@
 /* ── Bottom navigation bar on mobile ───────────────────────────────────────────────── */
 @media (max-width: 479px) {
 
-  /* ── Tab bar sits above the version strip ── */
+  /* ── Tab bar sits above the build footer ── */
   .main-nav {
     position: fixed;
-    bottom: calc(44px + var(--safe-bottom)); /* lifted above the taller version strip */
+    bottom: calc(28px + var(--safe-bottom)); /* lifted above the build footer */
     left: 0; right: 0;
     z-index: 60;
     height: 56px;
@@ -96,92 +96,35 @@
 
   /*
    * All views get bottom padding to clear:
-   *   56px tab bar + 44px version strip + safe-bottom
+   *   56px tab bar + 28px build footer + safe-bottom
    */
   .view.active,
   #board.view.active,
   .board--mobile {
-    padding-bottom: calc(56px + 44px + var(--safe-bottom) + var(--space-4));
+    padding-bottom: calc(56px + 28px + var(--safe-bottom) + var(--space-4));
   }
 
-  /* ── Version footer: taller strip below the tab bar, readable stacked layout ── */
-  .version-footer {
+  /* ── Build footer on mobile: compact strip, same primary background ── */
+  .build-footer {
     position: fixed;
     bottom: 0;
     left: 0; right: 0;
     z-index: 59;
-    min-height: calc(44px + var(--safe-bottom));
+    height: calc(28px + var(--safe-bottom));
     padding-bottom: var(--safe-bottom);
-    padding-top: var(--space-2);
-    padding-inline: var(--space-4);
+    padding-top: 0;
+    padding-inline: var(--space-3);
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--color-surface);
-    border-top: 1px solid var(--color-divider);
-    pointer-events: none;
-  }
-
-  .version-footer .version-badge,
-  .version-footer a {
-    pointer-events: auto;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 10px;
   }
 
   .templates-view {
-    padding-bottom: calc(56px + 44px + var(--safe-bottom) + var(--space-4));
-  }
-
-  .version-badge {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    pointer-events: auto;
-    text-align: center;
-    width: 100%;
-  }
-
-  .version-top-line {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--color-text-muted);
-    white-space: nowrap;
-    overflow: hidden;
-    max-width: 100%;
-  }
-
-  .version-bottom-line {
-    font-size: 10px;
-    color: var(--color-text-faint);
-    font-weight: 400;
-  }
-
-  .version-sha {
-    font-family: var(--font-body);
-    font-weight: 700;
-    font-size: 11px;
-    color: var(--color-primary);
-    flex-shrink: 0;
-  }
-
-  .version-msg {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    flex: 1;
-    min-width: 0;
-    color: var(--color-text-muted);
-    font-size: 11px;
-  }
-
-  .version-sep,
-  .version-info-wrap,
-  .version-info-btn,
-  .version-msg-popover {
-    display: none !important;
+    padding-bottom: calc(56px + 28px + var(--safe-bottom) + var(--space-4));
   }
 }
 
@@ -602,7 +545,6 @@
     align-items: flex-start;
     justify-content: center;
     padding-top: 2px;
-    /* Prevent card-level click from firing when the check area is tapped */
     isolation: isolate;
   }
 
@@ -611,10 +553,8 @@
     width: 30px;
     height: 30px;
     margin-top: 6px;
-    /* Visible unchecked border */
     border: 2px solid var(--color-border);
     border-radius: var(--radius-md);
-    /* Solid contrasting background so the box is always visible */
     background: var(--color-surface-2);
     flex-shrink: 0;
     display: inline-flex;
@@ -640,7 +580,6 @@
     transform: rotate(-45deg) translate(1px, -2px);
   }
 
-  /* Hover/focus border accent (non-touch devices that also have mobile width) */
   .mobile-task-card .task-check:not(.checked):hover {
     border-color: var(--color-primary);
     background: var(--color-primary-highlight);
