@@ -1,5 +1,5 @@
 import { toDateKey, dateKeyToDate, taskDisplayKeys } from './models.js';
-import { addTask, toggleComplete, reorderTask } from './store.js';
+import { addTask, toggleComplete, reorderTask, deleteTask } from './store.js';
 import { openModal } from './modal.js';
 import { Timestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
@@ -16,14 +16,15 @@ const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov
 const ICONS = {
   chevronRight: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>`,
   calendar: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
-  note: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`
+  note: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
+  trash: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`
 };
 
 function isMobile() {
   return window.innerWidth < 768;
 }
 
-// ── Tooltip singleton (desktop only) ────────────────────────────────────────────────────────────────────
+// ── Tooltip singleton (desktop only) ─────────────────────────────────────────
 const tooltip = document.createElement('div');
 tooltip.className = 'notes-tooltip';
 tooltip.setAttribute('role', 'tooltip');
@@ -65,7 +66,43 @@ function attachNoteTooltip(el, notes) {
   }
 }
 
-// ── Week / date helpers ───────────────────────────────────────────────────────────────────
+// ── Delete button helper ──────────────────────────────────────────────────────
+function buildDeleteBtn(task, card) {
+  const btn = document.createElement('button');
+  btn.className = 'task-delete-btn';
+  btn.setAttribute('aria-label', 'Delete task');
+  btn.innerHTML = ICONS.trash;
+
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    // Show inline mini-confirm on the card
+    if (card.querySelector('.task-delete-confirm')) return;
+    const confirm = document.createElement('div');
+    confirm.className = 'task-delete-confirm';
+    confirm.innerHTML = `
+      <span>Delete?</span>
+      <button class="task-delete-yes" aria-label="Confirm delete">Yes</button>
+      <button class="task-delete-no" aria-label="Cancel delete">No</button>`;
+    card.appendChild(confirm);
+    btn.style.display = 'none';
+
+    confirm.querySelector('.task-delete-yes').addEventListener('click', async ev => {
+      ev.stopPropagation();
+      card.style.opacity = '0';
+      card.style.transform = 'scale(.95)';
+      card.style.transition = 'opacity 180ms ease, transform 180ms ease';
+      setTimeout(() => deleteTask(task.id), 160);
+    });
+    confirm.querySelector('.task-delete-no').addEventListener('click', ev => {
+      ev.stopPropagation();
+      confirm.remove();
+      btn.style.display = '';
+    });
+  });
+  return btn;
+}
+
+// ── Week / date helpers ───────────────────────────────────────────────────────
 
 export function getDays() {
   const today = new Date();
@@ -88,7 +125,7 @@ function getMobileDays() {
   });
 }
 
-// ── Main render entry point ──────────────────────────────────────────────────────────────────
+// ── Main render entry point ───────────────────────────────────────────────────
 
 export function renderBoard(tasks) {
   currentTasks = tasks;
@@ -105,7 +142,7 @@ window.addEventListener('resize', () => {
   _resizeTimer = setTimeout(() => renderBoard(currentTasks), 150);
 });
 
-// ── ResizeObserver: keep --board-header-h in sync with the rendered header ──────────────────
+// ── ResizeObserver: keep --board-header-h in sync ────────────────────────────
 let _headerObserver = null;
 
 function observeHeaderHeight(headerRow) {
@@ -278,7 +315,7 @@ function renderMobileBoard(tasks) {
   attachMobileSwipe(board);
 }
 
-// ── Swipe handler ─────────────────────────────────────────────────────────────────────────────────────
+// ── Swipe handler ─────────────────────────────────────────────────────────────
 let _swipeTouchStartX = 0;
 let _swipeTouchStartY = 0;
 let _swipeActive = false;
@@ -310,7 +347,7 @@ function attachMobileSwipe(el) {
   }, { passive: true });
 }
 
-// ── Mobile card builders ────────────────────────────────────────────────────────────────────────────────────
+// ── Mobile card builders ──────────────────────────────────────────────────────
 
 function buildMobileTaskCard(task) {
   const card = document.createElement('div');
@@ -346,8 +383,8 @@ function buildMobileTaskCard(task) {
         ${tagsHtml}${dueDateHtml}${progressHtml}
       </div>
     </div>
-    <div class="mobile-card-arrow" aria-hidden="true">
-      ${ICONS.chevronRight}
+    <div class="mobile-card-right">
+      <div class="mobile-card-arrow" aria-hidden="true">${ICONS.chevronRight}</div>
     </div>`;
 
   const checkBtn = card.querySelector('[data-check]');
@@ -366,8 +403,14 @@ function buildMobileTaskCard(task) {
     applyCheckToggle(task, card, checkBtn);
   });
 
+  // Append trash button into mobile-card-right
+  const rightEl = card.querySelector('.mobile-card-right');
+  rightEl.appendChild(buildDeleteBtn(task, card));
+
   card.addEventListener('click', e => {
     if (e.target.closest('.mobile-card-left')) return;
+    if (e.target.closest('.task-delete-btn')) return;
+    if (e.target.closest('.task-delete-confirm')) return;
     openModal(task);
   });
   return card;
@@ -398,8 +441,8 @@ function buildMobileSpanCard(task) {
         <span class="span-days-badge">${spanDays}d</span>
       </div>
     </div>
-    <div class="mobile-card-arrow" aria-hidden="true">
-      ${ICONS.chevronRight}
+    <div class="mobile-card-right">
+      <div class="mobile-card-arrow" aria-hidden="true">${ICONS.chevronRight}</div>
     </div>`;
 
   const checkBtn = card.querySelector('[data-check]');
@@ -418,8 +461,13 @@ function buildMobileSpanCard(task) {
     applyCheckToggle(task, card, checkBtn);
   });
 
+  const rightEl = card.querySelector('.mobile-card-right');
+  rightEl.appendChild(buildDeleteBtn(task, card));
+
   card.addEventListener('click', e => {
     if (e.target.closest('.mobile-card-left')) return;
+    if (e.target.closest('.task-delete-btn')) return;
+    if (e.target.closest('.task-delete-confirm')) return;
     openModal(task);
   });
   return card;
@@ -436,7 +484,7 @@ function applyCheckToggle(task, card, checkBtn) {
   toggleComplete(task.id, nowCompleted);
 }
 
-// ── Mobile inline add ────────────────────────────────────────────────────────────────────────────────────
+// ── Mobile inline add ─────────────────────────────────────────────────────────
 
 function showMobileInlineAdd(taskList, addArea, colKey, addBtn) {
   addBtn.style.display = 'none';
@@ -445,7 +493,7 @@ function showMobileInlineAdd(taskList, addArea, colKey, addBtn) {
   const input = document.createElement('input');
   input.type = 'text';
   input.className = 'mobile-inline-add-input';
-  input.placeholder = 'Task title…';
+  input.placeholder = 'Task title\u2026';
   input.style.fontSize = '16px';
   const confirmBtn = document.createElement('button');
   confirmBtn.type = 'button';
@@ -490,7 +538,7 @@ function renderDesktopBoard(tasks) {
   const allKeys  = ['no-date', ...dayKeys];
 
   weekLabel.textContent =
-    `${MONTHS[days[0].getMonth()]} ${days[0].getDate()} – ` +
+    `${MONTHS[days[0].getMonth()]} ${days[0].getDate()} \u2013 ` +
     `${MONTHS[days[6].getMonth()]} ${days[6].getDate()}, ${days[6].getFullYear()}`;
 
   const spanTasks   = [];
@@ -510,14 +558,14 @@ function renderDesktopBoard(tasks) {
 
   board.innerHTML = '';
 
-  // ── Header row ────────────────────────────────────────────────────────────
+  // ── Header row ───────────────────────────────────────────────────────────
   const headerRow = document.createElement('div');
   headerRow.className = 'board-header-row';
 
   const noDateHdr = document.createElement('div');
   noDateHdr.className = 'column-header no-date-header';
   noDateHdr.dataset.col = 'no-date';
-  noDateHdr.innerHTML = `<div class="col-day">No Date</div><div class="col-date">—</div>`;
+  noDateHdr.innerHTML = `<div class="col-day">No Date</div><div class="col-date">\u2014</div>`;
   headerRow.appendChild(noDateHdr);
 
   days.forEach(day => {
@@ -538,10 +586,9 @@ function renderDesktopBoard(tasks) {
   });
   board.appendChild(headerRow);
 
-  // ── Wire up ResizeObserver so --board-header-h always matches real height ──
   observeHeaderHeight(headerRow);
 
-  // ── Span row ──────────────────────────────────────────────────────────────
+  // ── Span row ─────────────────────────────────────────────────────────────
   const spanRow = document.createElement('div');
   spanRow.className = 'board-span-row';
 
@@ -576,7 +623,7 @@ function renderDesktopBoard(tasks) {
   });
   board.appendChild(spanRow);
 
-  // ── Body row (columns with tasks + inline add footer) ────────────────────
+  // ── Body row ─────────────────────────────────────────────────────────────
   const bodyRow = document.createElement('div');
   bodyRow.className = 'board-body-row';
 
@@ -607,7 +654,6 @@ function renderDesktopBoard(tasks) {
       body.appendChild(buildTaskCard(task));
     });
 
-    // Inline add footer — hidden until column is hovered
     const addArea = document.createElement('div');
     addArea.className = 'column-add';
     const addBtn = document.createElement('button');
@@ -669,7 +715,14 @@ function buildTaskCard(task) {
     e.stopPropagation();
     toggleComplete(task.id, !task.completed);
   });
-  card.addEventListener('click', () => openModal(task));
+
+  card.appendChild(buildDeleteBtn(task, card));
+
+  card.addEventListener('click', e => {
+    if (e.target.closest('.task-delete-btn')) return;
+    if (e.target.closest('.task-delete-confirm')) return;
+    openModal(task);
+  });
   attachNoteTooltip(card, task.notes);
   return card;
 }
@@ -705,7 +758,14 @@ function buildSpanCard(task, spanDays) {
     e.stopPropagation();
     toggleComplete(task.id, !task.completed);
   });
-  card.addEventListener('click', () => openModal(task));
+
+  card.appendChild(buildDeleteBtn(task, card));
+
+  card.addEventListener('click', e => {
+    if (e.target.closest('.task-delete-btn')) return;
+    if (e.target.closest('.task-delete-confirm')) return;
+    openModal(task);
+  });
   attachNoteTooltip(card, task.notes);
   return card;
 }
@@ -722,7 +782,7 @@ function showInlineAdd(col, addArea, colKey, addBtn) {
   const confirmBtn = document.createElement('button');
   confirmBtn.type = 'button';
   confirmBtn.className = 'inline-confirm-btn';
-  confirmBtn.textContent = '↵';
+  confirmBtn.textContent = '\u21B5';
   form.appendChild(input);
   form.appendChild(confirmBtn);
   addArea.insertBefore(form, addBtn);
