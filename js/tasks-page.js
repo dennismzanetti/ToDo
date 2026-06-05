@@ -5,7 +5,7 @@
  * those are unscheduled tasks that don't belong to any board day.
  * Subscribes to the shared store and renders tasks grouped by priority.
  */
-import { initStore, subscribe, toggleComplete } from './store.js';
+import { initStore, subscribe, toggleComplete, deleteTask } from './store.js';
 import { openModal } from './modal.js';
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
@@ -60,6 +60,10 @@ const PRIORITY_ORDER  = { high: 0, medium: 1, low: 2 };
 const PRIORITY_LABELS = { high: 'High', medium: 'Medium', low: 'Low' };
 const GROUPS          = ['high', 'medium', 'low'];
 
+// ── SVG icons ──────────────────────────────────────────────────────────────────
+const ICON_EDIT = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+const ICON_TRASH = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
+
 // ── Filter bar ─────────────────────────────────────────────────────────────────
 document.querySelectorAll('.tasks-filter-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -73,6 +77,36 @@ document.querySelectorAll('.tasks-filter-btn').forEach(btn => {
 
 // ── Add Task button ────────────────────────────────────────────────────────────
 document.getElementById('header-add-btn')?.addEventListener('click', () => openModal(null));
+
+// ── Delete with inline confirm ─────────────────────────────────────────────────
+function showDeleteConfirm(row, taskId) {
+  // Prevent opening two confirms on the same row
+  if (row.querySelector('.tasks-row-delete-confirm')) return;
+
+  const confirm = document.createElement('div');
+  confirm.className = 'tasks-row-delete-confirm';
+  confirm.innerHTML = `
+    <span>Delete this task?</span>
+    <button class="tasks-row-delete-yes" aria-label="Confirm delete">Delete</button>
+    <button class="tasks-row-delete-no"  aria-label="Cancel delete">Cancel</button>`;
+
+  // Prevent row click while confirm is visible
+  confirm.addEventListener('click', e => e.stopPropagation());
+
+  confirm.querySelector('.tasks-row-delete-yes').addEventListener('click', async e => {
+    e.stopPropagation();
+    row.style.opacity = '0.4';
+    row.style.pointerEvents = 'none';
+    await deleteTask(taskId);
+  });
+
+  confirm.querySelector('.tasks-row-delete-no').addEventListener('click', e => {
+    e.stopPropagation();
+    confirm.remove();
+  });
+
+  row.appendChild(confirm);
+}
 
 // ── Render ─────────────────────────────────────────────────────────────────────
 function render() {
@@ -168,12 +202,28 @@ function render() {
             </span>` : ''}
           ${totalSubs ? `<span class="subtask-progress${doneCount === totalSubs ? ' done' : ''}">${doneCount}/${totalSubs}</span>` : ''}
           ${tagsHtml}
+        </span>
+        <span class="tasks-row-actions">
+          <button class="tasks-row-edit-btn"  aria-label="Edit task">${ICON_EDIT}</button>
+          <button class="tasks-row-delete-btn" aria-label="Delete task">${ICON_TRASH}</button>
         </span>`;
 
       // Checkbox: toggle complete without opening modal
       row.querySelector('.task-check').addEventListener('click', async e => {
         e.stopPropagation();
         await toggleComplete(task.id, !task.completed);
+      });
+
+      // Edit button: open modal
+      row.querySelector('.tasks-row-edit-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        openModal(task);
+      });
+
+      // Delete button: show inline confirm
+      row.querySelector('.tasks-row-delete-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        showDeleteConfirm(row, task.id);
       });
 
       // Row click: open edit modal

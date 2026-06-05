@@ -371,6 +371,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   cursor: pointer;
+  position: relative;
   transition: box-shadow var(--transition-interactive),
               border-color var(--transition-interactive),
               background var(--transition-interactive);
@@ -421,6 +422,89 @@
   color: var(--color-primary);
   white-space: nowrap;
 }
+
+/* ── Row actions (edit + delete) ─────────────────────────────────────────────── */
+.tasks-row-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity var(--transition-interactive);
+}
+.tasks-row:hover .tasks-row-actions {
+  opacity: 1;
+}
+.tasks-row-edit-btn,
+.tasks-row-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-faint);
+  transition: color var(--transition-interactive),
+              background var(--transition-interactive),
+              transform var(--transition-interactive);
+}
+.tasks-row-edit-btn:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-highlight);
+}
+.tasks-row-edit-btn:active { transform: scale(.92); }
+.tasks-row-delete-btn:hover {
+  color: var(--color-error);
+  background: var(--color-error-highlight);
+}
+.tasks-row-delete-btn:active { transform: scale(.92); }
+
+/* Touch devices: always show at reduced opacity */
+@media (hover: none) {
+  .tasks-row-actions { opacity: .45; }
+}
+
+/* ── Row inline delete confirm ───────────────────────────────────────────────── */
+.tasks-row-delete-confirm {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-4);
+  z-index: 2;
+  animation: fadeIn .12s ease;
+}
+.tasks-row-delete-confirm span {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  flex: 1;
+}
+.tasks-row-delete-yes {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  background: var(--color-error);
+  color: #fff;
+  transition: background var(--transition-interactive), transform var(--transition-interactive);
+}
+.tasks-row-delete-yes:hover  { background: var(--color-error-hover); }
+.tasks-row-delete-yes:active { transform: scale(.95); }
+.tasks-row-delete-no {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  transition: background var(--transition-interactive), color var(--transition-interactive);
+}
+.tasks-row-delete-no:hover { background: var(--color-surface-offset); color: var(--color-text); }
 
 /* ── Empty state ─────────────────────────────────────────────────────────────── */
 .tasks-empty {
