@@ -493,7 +493,7 @@ function showMobileInlineAdd(taskList, addArea, colKey, addBtn) {
   const input = document.createElement('input');
   input.type = 'text';
   input.className = 'mobile-inline-add-input';
-  input.placeholder = 'Task title\u2026';
+  input.placeholder = 'Task title…';
   input.style.fontSize = '16px';
   const confirmBtn = document.createElement('button');
   confirmBtn.type = 'button';
@@ -538,7 +538,7 @@ function renderDesktopBoard(tasks) {
   const allKeys  = ['no-date', ...dayKeys];
 
   weekLabel.textContent =
-    `${MONTHS[days[0].getMonth()]} ${days[0].getDate()} \u2013 ` +
+    `${MONTHS[days[0].getMonth()]} ${days[0].getDate()} – ` +
     `${MONTHS[days[6].getMonth()]} ${days[6].getDate()}, ${days[6].getFullYear()}`;
 
   const spanTasks   = [];
@@ -565,7 +565,7 @@ function renderDesktopBoard(tasks) {
   const noDateHdr = document.createElement('div');
   noDateHdr.className = 'column-header no-date-header';
   noDateHdr.dataset.col = 'no-date';
-  noDateHdr.innerHTML = `<div class="col-day">No Date</div><div class="col-date">\u2014</div>`;
+  noDateHdr.innerHTML = `<div class="col-day">No Date</div><div class="col-date">—</div>`;
   headerRow.appendChild(noDateHdr);
 
   days.forEach(day => {
@@ -761,7 +761,9 @@ function buildSpanCard(task, spanDays) {
     toggleComplete(task.id, !task.completed);
   });
 
-  card.appendChild(buildDeleteBtn(task, card));
+  // Move delete button into .span-card-inner as a flex item so it's always
+  // visible on hover and never clipped by the card boundary.
+  card.querySelector('.span-card-inner').appendChild(buildDeleteBtn(task, card));
 
   card.addEventListener('click', e => {
     if (e.target.closest('.task-delete-btn')) return;
@@ -784,7 +786,7 @@ function showInlineAdd(col, addArea, colKey, addBtn) {
   const confirmBtn = document.createElement('button');
   confirmBtn.type = 'button';
   confirmBtn.className = 'inline-confirm-btn';
-  confirmBtn.textContent = '\u21B5';
+  confirmBtn.textContent = '↵';
   form.appendChild(input);
   form.appendChild(confirmBtn);
   addArea.insertBefore(form, addBtn);
