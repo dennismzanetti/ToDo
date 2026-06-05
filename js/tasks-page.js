@@ -1,7 +1,9 @@
 /**
  * tasks-page.js
  * Entry point for todo-list.html.
- * Subscribes to the shared store and renders all tasks grouped by priority.
+ * Shows only tasks that have no "Do On" (doOnFrom/doOnTo) dates set —
+ * those are unscheduled tasks that don't belong to any board day.
+ * Subscribes to the shared store and renders tasks grouped by priority.
  */
 import { initStore, subscribe, toggleComplete } from './store.js';
 import { openModal } from './modal.js';
@@ -30,22 +32,8 @@ themeToggle?.addEventListener('click', () => {
 });
 
 // ── State ──────────────────────────────────────────────────────────────────────
-let allTasks    = [];
+let allTasks     = [];
 let activeFilter = 'all';
-
-// ── Filter bar ─────────────────────────────────────────────────────────────────
-document.querySelectorAll('.tasks-filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    activeFilter = btn.dataset.filter;
-    document.querySelectorAll('.tasks-filter-btn').forEach(b =>
-      b.classList.toggle('active', b === btn)
-    );
-    render();
-  });
-});
-
-// ── Add Task button ────────────────────────────────────────────────────────────
-document.getElementById('header-add-btn')?.addEventListener('click', () => openModal(null));
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 function escHtml(str) {
@@ -63,9 +51,28 @@ function tsToDateStr(ts) {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+/** Returns true if the task has no scheduled Do On dates (unscheduled). */
+function isUnscheduled(task) {
+  return !task.doOnFrom && !task.doOnTo;
+}
+
 const PRIORITY_ORDER  = { high: 0, medium: 1, low: 2 };
 const PRIORITY_LABELS = { high: 'High', medium: 'Medium', low: 'Low' };
 const GROUPS          = ['high', 'medium', 'low'];
+
+// ── Filter bar ─────────────────────────────────────────────────────────────────
+document.querySelectorAll('.tasks-filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    activeFilter = btn.dataset.filter;
+    document.querySelectorAll('.tasks-filter-btn').forEach(b =>
+      b.classList.toggle('active', b === btn)
+    );
+    render();
+  });
+});
+
+// ── Add Task button ────────────────────────────────────────────────────────────
+document.getElementById('header-add-btn')?.addEventListener('click', () => openModal(null));
 
 // ── Render ─────────────────────────────────────────────────────────────────────
 function render() {
@@ -73,12 +80,17 @@ function render() {
   const countEl = document.getElementById('tasks-count');
   if (!list) return;
 
-  let filtered = allTasks;
-  if (activeFilter === 'active')    filtered = allTasks.filter(t => !t.completed);
-  if (activeFilter === 'completed') filtered = allTasks.filter(t =>  t.completed);
+  // Only show unscheduled tasks (no Do On from/to dates)
+  const unscheduled = allTasks.filter(isUnscheduled);
 
-  const total     = allTasks.length;
-  const completed = allTasks.filter(t => t.completed).length;
+  // Apply active/completed filter on top of unscheduled set
+  let filtered = unscheduled;
+  if (activeFilter === 'active')    filtered = unscheduled.filter(t => !t.completed);
+  if (activeFilter === 'completed') filtered = unscheduled.filter(t =>  t.completed);
+
+  // Count line reflects the unscheduled subset
+  const total     = unscheduled.length;
+  const completed = unscheduled.filter(t => t.completed).length;
   if (countEl) {
     countEl.textContent = `${total} task${total !== 1 ? 's' : ''} — ${completed} completed`;
   }
@@ -87,7 +99,7 @@ function render() {
     const messages = {
       completed : 'No completed tasks yet.',
       active    : 'No active tasks — all done!',
-      all       : 'No tasks yet. Add one to get started.',
+      all       : 'No unscheduled tasks. Tasks with a \u201cDo On\u201d date appear on the board.',
     };
     list.innerHTML = `
       <div class="tasks-empty">
@@ -101,7 +113,7 @@ function render() {
     return;
   }
 
-  // Group tasks by priority
+  // Group by priority
   const grouped = Object.fromEntries([...GROUPS, 'none'].map(p => [p, []]));
   filtered.forEach(t => {
     grouped[GROUPS.includes(t.priority) ? t.priority : 'none'].push(t);
