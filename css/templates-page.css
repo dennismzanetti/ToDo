@@ -1,0 +1,186 @@
+/* =============================================================================
+   TEMPLATES-PAGE.CSS — Styles for templates.html only.
+   Loaded by templates.html alongside styles.css and mobile.css.
+   ============================================================================= */
+
+/* ── Page layout ─────────────────────────────────────────────────────────────── */
+.templates-page {
+  flex: 1;
+  padding: var(--space-6) var(--space-4);
+  overflow-y: auto;
+}
+.templates-content {
+  max-width: var(--content-default, 960px);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* ── Page header ─────────────────────────────────────────────────────────────── */
+.templates-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+.templates-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: -.02em;
+  color: var(--color-text);
+  line-height: 1.15;
+}
+.text-muted {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-top: var(--space-1);
+}
+
+/* ── New template button ─────────────────────────────────────────────────────── */
+.new-template-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  box-shadow: 0 1px 3px oklch(from var(--color-primary) .3 .15 h / .4);
+  transition: background var(--transition-interactive), box-shadow var(--transition-interactive),
+              transform var(--transition-interactive);
+}
+.new-template-btn:hover { background: var(--color-primary-hover); box-shadow: 0 3px 8px oklch(from var(--color-primary) .3 .15 h / .4); }
+.new-template-btn:active { background: var(--color-primary-active); box-shadow: none; transform: scale(.98); }
+
+/* ── Templates grid ──────────────────────────────────────────────────────────── */
+.templates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+  gap: var(--space-3);
+}
+
+/* ── Template card ───────────────────────────────────────────────────────────── */
+.template-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  transition: box-shadow var(--transition-interactive),
+              border-color var(--transition-interactive);
+}
+.template-card:hover {
+  box-shadow: var(--shadow-sm);
+  border-color: oklch(from var(--color-primary) l c h / .35);
+}
+.template-card-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.template-card-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  word-break: break-word;
+}
+.template-card-notes {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+.template-card-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+/* ── Recurrence badge ────────────────────────────────────────────────────────── */
+.recurrence-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  background: var(--color-surface-offset);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+/* ── Tag chip ────────────────────────────────────────────────────────────────── */
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  background: var(--color-primary-highlight);
+  color: var(--color-primary);
+  white-space: nowrap;
+}
+
+/* ── Edit button ─────────────────────────────────────────────────────────────── */
+.template-card-actions { flex-shrink: 0; }
+.tmpl-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  transition: background var(--transition-interactive),
+              color var(--transition-interactive),
+              border-color var(--transition-interactive);
+}
+.tmpl-edit-btn:hover {
+  background: var(--color-surface-offset);
+  color: var(--color-text);
+  border-color: oklch(from var(--color-primary) l c h / .35);
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────────── */
+.template-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-16) var(--space-8);
+  color: var(--color-text-faint);
+  text-align: center;
+}
+.template-empty h3 {
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+.template-empty p {
+  font-size: var(--text-sm);
+  color: var(--color-text-faint);
+  max-width: 36ch;
+}
+
+/* ── Mobile adjustments ──────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .templates-page { padding: var(--space-4) var(--space-3); }
+  .templates-header { flex-direction: column; align-items: flex-start; }
+  .templates-grid { grid-template-columns: 1fr; }
+}

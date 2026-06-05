@@ -1,0 +1,255 @@
+/* =============================================================================
+   TASKS-PAGE.CSS — Styles for todo-list.html only.
+   Loaded by todo-list.html alongside styles.css, modal.css, mobile.css.
+   ============================================================================= */
+
+/* ── Page layout ─────────────────────────────────────────────────────────────── */
+.tasks-page {
+  flex: 1;
+  padding: var(--space-6) var(--space-4);
+  overflow-y: auto;
+}
+.tasks-page-inner {
+  max-width: var(--content-default, 960px);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* ── Page header ─────────────────────────────────────────────────────────────── */
+.tasks-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+.tasks-page-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: -.02em;
+  color: var(--color-text);
+  line-height: 1.15;
+}
+.text-muted {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-top: var(--space-1);
+}
+
+/* ── Filter bar ──────────────────────────────────────────────────────────────── */
+.tasks-filter-bar {
+  display: inline-flex;
+  align-items: center;
+  background: var(--color-surface-offset);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: var(--space-1);
+  gap: var(--space-1);
+}
+.tasks-filter-btn {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  transition: background var(--transition-interactive), color var(--transition-interactive);
+}
+.tasks-filter-btn:hover { color: var(--color-text); background: var(--color-surface-dynamic); }
+.tasks-filter-btn.active {
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Task list container ─────────────────────────────────────────────────────── */
+.tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* ── Priority group heading ──────────────────────────────────────────────────── */
+.tasks-group-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) 0 var(--space-1);
+  border-bottom: 1px solid var(--color-divider);
+  margin-bottom: var(--space-1);
+}
+.tasks-group-count {
+  font-size: var(--text-xs);
+  color: var(--color-text-faint);
+  font-weight: 600;
+}
+
+/* ── Task row ────────────────────────────────────────────────────────────────── */
+.tasks-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  position: relative;
+  transition: box-shadow var(--transition-interactive),
+              border-color var(--transition-interactive),
+              background var(--transition-interactive);
+}
+.tasks-row:hover {
+  box-shadow: var(--shadow-sm);
+  border-color: oklch(from var(--color-primary) l c h / .35);
+  background: var(--color-surface-2);
+}
+.tasks-row:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+.tasks-row.completed { opacity: .55; }
+
+/* ── Row title ───────────────────────────────────────────────────────────────── */
+.tasks-row-title {
+  flex: 1;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text);
+  word-break: break-word;
+  min-width: 0;
+}
+.tasks-row-title.done {
+  text-decoration: line-through;
+  color: var(--color-text-muted);
+}
+
+/* ── Row meta (date, subtasks, tags) ─────────────────────────────────────────── */
+.tasks-row-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+/* ── Tag pill ────────────────────────────────────────────────────────────────── */
+.tasks-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  background: var(--color-primary-highlight);
+  color: var(--color-primary);
+  white-space: nowrap;
+}
+
+/* ── Row actions (edit + delete) ─────────────────────────────────────────────── */
+.tasks-row-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity var(--transition-interactive);
+}
+.tasks-row:hover .tasks-row-actions { opacity: 1; }
+.tasks-row-edit-btn,
+.tasks-row-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-faint);
+  transition: color var(--transition-interactive),
+              background var(--transition-interactive),
+              transform var(--transition-interactive);
+}
+.tasks-row-edit-btn:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-highlight);
+}
+.tasks-row-edit-btn:active { transform: scale(.92); }
+.tasks-row-delete-btn:hover {
+  color: var(--color-error);
+  background: var(--color-error-highlight);
+}
+.tasks-row-delete-btn:active { transform: scale(.92); }
+
+@media (hover: none) {
+  .tasks-row-actions { opacity: .45; }
+}
+
+/* ── Row inline delete confirm ───────────────────────────────────────────────── */
+.tasks-row-delete-confirm {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-4);
+  z-index: 2;
+  animation: fadeIn .12s ease;
+}
+.tasks-row-delete-confirm span {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  flex: 1;
+}
+.tasks-row-delete-yes {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  background: var(--color-error);
+  color: #fff;
+  transition: background var(--transition-interactive), transform var(--transition-interactive);
+}
+.tasks-row-delete-yes:hover  { background: var(--color-error-hover); }
+.tasks-row-delete-yes:active { transform: scale(.95); }
+.tasks-row-delete-no {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  transition: background var(--transition-interactive), color var(--transition-interactive);
+}
+.tasks-row-delete-no:hover { background: var(--color-surface-offset); color: var(--color-text); }
+
+/* ── Empty state ─────────────────────────────────────────────────────────────── */
+.tasks-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-16) var(--space-8);
+  color: var(--color-text-faint);
+  text-align: center;
+}
+.tasks-empty p {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  max-width: 32ch;
+}
+
+/* ── Mobile adjustments ──────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .tasks-page { padding: var(--space-4) var(--space-3); }
+  .tasks-page-header { flex-direction: column; align-items: flex-start; }
+  .tasks-row-meta { display: none; }
+  .tasks-row { padding: var(--space-2) var(--space-3); }
+}

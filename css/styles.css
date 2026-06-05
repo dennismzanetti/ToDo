@@ -2,11 +2,15 @@
    STYLES.CSS — Main CSS entry point
 
    Architecture:
-     base.css        Design tokens, CSS reset, global base styles
-     layout.css      Topbar, board grid, header/body/span rows, week nav
-     components.css  All UI components (modals, forms, buttons, cards, etc.)
-     modal.css       Additional modal overrides (loaded separately in HTML)
-     mobile.css      Responsive / iPhone optimizations (loaded separately in HTML)
+     base.css            Design tokens, CSS reset, global base styles
+     layout.css          Topbar, board grid, header/body/span rows, week nav
+     components.css      Shared UI: modal, forms, buttons, priority badge,
+                         subtask progress, inline-add, task-card delete confirm
+     board.css           Board-page-only: task cards, span cards, add-task btn
+     tasks-page.css      Tasks-page-only: rows, filters, groups, tag pills
+     templates-page.css  Templates-page-only: template cards, recurrence badge
+     modal.css           Additional modal overrides (loaded separately in HTML)
+     mobile.css          Responsive / iPhone optimizations (loaded separately)
    ============================================================================= */
 
 @import url('./base.css');

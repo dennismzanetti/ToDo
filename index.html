@@ -15,6 +15,7 @@
   <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@700,800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./css/styles.css" />
+  <link rel="stylesheet" href="./css/board.css" />
   <link rel="stylesheet" href="./css/modal.css" />
   <link rel="stylesheet" href="./css/mobile.css" />
   <link rel="manifest" href="./manifest.json" />
@@ -104,7 +105,6 @@
 
         <div class="modal-body">
 
-          <!-- Title -->
           <div class="form-group">
             <label class="form-label" for="edit-title">
               Title <span class="form-required">*</span>
@@ -112,7 +112,6 @@
             <input class="form-input" type="text" id="edit-title" placeholder="What needs to be done?" required autocomplete="off" />
           </div>
 
-          <!-- Priority -->
           <div class="form-group">
             <span class="form-label">Priority</span>
             <div class="priority-group" role="group" aria-label="Priority">
@@ -127,7 +126,6 @@
             </select>
           </div>
 
-          <!-- Do-On dates -->
           <div class="form-group">
             <span class="form-label">
               Do On
@@ -148,7 +146,6 @@
             </div>
           </div>
 
-          <!-- Due Date + Tags (2-col) -->
           <div class="modal-two-col">
             <div class="form-group">
               <span class="form-label">
@@ -172,13 +169,11 @@
             </div>
           </div>
 
-          <!-- Notes -->
           <div class="form-group">
             <label class="form-label" for="edit-notes">Notes</label>
             <textarea class="form-input form-textarea" id="edit-notes" placeholder="Add any details or context&#x2026;" rows="3"></textarea>
           </div>
 
-          <!-- Subtasks -->
           <div class="form-group">
             <span class="form-label">Subtasks</span>
             <div id="subtask-list" class="subtask-list"></div>
@@ -191,7 +186,7 @@
             </div>
           </div>
 
-        </div><!-- /.modal-body -->
+        </div>
 
         <div class="modal-actions">
           <button type="button" class="btn btn-danger" id="delete-task-btn">Delete task</button>
