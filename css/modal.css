@@ -67,7 +67,7 @@
   padding: var(--space-5) var(--space-6);
   display: flex; flex-direction: column; gap: var(--space-5);
   /* flex:1 + min-height:0 lets it shrink and scroll inside the fixed shell */
-  flex: 1;
+  flex: 1 1 0;
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch; /* smooth momentum scroll on iOS */
@@ -270,26 +270,54 @@
     padding: 0;
     align-items: flex-end;
   }
-  .modal {
-    max-width: 100%;
-    /* Fixed height (not max-height) so the modal doesn't collapse when the
-       software keyboard opens and shrinks the viewport. The body flex region
-       absorbs all remaining space and scrolls independently. */
-    height: 92dvh;
-    max-height: 92dvh;
-    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+
+  /*
+   * On iOS, opening the soft keyboard shrinks dvh, which collapses a
+   * height:92dvh modal and kills scrolling. Fix: anchor the modal with
+   * position:fixed + inset so it is pinned to the visual viewport and
+   * cannot be resized by the keyboard. The flex column layout means
+   * .modal-body (flex:1 1 0, overflow-y:auto) absorbs all remaining
+   * space and scrolls independently of the keyboard state.
+   */
+  .modal-overlay {
+    /* overlay already covers inset:0 — align sheet to bottom */
+    align-items: flex-end;
   }
+
+  .modal {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    /* top: 8% leaves ~92% of screen height regardless of keyboard */
+    top: 8%;
+    height: auto;        /* let the fixed inset define height */
+    max-height: none;    /* remove the dvh cap — inset handles it */
+    max-width: 100%;
+    width: 100%;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    /* flex column already set on .modal — body will scroll */
+  }
+
   .modal-body {
     padding: var(--space-4);
+    /* Reinforce the scroll contract inside the fixed shell */
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
+
   .modal-header,
   .modal-actions {
     padding-left: var(--space-4);
     padding-right: var(--space-4);
   }
-  /* Ensure the Save/Cancel bar clears the iPhone home indicator */
+
+  /* Save/Cancel bar clears the iPhone home indicator */
   .modal-actions {
     padding-bottom: max(var(--space-4), env(safe-area-inset-bottom, 0px));
   }
+
   .modal-two-col { grid-template-columns: 1fr; }
 }
