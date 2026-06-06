@@ -3,11 +3,10 @@ import { renderBoard, prevWeek, nextWeek, gotoToday } from './board.js';
 import { applyTemplates } from './templates-engine.js';
 import { openModal } from './modal.js';
 
-// ── Theme ──────────────────────────────────────────────────────────────────
+// ── Theme ──────────────────────────────────────────────────────────────────────────
 const root = document.documentElement;
 const themeToggle = document.querySelector('[data-theme-toggle]');
 const mq = window.matchMedia('(prefers-color-scheme: dark)');
-let manualTheme = null;
 
 function applyTheme(t) {
   root.setAttribute('data-theme', t);
@@ -18,26 +17,37 @@ function applyTheme(t) {
     : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
 }
 
-applyTheme('light');
-mq.addEventListener?.('change', () => { if (!manualTheme) applyTheme(mq.matches ? 'dark' : 'light'); });
-themeToggle?.addEventListener('click', () => {
-  manualTheme = (root.getAttribute('data-theme') === 'dark') ? 'light' : 'dark';
-  applyTheme(manualTheme);
+// Restore saved preference, fall back to system preference
+let savedTheme = null;
+try { savedTheme = localStorage.getItem('theme'); } catch (_) {}
+const initialTheme = savedTheme || (mq.matches ? 'dark' : 'light');
+applyTheme(initialTheme);
+
+mq.addEventListener?.('change', () => {
+  // Only follow system preference if the user has never manually toggled
+  try { if (localStorage.getItem('theme')) return; } catch (_) {}
+  applyTheme(mq.matches ? 'dark' : 'light');
 });
 
-// ── Week nav ──────────────────────────────────────────────────────────────
+themeToggle?.addEventListener('click', () => {
+  const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  try { localStorage.setItem('theme', next); } catch (_) {}
+  applyTheme(next);
+});
+
+// ── Week nav ─────────────────────────────────────────────────────────────────────
 let lastTasks = [];
 document.getElementById('prev-week')?.addEventListener('click', () => { prevWeek(); renderBoard(lastTasks); });
 document.getElementById('next-week')?.addEventListener('click', () => { nextWeek(); renderBoard(lastTasks); });
 document.getElementById('today-btn')?.addEventListener('click', () => { gotoToday(); renderBoard(lastTasks); });
 document.getElementById('today-btn-mobile')?.addEventListener('click', () => { gotoToday(); renderBoard(lastTasks); });
 
-// ── Header Add Task button (desktop) ──────────────────────────────────────
+// ── Header Add Task button (desktop) ─────────────────────────────────────────────
 document.getElementById('header-add-btn')?.addEventListener('click', () => {
   openModal(null);
 });
 
-// ── Store ─────────────────────────────────────────────────────────────────
+// ── Store ────────────────────────────────────────────────────────────────────────
 let tasksReady = false, templatesReady = false;
 function maybeApplyTemplates() { if (tasksReady && templatesReady) applyTemplates(); }
 
@@ -51,7 +61,7 @@ subscribeTemplates(() => {
   if (!templatesReady) { templatesReady = true; maybeApplyTemplates(); }
 });
 
-// ── Service Worker ────────────────────────────────────────────────────────
+// ── Service Worker ────────────────────────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./service-worker.js').catch(() => {});
