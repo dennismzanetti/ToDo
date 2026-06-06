@@ -6,7 +6,7 @@
 /* ── Page layout ─────────────────────────────────────────────────────────────── */
 .tasks-page {
   flex: 1;
-  padding: var(--space-6) var(--space-4);
+  padding: calc(var(--topbar-h) + var(--space-6)) var(--space-4) var(--space-6);
   overflow-y: auto;
 }
 .tasks-page-inner {
@@ -248,7 +248,7 @@
 
 /* ── Mobile adjustments ──────────────────────────────────────────────────────── */
 @media (max-width: 600px) {
-  .tasks-page { padding: var(--space-4) var(--space-3); }
+  .tasks-page { padding: calc(var(--topbar-h) + var(--space-4)) var(--space-3) var(--space-4); }
   .tasks-page-header { flex-direction: column; align-items: flex-start; }
   .tasks-row-meta { display: none; }
   .tasks-row { padding: var(--space-2) var(--space-3); }
