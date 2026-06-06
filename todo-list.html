@@ -82,10 +82,15 @@
           <h1 class="tasks-page-title">All Tasks</h1>
           <p class="text-muted" id="tasks-count">Loading&hellip;</p>
         </div>
-        <div class="tasks-filter-bar" role="group" aria-label="Filter tasks">
-          <button class="tasks-filter-btn active" data-filter="all">All</button>
-          <button class="tasks-filter-btn" data-filter="active">Active</button>
-          <button class="tasks-filter-btn" data-filter="completed">Completed</button>
+        <div class="tasks-header-controls">
+          <select class="tasks-category-filter" id="tasks-category-filter" aria-label="Filter by category">
+            <option value="">All categories</option>
+          </select>
+          <div class="tasks-filter-bar" role="group" aria-label="Filter tasks">
+            <button class="tasks-filter-btn active" data-filter="all">All</button>
+            <button class="tasks-filter-btn" data-filter="active">Active</button>
+            <button class="tasks-filter-btn" data-filter="completed">Completed</button>
+          </div>
         </div>
       </div>
 
@@ -142,6 +147,12 @@
               <option value="low">Low</option>
               <option value="medium" selected>Medium</option>
               <option value="high">High</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-category">Category</label>
+            <select class="form-input" id="edit-category">
+              <option value="">None</option>
             </select>
           </div>
           <div class="form-group">

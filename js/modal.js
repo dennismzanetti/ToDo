@@ -1,4 +1,4 @@
-import { saveTask, deleteTask, addTask } from './store.js';
+import { saveTask, deleteTask, addTask, getCategories } from './store.js';
 import { createSubtask } from './models.js';
 import { Timestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
@@ -31,6 +31,19 @@ function setPriority(val) {
 priorityBtns.forEach(btn => {
   btn.addEventListener('click', () => setPriority(btn.dataset.priority));
 });
+
+// ── Category select ───────────────────────────────────────────────────────────
+function populateCategorySelect(currentCategoryId) {
+  const sel = document.getElementById('edit-category');
+  if (!sel) return;
+  const cats = getCategories();
+  sel.innerHTML = '<option value="">None</option>' +
+    cats
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(c => `<option value="${escHtml(c.id)}"${c.id === currentCategoryId ? ' selected' : ''}>${escHtml(c.name)}</option>`)
+      .join('');
+}
 
 // ── Body scroll lock ─────────────────────────────────────────────────────────
 let _bodyScrollTop = 0;
@@ -121,6 +134,7 @@ export function openModal(task) {
   tagsInput.value     = (t.tags || []).join(', ');
 
   setPriority(t.priority || 'medium');
+  populateCategorySelect(t.categoryId || '');
   syncClearBtn();
 
   notesInput = document.getElementById('edit-notes');
@@ -215,9 +229,13 @@ form.addEventListener('submit', async e => {
   const notesEl = document.getElementById('edit-notes');
   const notes = notesEl ? notesEl.value.trim() : '';
 
+  const categorySel = document.getElementById('edit-category');
+  const categoryId  = categorySel?.value || null;
+
   const fields = {
     title,
-    priority: priorityInput.value,
+    priority:   priorityInput.value,
+    categoryId: categoryId || null,
     doOnFrom,
     doOnTo,
     dueDate:  inputToTs(dueDateInput.value),

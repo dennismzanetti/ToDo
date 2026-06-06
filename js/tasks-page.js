@@ -26,7 +26,6 @@ function applyTheme(t) {
     : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
 }
 
-// Always start in light mode — matches app.js behaviour on index.html
 applyTheme('light');
 mq.addEventListener?.('change', () => { if (!manualTheme) applyTheme(mq.matches ? 'dark' : 'light'); });
 themeToggle?.addEventListener('click', () => {
@@ -35,9 +34,10 @@ themeToggle?.addEventListener('click', () => {
 });
 
 // ── State ──────────────────────────────────────────────────────────────────────
-let allTasks      = [];
-let allCategories = [];
-let activeFilter  = 'all';
+let allTasks           = [];
+let allCategories      = [];
+let activeFilter       = 'all';
+let activeCategoryId   = '';     // '' = all categories
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 function escHtml(str) {
@@ -55,7 +55,6 @@ function tsToDateStr(ts) {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-/** Returns true if the task has no scheduled Do On dates (unscheduled). */
 function isUnscheduled(task) {
   return !task.doOnFrom && !task.doOnTo;
 }
@@ -65,10 +64,10 @@ const PRIORITY_LABELS = { high: 'High', medium: 'Medium', low: 'Low' };
 const GROUPS          = ['high', 'medium', 'low'];
 
 // ── SVG icons ──────────────────────────────────────────────────────────────────
-const ICON_EDIT = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+const ICON_EDIT  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
 const ICON_TRASH = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
 
-// ── Filter bar ─────────────────────────────────────────────────────────────────
+// ── Status filter bar ──────────────────────────────────────────────────────────
 document.querySelectorAll('.tasks-filter-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     activeFilter = btn.dataset.filter;
@@ -78,6 +77,30 @@ document.querySelectorAll('.tasks-filter-btn').forEach(btn => {
     render();
   });
 });
+
+// ── Category filter dropdown ───────────────────────────────────────────────────
+const categoryFilterEl = document.getElementById('tasks-category-filter');
+categoryFilterEl?.addEventListener('change', () => {
+  activeCategoryId = categoryFilterEl.value;
+  render();
+});
+
+function syncCategoryFilterOptions() {
+  if (!categoryFilterEl) return;
+  const current = categoryFilterEl.value;
+  categoryFilterEl.innerHTML =
+    '<option value="">All categories</option>' +
+    allCategories
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(c => `<option value="${escHtml(c.id)}"${c.id === current ? ' selected' : ''}>${escHtml(c.name)}</option>`)
+      .join('');
+  // Restore selection if it still exists; otherwise reset to all
+  if (current && !allCategories.find(c => c.id === current)) {
+    activeCategoryId = '';
+    categoryFilterEl.value = '';
+  }
+}
 
 // ── Add Task button ────────────────────────────────────────────────────────────
 document.getElementById('header-add-btn')?.addEventListener('click', () => openModal(null));
@@ -178,15 +201,14 @@ function render() {
   const countEl = document.getElementById('tasks-count');
   if (!list) return;
 
-  // Only show unscheduled tasks (no Do On from/to dates)
   const unscheduled = allTasks.filter(isUnscheduled);
 
-  // Apply active/completed filter on top of unscheduled set
+  // Stack filters: status then category
   let filtered = unscheduled;
-  if (activeFilter === 'active')    filtered = unscheduled.filter(t => !t.completed);
-  if (activeFilter === 'completed') filtered = unscheduled.filter(t =>  t.completed);
+  if (activeFilter === 'active')    filtered = filtered.filter(t => !t.completed);
+  if (activeFilter === 'completed') filtered = filtered.filter(t =>  t.completed);
+  if (activeCategoryId)             filtered = filtered.filter(t => t.categoryId === activeCategoryId);
 
-  // Count line reflects the unscheduled subset
   const total     = unscheduled.length;
   const completed = unscheduled.filter(t => t.completed).length;
   if (countEl) {
@@ -197,7 +219,9 @@ function render() {
     const messages = {
       completed : 'No completed tasks yet.',
       active    : 'No active tasks — all done!',
-      all       : 'No unscheduled tasks. Tasks with a \u201cDo On\u201d date appear on the board.',
+      all       : activeCategoryId
+        ? 'No tasks in this category.'
+        : 'No unscheduled tasks. Tasks with a \u201cDo On\u201d date appear on the board.',
     };
     list.innerHTML = `
       <div class="tasks-empty">
@@ -211,7 +235,9 @@ function render() {
     return;
   }
 
-  // Group by priority
+  // Build a quick lookup: categoryId → name
+  const catMap = Object.fromEntries(allCategories.map(c => [c.id, c.name]));
+
   const grouped = Object.fromEntries([...GROUPS, 'none'].map(p => [p, []]));
   filtered.forEach(t => {
     grouped[GROUPS.includes(t.priority) ? t.priority : 'none'].push(t);
@@ -223,7 +249,6 @@ function render() {
     const tasks = grouped[priority];
     if (!tasks.length) return;
 
-    // Group heading
     const heading = document.createElement('div');
     heading.className = 'tasks-group-heading';
     const label = priority === 'none' ? 'No Priority' : PRIORITY_LABELS[priority];
@@ -232,7 +257,6 @@ function render() {
       <span class="tasks-group-count">${tasks.length}</span>`;
     list.appendChild(heading);
 
-    // Task rows
     tasks.forEach(task => {
       const row = document.createElement('div');
       row.className = `tasks-row${task.completed ? ' completed' : ''}`;
@@ -246,6 +270,10 @@ function render() {
       const tagsHtml   = (task.tags || [])
         .map(tag => `<span class="tasks-tag">${escHtml(tag)}</span>`)
         .join('');
+      const catName  = task.categoryId ? catMap[task.categoryId] : null;
+      const catHtml  = catName
+        ? `<span class="tasks-category-chip">${escHtml(catName)}</span>`
+        : '';
 
       row.innerHTML = `
         <button class="task-check${task.completed ? ' checked' : ''}"
@@ -253,6 +281,7 @@ function render() {
                 data-id="${escHtml(task.id)}"></button>
         <span class="tasks-row-title${task.completed ? ' done' : ''}">${escHtml(task.title)}</span>
         <span class="tasks-row-meta">
+          ${catHtml}
           ${dueDateStr ? `
             <span class="due-date-badge">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -272,25 +301,21 @@ function render() {
           <button class="tasks-row-delete-btn" aria-label="Delete task">${ICON_TRASH}</button>
         </span>`;
 
-      // Checkbox: toggle complete without opening modal
       row.querySelector('.task-check').addEventListener('click', async e => {
         e.stopPropagation();
         await toggleComplete(task.id, !task.completed);
       });
 
-      // Edit button: open modal
       row.querySelector('.tasks-row-edit-btn').addEventListener('click', e => {
         e.stopPropagation();
         openModal(task);
       });
 
-      // Delete button: show inline confirm
       row.querySelector('.tasks-row-delete-btn').addEventListener('click', e => {
         e.stopPropagation();
         showDeleteConfirm(row, task.id);
       });
 
-      // Row click: open edit modal
       row.addEventListener('click', () => openModal(task));
       row.addEventListener('keydown', e => {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(task); }
@@ -314,6 +339,8 @@ subscribe(tasks => {
 subscribeCategories(cats => {
   allCategories = cats.slice().sort((a, b) => a.name.localeCompare(b.name));
   renderCategories();
+  syncCategoryFilterOptions();
+  render(); // re-render so catMap stays fresh
 });
 
 // ── Service Worker ─────────────────────────────────────────────────────────────
