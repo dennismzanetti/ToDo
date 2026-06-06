@@ -1,4 +1,4 @@
-import { saveTask, deleteTask, addTask, getCategories } from './store.js';
+import { saveTask, deleteTask, addTask, subscribeCategories } from './store.js';
 import { createSubtask } from './models.js';
 import { Timestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
@@ -18,6 +18,17 @@ const deleteBtn       = document.getElementById('delete-task-btn');
 const cancelBtn       = document.getElementById('modal-cancel');
 const closeBtn        = document.getElementById('modal-close');
 
+// ── Live categories cache ─────────────────────────────────────────────────────
+let _categories = [];
+subscribeCategories(cats => {
+  _categories = cats.slice().sort((a, b) => a.name.localeCompare(b.name));
+  // If modal is open, refresh the dropdown without resetting the current value
+  if (overlay && !overlay.hidden) {
+    const sel = document.getElementById('edit-category');
+    populateCategorySelect(sel?.value || '');
+  }
+});
+
 // ── Priority segmented buttons ────────────────────────────────────────────────
 const priorityBtns = document.querySelectorAll('.priority-btn[data-priority]');
 
@@ -36,11 +47,8 @@ priorityBtns.forEach(btn => {
 function populateCategorySelect(currentCategoryId) {
   const sel = document.getElementById('edit-category');
   if (!sel) return;
-  const cats = getCategories();
   sel.innerHTML = '<option value="">None</option>' +
-    cats
-      .slice()
-      .sort((a, b) => a.name.localeCompare(b.name))
+    _categories
       .map(c => `<option value="${escHtml(c.id)}"${c.id === currentCategoryId ? ' selected' : ''}>${escHtml(c.name)}</option>`)
       .join('');
 }
