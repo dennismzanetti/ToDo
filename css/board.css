@@ -58,6 +58,19 @@
 }
 .desktop-meta-icon { display: inline-flex; align-items: center; color: var(--color-text-faint); }
 
+/* ── CATEGORY CHIP (on cards) ───────────────────────────────────────────────── */
+.card-category-chip {
+  display: inline-flex; align-items: center;
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs); font-weight: 500;
+  background: var(--color-primary-highlight);
+  color: var(--color-primary);
+  border: 1px solid oklch(from var(--color-primary) l c h / .2);
+  white-space: nowrap; max-width: 120px;
+  overflow: hidden; text-overflow: ellipsis;
+}
+
 /* ── TASK CARD DELETE BUTTON ────────────────────────────────────────────────── */
 .task-delete-btn {
   position: static;

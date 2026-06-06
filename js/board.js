@@ -1,11 +1,17 @@
 import { toDateKey, dateKeyToDate, taskDisplayKeys } from './models.js';
-import { addTask, toggleComplete, reorderTask, deleteTask } from './store.js';
+import { addTask, toggleComplete, reorderTask, deleteTask, subscribeCategories } from './store.js';
 import { openModal } from './modal.js';
 import { Timestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 let weekOffset = 0;
 let currentTasks = [];
+let allCategories = [];
 let mobileDayOffset = 0;
+
+// Keep a live category map: id → name
+subscribeCategories(cats => {
+  allCategories = cats;
+});
 
 const board     = document.getElementById('board');
 const weekLabel = document.getElementById('week-label');
@@ -64,6 +70,14 @@ function attachNoteTooltip(el, notes) {
     el.addEventListener('mouseenter', () => showTooltip(notes, el));
     el.addEventListener('mouseleave', hideTooltip);
   }
+}
+
+// ── Category chip helper ──────────────────────────────────────────────────────
+function categoryChipHtml(task) {
+  if (!task.categoryId) return '';
+  const cat = allCategories.find(c => c.id === task.categoryId);
+  if (!cat) return '';
+  return `<span class="card-category-chip">${escHtml(cat.name)}</span>`;
 }
 
 // ── Delete button helper ──────────────────────────────────────────────────────
@@ -380,6 +394,7 @@ function buildMobileTaskCard(task) {
       </div>
       <div class="mobile-card-meta">
         <span class="priority-badge ${priority}">${priority}</span>
+        ${categoryChipHtml(task)}
         ${tagsHtml}${dueDateHtml}${progressHtml}
       </div>
     </div>
@@ -438,6 +453,7 @@ function buildMobileSpanCard(task) {
       </div>
       <div class="mobile-card-meta">
         <span class="priority-badge ${priority}">${priority}</span>
+        ${categoryChipHtml(task)}
         <span class="span-days-badge">${spanDays}d</span>
       </div>
     </div>
@@ -707,6 +723,7 @@ function buildTaskCard(task) {
     </div>
     <div class="task-card-meta">
       <span class="priority-badge ${priority}">${priority}</span>
+      ${categoryChipHtml(task)}
       ${dueDateHtml}
       <span class="task-badges">${hoverBadgesHtml(task)}</span>
     </div>`;
@@ -716,8 +733,6 @@ function buildTaskCard(task) {
     toggleComplete(task.id, !task.completed);
   });
 
-  // Move delete button into .task-top as a flex item so it's always
-  // visible on hover and never clipped by the card boundary.
   card.querySelector('.task-top').appendChild(buildDeleteBtn(task, card));
 
   card.addEventListener('click', e => {
@@ -750,6 +765,7 @@ function buildSpanCard(task, spanDays) {
       <button class="task-check${task.completed ? ' checked' : ''}" aria-label="${task.completed ? 'Mark incomplete' : 'Mark complete'}" data-check></button>
       <span class="task-title">${escHtml(task.title)}</span>
       <span class="priority-badge ${priority}">${priority}</span>
+      ${categoryChipHtml(task)}
       ${dueDateHtml}
       ${hoverBadgesHtml(task)}
       ${notesIcon}
@@ -761,8 +777,6 @@ function buildSpanCard(task, spanDays) {
     toggleComplete(task.id, !task.completed);
   });
 
-  // Move delete button into .span-card-inner as a flex item so it's always
-  // visible on hover and never clipped by the card boundary.
   card.querySelector('.span-card-inner').appendChild(buildDeleteBtn(task, card));
 
   card.addEventListener('click', e => {
