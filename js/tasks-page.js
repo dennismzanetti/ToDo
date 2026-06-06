@@ -5,7 +5,10 @@
  * those are unscheduled tasks that don't belong to any board day.
  * Subscribes to the shared store and renders tasks grouped by priority.
  */
-import { initStore, subscribe, toggleComplete, deleteTask } from './store.js';
+import {
+  initStore, subscribe, toggleComplete, deleteTask,
+  subscribeCategories, addCategory, deleteCategory
+} from './store.js';
 import { openModal } from './modal.js';
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
@@ -32,8 +35,9 @@ themeToggle?.addEventListener('click', () => {
 });
 
 // ── State ──────────────────────────────────────────────────────────────────────
-let allTasks     = [];
-let activeFilter = 'all';
+let allTasks      = [];
+let allCategories = [];
+let activeFilter  = 'all';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 function escHtml(str) {
@@ -78,9 +82,70 @@ document.querySelectorAll('.tasks-filter-btn').forEach(btn => {
 // ── Add Task button ────────────────────────────────────────────────────────────
 document.getElementById('header-add-btn')?.addEventListener('click', () => openModal(null));
 
-// ── Delete with inline confirm ─────────────────────────────────────────────────
+// ── Categories panel ───────────────────────────────────────────────────────────
+function renderCategories() {
+  const container = document.getElementById('category-chips');
+  if (!container) return;
+  if (allCategories.length === 0) {
+    container.innerHTML = '<span class="category-chips-empty">No categories yet.</span>';
+    return;
+  }
+  container.innerHTML = '';
+  allCategories.forEach(cat => {
+    const chip = document.createElement('div');
+    chip.className = 'category-chip';
+    chip.setAttribute('role', 'listitem');
+    chip.innerHTML = `
+      <span class="category-chip-name">${escHtml(cat.name)}</span>
+      <button class="category-chip-delete" aria-label="Delete category ${escHtml(cat.name)}">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="3" stroke-linecap="round" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>`;
+    chip.querySelector('.category-chip-delete').addEventListener('click', () =>
+      showCategoryDeleteConfirm(chip, cat.id, cat.name)
+    );
+    container.appendChild(chip);
+  });
+}
+
+function showCategoryDeleteConfirm(chip, catId, catName) {
+  if (chip.querySelector('.category-chip-confirm')) return;
+  const confirm = document.createElement('div');
+  confirm.className = 'category-chip-confirm';
+  confirm.innerHTML = `
+    <span>Delete "${escHtml(catName)}"?</span>
+    <button class="category-chip-confirm-yes">Delete</button>
+    <button class="category-chip-confirm-no">Cancel</button>`;
+  confirm.addEventListener('click', e => e.stopPropagation());
+  confirm.querySelector('.category-chip-confirm-yes').addEventListener('click', async () => {
+    chip.style.opacity = '0.4';
+    chip.style.pointerEvents = 'none';
+    await deleteCategory(catId);
+  });
+  confirm.querySelector('.category-chip-confirm-no').addEventListener('click', () =>
+    confirm.remove()
+  );
+  chip.appendChild(confirm);
+}
+
+const categoryNameInput = document.getElementById('category-name-input');
+const categoryAddBtn    = document.getElementById('category-add-btn');
+
+async function handleAddCategory() {
+  const name = categoryNameInput?.value.trim();
+  if (!name) return;
+  categoryNameInput.value = '';
+  await addCategory({ name });
+}
+categoryAddBtn?.addEventListener('click', handleAddCategory);
+categoryNameInput?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); handleAddCategory(); }
+});
+
+// ── Delete task with inline confirm ───────────────────────────────────────────
 function showDeleteConfirm(row, taskId) {
-  // Prevent opening two confirms on the same row
   if (row.querySelector('.tasks-row-delete-confirm')) return;
 
   const confirm = document.createElement('div');
@@ -90,7 +155,6 @@ function showDeleteConfirm(row, taskId) {
     <button class="tasks-row-delete-yes" aria-label="Confirm delete">Delete</button>
     <button class="tasks-row-delete-no"  aria-label="Cancel delete">Cancel</button>`;
 
-  // Prevent row click while confirm is visible
   confirm.addEventListener('click', e => e.stopPropagation());
 
   confirm.querySelector('.tasks-row-delete-yes').addEventListener('click', async e => {
@@ -237,7 +301,7 @@ function render() {
   });
 }
 
-// ── Store subscription ─────────────────────────────────────────────────────────
+// ── Store subscriptions ────────────────────────────────────────────────────────
 subscribe(tasks => {
   allTasks = tasks.slice().sort((a, b) => {
     const pa = PRIORITY_ORDER[a.priority] ?? 3;
@@ -245,6 +309,11 @@ subscribe(tasks => {
     return pa !== pb ? pa - pb : (a.order ?? 0) - (b.order ?? 0);
   });
   render();
+});
+
+subscribeCategories(cats => {
+  allCategories = cats.slice().sort((a, b) => a.name.localeCompare(b.name));
+  renderCategories();
 });
 
 // ── Service Worker ─────────────────────────────────────────────────────────────

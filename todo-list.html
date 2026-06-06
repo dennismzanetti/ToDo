@@ -89,6 +89,27 @@
         </div>
       </div>
 
+      <!-- Categories panel -->
+      <div class="categories-panel" id="categories-panel">
+        <div class="categories-panel-header">
+          <span class="categories-panel-label">Categories</span>
+          <div class="category-add-row">
+            <input class="form-input category-add-input" type="text"
+                   id="category-name-input" placeholder="New category…" autocomplete="off" maxlength="40" />
+            <button class="category-add-btn" id="category-add-btn" aria-label="Add category">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Add
+            </button>
+          </div>
+        </div>
+        <div class="category-chips" id="category-chips" aria-label="Categories" role="list">
+          <!-- Rendered by tasks-page.js -->
+        </div>
+      </div>
+
       <div id="tasks-list" class="tasks-list"></div>
 
     </div>
