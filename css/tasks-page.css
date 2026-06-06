@@ -525,11 +525,16 @@
 
 /* ── Mobile adjustments ──────────────────────────────────────────────────────── */
 @media (max-width: 600px) {
-  .tasks-page { padding: calc(var(--topbar-h) + var(--space-4)) var(--space-3) var(--space-4); }
+  .tasks-page {
+    padding: calc(var(--topbar-h) + var(--space-4)) var(--space-3) calc(56px + 28px + var(--safe-bottom, 0px) + var(--space-4));
+  }
   .tasks-page-header { flex-direction: column; align-items: flex-start; }
   .tasks-row-meta { display: none; }
   .tasks-row { padding: var(--space-2) var(--space-3); }
   .categories-panel-header { flex-direction: column; align-items: flex-start; }
   .category-add-input { width: 140px; }
-  .tasks-subtab--categories { margin-left: auto; }
+
+  /* On mobile, don't push Categories tab off-screen — let all tabs sit inline */
+  .tasks-subtab--categories { margin-left: 0; }
+  .tasks-subtabs-divider { display: none; }
 }
