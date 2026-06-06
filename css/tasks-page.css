@@ -17,6 +17,11 @@
   gap: var(--space-4);
 }
 
+/* When categories tab is active, float the panel above the subtab strip */
+.tasks-page-inner--categories .categories-panel {
+  order: -1;
+}
+
 /* ── Page header ─────────────────────────────────────────────────────────────── */
 .tasks-page-header {
   display: flex;
