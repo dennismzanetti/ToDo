@@ -113,6 +113,53 @@
 }
 .tasks-row.completed { opacity: .55; }
 
+/* ── Complete checkbox ───────────────────────────────────────────────────────── */
+.task-check {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--color-border);
+  background: var(--color-surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-interactive),
+              border-color var(--transition-interactive),
+              transform var(--transition-interactive);
+  color: transparent;
+}
+.task-check:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-highlight);
+  color: var(--color-primary);
+  transform: scale(1.1);
+}
+.task-check::after {
+  content: '';
+  display: block;
+  width: 10px;
+  height: 6px;
+  border-left: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg) translateY(-1px);
+  opacity: 0;
+  transition: opacity var(--transition-interactive);
+}
+.task-check:hover::after { opacity: 0.5; }
+.task-check.checked {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+.task-check.checked::after { opacity: 1; }
+.task-check.checked:hover {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+  color: var(--color-text-inverse);
+  transform: scale(1.1);
+}
+
 /* ── Row title ───────────────────────────────────────────────────────────────── */
 .tasks-row-title {
   flex: 1;
@@ -149,23 +196,21 @@
   white-space: nowrap;
 }
 
-/* ── Row actions (edit + delete) ─────────────────────────────────────────────── */
+/* ── Row actions (edit + delete) — always visible ───────────────────────────── */
 .tasks-row-actions {
   display: flex;
   align-items: center;
   gap: var(--space-1);
   flex-shrink: 0;
-  opacity: 0;
-  transition: opacity var(--transition-interactive);
+  opacity: 1;
 }
-.tasks-row:hover .tasks-row-actions { opacity: 1; }
 .tasks-row-edit-btn,
 .tasks-row-delete-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: var(--radius-sm);
   color: var(--color-text-faint);
   transition: color var(--transition-interactive),
@@ -182,10 +227,6 @@
   background: var(--color-error-highlight);
 }
 .tasks-row-delete-btn:active { transform: scale(.92); }
-
-@media (hover: none) {
-  .tasks-row-actions { opacity: .45; }
-}
 
 /* ── Row inline delete confirm ───────────────────────────────────────────────── */
 .tasks-row-delete-confirm {
