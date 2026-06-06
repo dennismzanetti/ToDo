@@ -77,27 +77,41 @@
   <main id="tasks-content" class="tasks-page">
     <div class="tasks-page-inner">
 
+      <!-- Page heading -->
       <div class="tasks-page-header">
         <div>
-          <h1 class="tasks-page-title">All Tasks</h1>
+          <h1 class="tasks-page-title" id="tasks-page-title">All Tasks</h1>
           <p class="text-muted" id="tasks-count">Loading&hellip;</p>
-        </div>
-        <div class="tasks-header-controls">
-          <select class="tasks-category-filter" id="tasks-category-filter" aria-label="Filter by category">
-            <option value="">All categories</option>
-          </select>
-          <div class="tasks-filter-bar" role="group" aria-label="Filter tasks">
-            <button class="tasks-filter-btn active" data-filter="all">All</button>
-            <button class="tasks-filter-btn" data-filter="active">Active</button>
-            <button class="tasks-filter-btn" data-filter="completed">Completed</button>
-          </div>
         </div>
       </div>
 
+      <!-- Sub-tab strip -->
+      <div class="tasks-subtabs" role="tablist" aria-label="Task views">
+        <button class="tasks-subtab active" data-tab="all"     role="tab" aria-selected="true"  aria-controls="tasks-list">All</button>
+        <button class="tasks-subtab"        data-tab="active"  role="tab" aria-selected="false" aria-controls="tasks-list">Active</button>
+        <button class="tasks-subtab"        data-tab="completed" role="tab" aria-selected="false" aria-controls="tasks-list">Completed</button>
+        <span class="tasks-subtabs-divider" aria-hidden="true"></span>
+        <button class="tasks-subtab tasks-subtab--categories" data-tab="categories" role="tab" aria-selected="false" aria-controls="categories-panel">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1.5" fill="currentColor" stroke="none"/></svg>
+          Categories
+        </button>
+      </div>
+
+      <!-- Category filter (visible only on task tabs, when categories exist) -->
+      <div class="tasks-cat-filter-row" id="tasks-cat-filter-row" hidden>
+        <label class="tasks-cat-filter-label" for="tasks-category-filter">Category:</label>
+        <select class="tasks-category-filter" id="tasks-category-filter" aria-label="Filter by category">
+          <option value="">All</option>
+        </select>
+      </div>
+
+      <!-- Task list -->
+      <div id="tasks-list" class="tasks-list" role="tabpanel" aria-labelledby=""></div>
+
       <!-- Categories panel -->
-      <div class="categories-panel" id="categories-panel">
+      <div class="categories-panel" id="categories-panel" role="tabpanel" hidden>
         <div class="categories-panel-header">
-          <span class="categories-panel-label">Categories</span>
+          <span class="categories-panel-label">Manage Categories</span>
           <div class="category-add-row">
             <input class="form-input category-add-input" type="text"
                    id="category-name-input" placeholder="New category…" autocomplete="off" maxlength="40" />
@@ -114,8 +128,6 @@
           <!-- Rendered by tasks-page.js -->
         </div>
       </div>
-
-      <div id="tasks-list" class="tasks-list"></div>
 
     </div>
   </main>

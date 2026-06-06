@@ -36,8 +36,9 @@ themeToggle?.addEventListener('click', () => {
 // ── State ──────────────────────────────────────────────────────────────────────
 let allTasks           = [];
 let allCategories      = [];
-let activeFilter       = 'all';
-let activeCategoryId   = '';     // '' = all categories
+let activeFilter       = 'all';   // 'all' | 'active' | 'completed'
+let activeTab          = 'all';   // 'all' | 'active' | 'completed' | 'categories'
+let activeCategoryId   = '';      // '' = all categories
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 function escHtml(str) {
@@ -67,15 +68,45 @@ const GROUPS          = ['high', 'medium', 'low'];
 const ICON_EDIT  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
 const ICON_TRASH = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
 
-// ── Status filter bar ──────────────────────────────────────────────────────────
-document.querySelectorAll('.tasks-filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    activeFilter = btn.dataset.filter;
-    document.querySelectorAll('.tasks-filter-btn').forEach(b =>
-      b.classList.toggle('active', b === btn)
-    );
-    render();
+// ── Sub-tab switching ──────────────────────────────────────────────────────────
+const taskListEl       = document.getElementById('tasks-list');
+const categoriesPanelEl = document.getElementById('categories-panel');
+const catFilterRowEl   = document.getElementById('tasks-cat-filter-row');
+const pageTitleEl      = document.getElementById('tasks-page-title');
+
+function setTab(tab) {
+  activeTab = tab;
+  const isCatTab = tab === 'categories';
+
+  // Update tab buttons
+  document.querySelectorAll('.tasks-subtab').forEach(btn => {
+    const isActive = btn.dataset.tab === tab;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
   });
+
+  // Show / hide panels
+  taskListEl.hidden       =  isCatTab;
+  categoriesPanelEl.hidden = !isCatTab;
+
+  // Category filter row: only when on a task tab AND categories exist
+  catFilterRowEl.hidden = isCatTab || allCategories.length === 0;
+
+  // Page title
+  const titles = { all: 'All Tasks', active: 'Active Tasks', completed: 'Completed Tasks', categories: 'Categories' };
+  if (pageTitleEl) pageTitleEl.textContent = titles[tab] ?? 'Tasks';
+
+  // Keep activeFilter in sync for task tabs
+  if (!isCatTab) {
+    activeFilter = tab;
+    render();
+  } else {
+    renderCategories();
+  }
+}
+
+document.querySelectorAll('.tasks-subtab').forEach(btn => {
+  btn.addEventListener('click', () => setTab(btn.dataset.tab));
 });
 
 // ── Category filter dropdown ───────────────────────────────────────────────────
@@ -89,16 +120,20 @@ function syncCategoryFilterOptions() {
   if (!categoryFilterEl) return;
   const current = categoryFilterEl.value;
   categoryFilterEl.innerHTML =
-    '<option value="">All categories</option>' +
+    '<option value="">All</option>' +
     allCategories
       .slice()
       .sort((a, b) => a.name.localeCompare(b.name))
       .map(c => `<option value="${escHtml(c.id)}"${c.id === current ? ' selected' : ''}>${escHtml(c.name)}</option>`)
       .join('');
-  // Restore selection if it still exists; otherwise reset to all
+  // If current selection was deleted, reset
   if (current && !allCategories.find(c => c.id === current)) {
     activeCategoryId = '';
     categoryFilterEl.value = '';
+  }
+  // Show/hide the filter row based on tab + whether categories exist
+  if (catFilterRowEl) {
+    catFilterRowEl.hidden = activeTab === 'categories' || allCategories.length === 0;
   }
 }
 
@@ -110,7 +145,7 @@ function renderCategories() {
   const container = document.getElementById('category-chips');
   if (!container) return;
   if (allCategories.length === 0) {
-    container.innerHTML = '<span class="category-chips-empty">No categories yet.</span>';
+    container.innerHTML = '<span class="category-chips-empty">No categories yet. Add one above.</span>';
     return;
   }
   container.innerHTML = '';
@@ -212,13 +247,13 @@ function render() {
   const total     = unscheduled.length;
   const completed = unscheduled.filter(t => t.completed).length;
   if (countEl) {
-    countEl.textContent = `${total} task${total !== 1 ? 's' : ''} — ${completed} completed`;
+    countEl.textContent = `${total} task${total !== 1 ? 's' : ''} \u2014 ${completed} completed`;
   }
 
   if (filtered.length === 0) {
     const messages = {
       completed : 'No completed tasks yet.',
-      active    : 'No active tasks — all done!',
+      active    : 'No active tasks \u2014 all done!',
       all       : activeCategoryId
         ? 'No tasks in this category.'
         : 'No unscheduled tasks. Tasks with a \u201cDo On\u201d date appear on the board.',
@@ -338,9 +373,10 @@ subscribe(tasks => {
 
 subscribeCategories(cats => {
   allCategories = cats.slice().sort((a, b) => a.name.localeCompare(b.name));
-  renderCategories();
+  // If we're on the categories tab, re-render that panel
+  if (activeTab === 'categories') renderCategories();
   syncCategoryFilterOptions();
-  render(); // re-render so catMap stays fresh
+  render();
 });
 
 // ── Service Worker ─────────────────────────────────────────────────────────────
