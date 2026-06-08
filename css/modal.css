@@ -63,6 +63,15 @@
 }
 .modal-close:hover { background: var(--color-surface-offset); color: var(--color-text); }
 
+/* ── Form — must be a flex child to pass height down to .modal-body ── */
+.modal > form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
 /* ── Body — THE scroll region ── */
 .modal-body {
   padding: var(--space-5) var(--space-6);
