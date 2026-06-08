@@ -27,6 +27,7 @@
   box-shadow: var(--shadow-lg);
   width: 100%;
   max-width: 540px;
+  height: 90dvh;       /* definite height so flex:1 children can scroll */
   max-height: 90dvh;
   /* overflow hidden here — only .modal-body scrolls */
   overflow: hidden;
