@@ -136,8 +136,15 @@ export function openModal(task) {
   pendingSubtasks = JSON.parse(JSON.stringify(t.subtasks || []));
 
   titleInput.value    = t.title    || '';
-  doOnFromInput.value = t.id ? tsToInputVal(t.doOnFrom) : '';
-  doOnToInput.value   = t.id ? tsToInputVal(t.doOnTo || t.doOnFrom) : '';
+  doOnFromInput.value = tsToInputVal(t.doOnFrom);
+  doOnToInput.value   = tsToInputVal(t.doOnTo || t.doOnFrom);
+  // For new tasks, always force-clear the Do On date fields regardless of
+  // any browser auto-fill or leftover HTML value attributes.
+  if (!task) {
+    doOnFromInput.value = '';
+    doOnToInput.value   = '';
+    doOnToInput.min     = '';
+  }
   dueDateInput.value  = tsToInputVal(t.dueDate);
   tagsInput.value     = (t.tags || []).join(', ');
 
