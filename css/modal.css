@@ -242,18 +242,33 @@
 }
 
 /* ── Date proxy wrapper ── */
-/* The visible text input sits on top; the hidden type=date proxy sits
-   underneath (position:absolute, opacity:0, pointer-events:none) so it
-   is never visible and therefore never auto-populated by iOS Safari. */
+/*
+  Two inputs live here:
+    1. .date-display  — visible type=text, read-only, styled like a normal input
+    2. .date-proxy    — hidden type=date, opacity:0, pointer-events:none
+                        never rendered visibly so iOS Safari never auto-fills it
+
+  Key layout rules:
+    - .date-proxy-wrap is display:flex so the clear button sits inline
+    - .date-display gets flex:1 + min-width:0 so it shrinks and doesn't overflow
+    - .date-proxy is position:absolute so it doesn't participate in flex layout
+    - We must override the broad ".form-field input { width:100% }" rule
+      which would otherwise force both inputs to full width inside the flex row
+*/
 .date-proxy-wrap {
   position: relative;
   display: flex;
   align-items: center;
+  gap: var(--space-1);
 }
+
+/* The visible text stand-in */
 .date-proxy-wrap .date-display {
   flex: 1;
+  min-width: 0;              /* allow shrinking in flex */
+  width: auto !important;    /* override .form-field input { width:100% } */
   cursor: pointer;
-  caret-color: transparent; /* no blinking cursor — field is read-only */
+  caret-color: transparent;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -262,7 +277,8 @@
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px oklch(from var(--color-primary) l c h / .15);
 }
-/* Hide the proxy completely — it must exist in the DOM but be invisible */
+
+/* The invisible native date picker — must be in DOM but never seen */
 .date-proxy {
   position: absolute;
   inset: 0;
@@ -274,16 +290,22 @@
   background: none;
   appearance: none;
   -webkit-appearance: none;
+  /* Override .form-field input width/border/background so it stays invisible */
+  padding: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
 }
-/* Clear (×) button overlaid on the right of the display input */
+
+/* Clear (×) button next to the display input */
 .date-clear-btn {
   flex-shrink: 0;
-  width: 26px; height: 26px;
-  display: none; /* shown via JS when a date is selected */
-  align-items: center; justify-content: center;
+  width: 26px;
+  height: 26px;
+  display: none;             /* toggled to flex via JS when a date is set */
+  align-items: center;
+  justify-content: center;
   border-radius: var(--radius-sm);
   color: var(--color-text-faint);
-  margin-left: var(--space-1);
   transition: background var(--transition-interactive), color var(--transition-interactive);
 }
 .date-clear-btn:hover { background: var(--color-surface-offset); color: var(--color-error); }
