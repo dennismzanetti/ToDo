@@ -17,12 +17,12 @@ const addSubtaskBtn   = document.getElementById('add-subtask-btn');
 const deleteBtn       = document.getElementById('delete-task-btn');
 const cancelBtn       = document.getElementById('modal-cancel');
 const closeBtn        = document.getElementById('modal-close');
+const doOnTodayBtn    = document.getElementById('do-on-today');
 
 // ── Live categories cache ─────────────────────────────────────────────────────
 let _categories = [];
 subscribeCategories(cats => {
   _categories = cats.slice().sort((a, b) => a.name.localeCompare(b.name));
-  // If modal is open, refresh the dropdown without resetting the current value
   if (overlay && !overlay.hidden) {
     const sel = document.getElementById('edit-category');
     populateCategorySelect(sel?.value || '');
@@ -96,7 +96,7 @@ function showDeleteConfirm() {
   });
 }
 
-// Clear due date button
+// ── Clear due date button ────────────────────────────────────────────────────
 clearDueDateBtn.addEventListener('click', () => {
   dueDateInput.value = '';
   syncClearBtn();
@@ -107,6 +107,15 @@ function syncClearBtn() {
 }
 
 dueDateInput.addEventListener('change', syncClearBtn);
+
+// ── Today button — sets Do On From/To to today ────────────────────────────────
+doOnTodayBtn.addEventListener('click', () => {
+  const today = new Date();
+  const val = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  doOnFromInput.value = val;
+  doOnToInput.value   = val;
+  enforceSpanOrder();
+});
 
 let notesInput = null;
 document.addEventListener('DOMContentLoaded', () => {
@@ -135,18 +144,19 @@ export function openModal(task) {
   currentTask     = task;
   pendingSubtasks = JSON.parse(JSON.stringify(t.subtasks || []));
 
-  titleInput.value    = t.title    || '';
-  doOnFromInput.value = tsToInputVal(t.doOnFrom);
-  doOnToInput.value   = tsToInputVal(t.doOnTo || t.doOnFrom);
-  // For new tasks, always force-clear the Do On date fields regardless of
-  // any browser auto-fill or leftover HTML value attributes.
-  if (!task) {
+  titleInput.value   = t.title || '';
+  tagsInput.value    = (t.tags || []).join(', ');
+  dueDateInput.value = tsToInputVal(t.dueDate);
+
+  // Do On dates: populate for existing tasks, always blank for new tasks
+  if (task) {
+    doOnFromInput.value = tsToInputVal(t.doOnFrom);
+    doOnToInput.value   = tsToInputVal(t.doOnTo || t.doOnFrom);
+  } else {
     doOnFromInput.value = '';
     doOnToInput.value   = '';
-    doOnToInput.min     = '';
   }
-  dueDateInput.value  = tsToInputVal(t.dueDate);
-  tagsInput.value     = (t.tags || []).join(', ');
+  doOnToInput.min = doOnFromInput.value || '';
 
   setPriority(t.priority || 'medium');
   populateCategorySelect(t.categoryId || '');
