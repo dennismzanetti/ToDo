@@ -148,14 +148,12 @@ export function openModal(task) {
   tagsInput.value    = (t.tags || []).join(', ');
   dueDateInput.value = tsToInputVal(t.dueDate);
 
-  // Do On dates: populate for existing tasks, always blank for new tasks
-  if (task) {
-    doOnFromInput.value = tsToInputVal(t.doOnFrom);
-    doOnToInput.value   = tsToInputVal(t.doOnTo || t.doOnFrom);
-  } else {
-    doOnFromInput.value = '';
-    doOnToInput.value   = '';
-  }
+  // Do On dates: always explicitly set — never rely on form.reset() or browser defaults
+  doOnFromInput.value = task ? tsToInputVal(t.doOnFrom) : '';
+  doOnToInput.value   = task ? tsToInputVal(t.doOnTo || t.doOnFrom) : '';
+  // Belt-and-suspenders: forcibly remove any cached value attribute the browser may restore
+  doOnFromInput.removeAttribute('value');
+  doOnToInput.removeAttribute('value');
   doOnToInput.min = doOnFromInput.value || '';
 
   setPriority(t.priority || 'medium');
@@ -181,6 +179,13 @@ export function openModal(task) {
   requestAnimationFrame(() => {
     if (window.matchMedia('(hover: hover)').matches) titleInput.focus();
   });
+}
+
+// Exported so board.js can pre-fill dates after calling openModal(null)
+export function setDoOnDates(fromVal, toVal) {
+  doOnFromInput.value = fromVal || '';
+  doOnToInput.value   = toVal   || '';
+  enforceSpanOrder();
 }
 
 function enforceSpanOrder() {
@@ -230,6 +235,11 @@ function closeModal() {
   currentTask     = null;
   pendingSubtasks = [];
   form.reset();
+  // Explicitly clear date fields after reset — form.reset() can restore browser-cached values
+  doOnFromInput.value = '';
+  doOnToInput.value   = '';
+  doOnFromInput.removeAttribute('value');
+  doOnToInput.removeAttribute('value');
   subtaskList.innerHTML = '';
   doOnToInput.min = '';
   syncClearBtn();

@@ -1,6 +1,6 @@
 import { toDateKey, dateKeyToDate, taskDisplayKeys } from './models.js';
 import { addTask, toggleComplete, reorderTask, deleteTask, subscribeCategories } from './store.js';
-import { openModal } from './modal.js';
+import { openModal, setDoOnDates } from './modal.js';
 import { Timestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 let weekOffset = 0;
@@ -172,16 +172,15 @@ function observeHeaderHeight(headerRow) {
   _headerObserver.observe(headerRow);
 }
 
-// ── Open modal for new task, pre-filling date if a specific day column ────────
+// ── Open modal for new task, pre-filling date only for specific day columns ───
 function openModalForDate(colKey) {
   openModal(null);
+  // Only pre-fill dates when the user taps + on a specific day column.
+  // For 'no-date' columns (and the header + Add Task button), leave dates blank.
   if (colKey !== 'no-date') {
-    const doOnFromInput = document.getElementById('edit-do-on-from');
-    const doOnToInput   = document.getElementById('edit-do-on-to');
     const d = dateKeyToDate(colKey);
     const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    doOnFromInput.value = val;
-    doOnToInput.value   = val;
+    setDoOnDates(val, val);
   }
 }
 
