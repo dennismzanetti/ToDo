@@ -172,6 +172,19 @@ function observeHeaderHeight(headerRow) {
   _headerObserver.observe(headerRow);
 }
 
+// ── Open modal for new task, pre-filling date if a specific day column ────────
+function openModalForDate(colKey) {
+  openModal(null);
+  if (colKey !== 'no-date') {
+    const doOnFromInput = document.getElementById('edit-do-on-from');
+    const doOnToInput   = document.getElementById('edit-do-on-to');
+    const d = dateKeyToDate(colKey);
+    const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    doOnFromInput.value = val;
+    doOnToInput.value   = val;
+  }
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 // MOBILE BOARD
 // ══════════════════════════════════════════════════════════════════════════════
@@ -295,7 +308,7 @@ function renderMobileBoard(tasks) {
   taskSection.appendChild(addArea);
   board.appendChild(taskSection);
 
-  addBtn.addEventListener('click', () => showMobileInlineAdd(taskList, addArea, activeDayKey, addBtn));
+  addBtn.addEventListener('click', () => openModalForDate(activeDayKey));
 
   if (noDateTasks.length > 0) {
     const ndSection = document.createElement('div');
@@ -323,7 +336,7 @@ function renderMobileBoard(tasks) {
     ndSection.appendChild(ndAddArea);
     board.appendChild(ndSection);
 
-    ndAddBtn.addEventListener('click', () => showMobileInlineAdd(ndList, ndAddArea, 'no-date', ndAddBtn));
+    ndAddBtn.addEventListener('click', () => openModalForDate('no-date'));
   }
 
   attachMobileSwipe(board);
@@ -500,7 +513,7 @@ function applyCheckToggle(task, card, checkBtn) {
   toggleComplete(task.id, nowCompleted);
 }
 
-// ── Mobile inline add ─────────────────────────────────────────────────────────
+// ── Mobile inline add (kept for potential future use) ─────────────────────────
 
 function showMobileInlineAdd(taskList, addArea, colKey, addBtn) {
   addBtn.style.display = 'none';
@@ -574,7 +587,7 @@ function renderDesktopBoard(tasks) {
 
   board.innerHTML = '';
 
-  // ── Header row ───────────────────────────────────────────────────────────
+  // ── Header row ───────────────────────────────────────────────────────────────
   const headerRow = document.createElement('div');
   headerRow.className = 'board-header-row';
 
@@ -604,7 +617,7 @@ function renderDesktopBoard(tasks) {
 
   observeHeaderHeight(headerRow);
 
-  // ── Span row ─────────────────────────────────────────────────────────────
+  // ── Span row ───────────────────────────────────────────────────────────────
   const spanRow = document.createElement('div');
   spanRow.className = 'board-span-row';
 
@@ -639,7 +652,7 @@ function renderDesktopBoard(tasks) {
   });
   board.appendChild(spanRow);
 
-  // ── Body row ─────────────────────────────────────────────────────────────
+  // ── Body row ───────────────────────────────────────────────────────────────
   const bodyRow = document.createElement('div');
   bodyRow.className = 'board-body-row';
 
