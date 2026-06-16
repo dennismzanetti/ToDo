@@ -17,11 +17,63 @@ const cancelBtn       = document.getElementById('modal-cancel');
 const closeBtn        = document.getElementById('modal-close');
 const doOnTodayBtn    = document.getElementById('do-on-today');
 
-// ── Live references to the date inputs (may be replaced by clones) ────────────
-// We use getter functions instead of top-level consts so we always get the
-// current DOM node even after a clone-replacement.
-function getFromInput() { return document.getElementById('edit-do-on-from'); }
-function getToInput()   { return document.getElementById('edit-do-on-to'); }
+// ── Do On date proxy elements ─────────────────────────────────────────────────
+// Each Do On field has:
+//   display  — type="text" readonly, shows formatted date to the user
+//   proxy    — type="date" hidden off-screen, triggers native picker on tap
+//   clearBtn — ✕ button to clear the field
+//
+// WHY: iOS Safari auto-populates visible type="date" inputs with today's date
+// the moment the form becomes visible — this cannot be stopped with JS.
+// A hidden type="date" input is never auto-populated because Safari only fills
+// visible inputs. We layer the visible text display on top and sync values.
+const fromDisplay  = document.getElementById('edit-do-on-from-display');
+const fromProxy    = document.getElementById('edit-do-on-from');
+const fromClearBtn = document.getElementById('clear-do-on-from');
+const toDisplay    = document.getElementById('edit-do-on-to-display');
+const toProxy      = document.getElementById('edit-do-on-to');
+const toClearBtn   = document.getElementById('clear-do-on-to');
+
+// Format YYYY-MM-DD → MM/DD/YYYY for display
+function fmtDisplay(val) {
+  if (!val) return '';
+  const [y, m, d] = val.split('-');
+  return `${m}/${d}/${y}`;
+}
+
+function syncFromDisplay() {
+  fromDisplay.value = fmtDisplay(fromProxy.value);
+  fromClearBtn.style.display = fromProxy.value ? 'inline-flex' : 'none';
+}
+function syncToDisplay() {
+  toDisplay.value = fmtDisplay(toProxy.value);
+  toClearBtn.style.display = toProxy.value ? 'inline-flex' : 'none';
+}
+
+// Tapping the text display opens the hidden proxy picker
+fromDisplay.addEventListener('click', () => fromProxy.showPicker?.() ?? fromProxy.click());
+toDisplay.addEventListener('click',   () => toProxy.showPicker?.()   ?? toProxy.click());
+
+fromProxy.addEventListener('change', () => {
+  enforceSpanOrder();
+  syncFromDisplay();
+  syncToDisplay();
+});
+toProxy.addEventListener('change', () => {
+  enforceSpanOrder();
+  syncToDisplay();
+});
+
+fromClearBtn.addEventListener('click', () => {
+  fromProxy.value = '';
+  toProxy.value   = '';
+  syncFromDisplay();
+  syncToDisplay();
+});
+toClearBtn.addEventListener('click', () => {
+  toProxy.value = '';
+  syncToDisplay();
+});
 
 // ── Live categories cache ─────────────────────────────────────────────────────
 let _categories = [];
@@ -57,7 +109,7 @@ function populateCategorySelect(currentCategoryId) {
       .join('');
 }
 
-// ── Body scroll lock ─────────────────────────────────────────────────────────
+// ── Body scroll lock ──────────────────────────────────────────────────────────
 let _bodyScrollTop = 0;
 function lockBodyScroll() {
   _bodyScrollTop = window.scrollY;
@@ -72,28 +124,6 @@ function unlockBodyScroll() {
   document.body.style.top      = '';
   document.body.style.width    = '';
   window.scrollTo(0, _bodyScrollTop);
-}
-
-// ── Replace a date input with a pristine clone ────────────────────────────────
-// iOS Safari caches the .value property internally on type="date" inputs and
-// will restore today's date even after .value = '' is called programmatically.
-// The only 100% reliable fix is to replace the node itself with a fresh clone.
-function freshDateInput(id) {
-  const old = document.getElementById(id);
-  if (!old) return null;
-  const fresh = document.createElement('input');
-  fresh.type        = 'date';
-  fresh.id          = old.id;
-  fresh.name        = old.name || old.id;
-  fresh.className   = old.className;
-  // Copy any data-* and aria-* attributes
-  Array.from(old.attributes).forEach(attr => {
-    if (!['type','id','name','class','value','min','max'].includes(attr.name)) {
-      fresh.setAttribute(attr.name, attr.value);
-    }
-  });
-  old.parentNode.replaceChild(fresh, old);
-  return fresh;
 }
 
 // ── Delete confirmation ───────────────────────────────────────────────────────
@@ -122,7 +152,7 @@ function showDeleteConfirm() {
   });
 }
 
-// ── Clear due date button ────────────────────────────────────────────────────
+// ── Clear due date button ─────────────────────────────────────────────────────
 clearDueDateBtn.addEventListener('click', () => {
   dueDateInput.value = '';
   syncClearBtn();
@@ -138,9 +168,10 @@ dueDateInput.addEventListener('change', syncClearBtn);
 doOnTodayBtn.addEventListener('click', () => {
   const today = new Date();
   const val = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-  getFromInput().value = val;
-  getToInput().value   = val;
-  enforceSpanOrder();
+  fromProxy.value = val;
+  toProxy.value   = val;
+  syncFromDisplay();
+  syncToDisplay();
 });
 
 let notesInput = null;
@@ -165,6 +196,14 @@ function inputToTs(val) {
   return Timestamp.fromDate(new Date(y, m-1, d));
 }
 
+function setDoOnProxies(fromVal, toVal) {
+  fromProxy.value = fromVal || '';
+  toProxy.value   = toVal   || '';
+  enforceSpanOrder();
+  syncFromDisplay();
+  syncToDisplay();
+}
+
 export function openModal(task) {
   const t = task || {};
   currentTask     = task;
@@ -174,22 +213,11 @@ export function openModal(task) {
   tagsInput.value    = (t.tags || []).join(', ');
   dueDateInput.value = tsToInputVal(t.dueDate);
 
-  // ── Replace both date inputs with fresh DOM nodes ──────────────────────────
-  // This is the only reliable way to clear iOS Safari's internally cached date
-  // value. .value = '', removeAttribute('value'), and form.reset() all fail
-  // on Safari mobile once the input has been used. A brand-new element has
-  // no cached state whatsoever.
-  const fromFresh = freshDateInput('edit-do-on-from');
-  const toFresh   = freshDateInput('edit-do-on-to');
-
-  if (task) {
-    if (fromFresh) fromFresh.value = tsToInputVal(t.doOnFrom);
-    if (toFresh)   toFresh.value   = tsToInputVal(t.doOnTo || t.doOnFrom);
-  }
-  // For a new task: fresh nodes start with no value — nothing else needed.
-
-  if (fromFresh) fromFresh.addEventListener('change', enforceSpanOrder);
-  enforceSpanOrder();
+  // Set Do On proxies — hidden inputs are never auto-populated by Safari
+  setDoOnProxies(
+    task ? tsToInputVal(t.doOnFrom) : '',
+    task ? tsToInputVal(t.doOnTo || t.doOnFrom) : ''
+  );
 
   setPriority(t.priority || 'medium');
   populateCategorySelect(t.categoryId || '');
@@ -216,21 +244,14 @@ export function openModal(task) {
 
 // Exported so board.js can pre-fill dates after calling openModal(null)
 export function setDoOnDates(fromVal, toVal) {
-  const f = getFromInput();
-  const t = getToInput();
-  if (f) f.value = fromVal || '';
-  if (t) t.value = toVal   || '';
-  enforceSpanOrder();
+  setDoOnProxies(fromVal, toVal);
 }
 
 function enforceSpanOrder() {
-  const f = getFromInput();
-  const t = getToInput();
-  if (!f || !t) return;
-  if (f.value && t.value && t.value < f.value) {
-    t.value = f.value;
+  if (fromProxy.value && toProxy.value && toProxy.value < fromProxy.value) {
+    toProxy.value = fromProxy.value;
   }
-  t.min = f.value || '';
+  toProxy.min = fromProxy.value || '';
 }
 
 function renderSubtasks() {
@@ -273,6 +294,8 @@ function closeModal() {
   currentTask     = null;
   pendingSubtasks = [];
   form.reset();
+  // Reset Do On proxies and displays
+  setDoOnProxies('', '');
   subtaskList.innerHTML = '';
   syncClearBtn();
   setPriority('medium');
@@ -290,8 +313,8 @@ form.addEventListener('submit', async e => {
   const title = titleInput.value.trim();
   if (!title) { titleInput.focus(); return; }
 
-  const doOnFrom = inputToTs(getFromInput()?.value);
-  const doOnTo   = inputToTs(getToInput()?.value) || doOnFrom;
+  const doOnFrom = inputToTs(fromProxy.value);
+  const doOnTo   = inputToTs(toProxy.value) || doOnFrom;
 
   const notesEl = document.getElementById('edit-notes');
   const notes = notesEl ? notesEl.value.trim() : '';

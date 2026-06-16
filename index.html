@@ -140,16 +140,39 @@
             </span>
             <div class="modal-date-row">
               <button type="button" class="modal-today-btn" id="do-on-today" aria-label="Set Do On to today">Today</button>
+
+              <!-- From: visible text display + hidden date proxy -->
               <div class="modal-date-field">
-                <label class="modal-date-label" for="edit-do-on-from">From</label>
-                <input class="form-input" type="date" id="edit-do-on-from" />
+                <label class="modal-date-label" for="edit-do-on-from-display">From</label>
+                <div class="date-proxy-wrap">
+                  <input class="form-input date-display" type="text" id="edit-do-on-from-display"
+                    placeholder="mm/dd/yyyy" readonly aria-label="Do On from date" />
+                  <input class="date-proxy" type="date" id="edit-do-on-from"
+                    aria-hidden="true" tabindex="-1" />
+                  <button type="button" class="date-clear-btn" id="clear-do-on-from"
+                    aria-label="Clear from date" style="display:none">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </div>
               </div>
+
               <div class="modal-date-arrow" aria-hidden="true">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
               </div>
+
+              <!-- To: visible text display + hidden date proxy -->
               <div class="modal-date-field">
-                <label class="modal-date-label" for="edit-do-on-to">To</label>
-                <input class="form-input" type="date" id="edit-do-on-to" />
+                <label class="modal-date-label" for="edit-do-on-to-display">To</label>
+                <div class="date-proxy-wrap">
+                  <input class="form-input date-display" type="text" id="edit-do-on-to-display"
+                    placeholder="mm/dd/yyyy" readonly aria-label="Do On to date" />
+                  <input class="date-proxy" type="date" id="edit-do-on-to"
+                    aria-hidden="true" tabindex="-1" />
+                  <button type="button" class="date-clear-btn" id="clear-do-on-to"
+                    aria-label="Clear to date" style="display:none">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
