@@ -6,8 +6,6 @@ const overlay         = document.getElementById('modal-overlay');
 const form            = document.getElementById('task-form');
 const titleInput      = document.getElementById('edit-title');
 const priorityInput   = document.getElementById('edit-priority');
-const doOnFromInput   = document.getElementById('edit-do-on-from');
-const doOnToInput     = document.getElementById('edit-do-on-to');
 const dueDateInput    = document.getElementById('edit-due-date');
 const clearDueDateBtn = document.getElementById('clear-due-date');
 const tagsInput       = document.getElementById('edit-tags');
@@ -18,6 +16,12 @@ const deleteBtn       = document.getElementById('delete-task-btn');
 const cancelBtn       = document.getElementById('modal-cancel');
 const closeBtn        = document.getElementById('modal-close');
 const doOnTodayBtn    = document.getElementById('do-on-today');
+
+// ── Live references to the date inputs (may be replaced by clones) ────────────
+// We use getter functions instead of top-level consts so we always get the
+// current DOM node even after a clone-replacement.
+function getFromInput() { return document.getElementById('edit-do-on-from'); }
+function getToInput()   { return document.getElementById('edit-do-on-to'); }
 
 // ── Live categories cache ─────────────────────────────────────────────────────
 let _categories = [];
@@ -70,6 +74,28 @@ function unlockBodyScroll() {
   window.scrollTo(0, _bodyScrollTop);
 }
 
+// ── Replace a date input with a pristine clone ────────────────────────────────
+// iOS Safari caches the .value property internally on type="date" inputs and
+// will restore today's date even after .value = '' is called programmatically.
+// The only 100% reliable fix is to replace the node itself with a fresh clone.
+function freshDateInput(id) {
+  const old = document.getElementById(id);
+  if (!old) return null;
+  const fresh = document.createElement('input');
+  fresh.type        = 'date';
+  fresh.id          = old.id;
+  fresh.name        = old.name || old.id;
+  fresh.className   = old.className;
+  // Copy any data-* and aria-* attributes
+  Array.from(old.attributes).forEach(attr => {
+    if (!['type','id','name','class','value','min','max'].includes(attr.name)) {
+      fresh.setAttribute(attr.name, attr.value);
+    }
+  });
+  old.parentNode.replaceChild(fresh, old);
+  return fresh;
+}
+
 // ── Delete confirmation ───────────────────────────────────────────────────────
 function showDeleteConfirm() {
   if (deleteBtn.parentElement.querySelector('.delete-confirm-row')) return;
@@ -112,8 +138,8 @@ dueDateInput.addEventListener('change', syncClearBtn);
 doOnTodayBtn.addEventListener('click', () => {
   const today = new Date();
   const val = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-  doOnFromInput.value = val;
-  doOnToInput.value   = val;
+  getFromInput().value = val;
+  getToInput().value   = val;
   enforceSpanOrder();
 });
 
@@ -148,13 +174,22 @@ export function openModal(task) {
   tagsInput.value    = (t.tags || []).join(', ');
   dueDateInput.value = tsToInputVal(t.dueDate);
 
-  // Do On dates: always explicitly set — never rely on form.reset() or browser defaults
-  doOnFromInput.value = task ? tsToInputVal(t.doOnFrom) : '';
-  doOnToInput.value   = task ? tsToInputVal(t.doOnTo || t.doOnFrom) : '';
-  // Belt-and-suspenders: forcibly remove any cached value attribute the browser may restore
-  doOnFromInput.removeAttribute('value');
-  doOnToInput.removeAttribute('value');
-  doOnToInput.min = doOnFromInput.value || '';
+  // ── Replace both date inputs with fresh DOM nodes ──────────────────────────
+  // This is the only reliable way to clear iOS Safari's internally cached date
+  // value. .value = '', removeAttribute('value'), and form.reset() all fail
+  // on Safari mobile once the input has been used. A brand-new element has
+  // no cached state whatsoever.
+  const fromFresh = freshDateInput('edit-do-on-from');
+  const toFresh   = freshDateInput('edit-do-on-to');
+
+  if (task) {
+    if (fromFresh) fromFresh.value = tsToInputVal(t.doOnFrom);
+    if (toFresh)   toFresh.value   = tsToInputVal(t.doOnTo || t.doOnFrom);
+  }
+  // For a new task: fresh nodes start with no value — nothing else needed.
+
+  if (fromFresh) fromFresh.addEventListener('change', enforceSpanOrder);
+  enforceSpanOrder();
 
   setPriority(t.priority || 'medium');
   populateCategorySelect(t.categoryId || '');
@@ -162,8 +197,6 @@ export function openModal(task) {
 
   notesInput = document.getElementById('edit-notes');
   if (notesInput) notesInput.value = t.notes || '';
-
-  doOnFromInput.addEventListener('change', enforceSpanOrder, { once: false });
 
   const confirmRow = overlay.querySelector('.delete-confirm-row');
   if (confirmRow) confirmRow.remove();
@@ -183,16 +216,21 @@ export function openModal(task) {
 
 // Exported so board.js can pre-fill dates after calling openModal(null)
 export function setDoOnDates(fromVal, toVal) {
-  doOnFromInput.value = fromVal || '';
-  doOnToInput.value   = toVal   || '';
+  const f = getFromInput();
+  const t = getToInput();
+  if (f) f.value = fromVal || '';
+  if (t) t.value = toVal   || '';
   enforceSpanOrder();
 }
 
 function enforceSpanOrder() {
-  if (doOnFromInput.value && doOnToInput.value && doOnToInput.value < doOnFromInput.value) {
-    doOnToInput.value = doOnFromInput.value;
+  const f = getFromInput();
+  const t = getToInput();
+  if (!f || !t) return;
+  if (f.value && t.value && t.value < f.value) {
+    t.value = f.value;
   }
-  doOnToInput.min = doOnFromInput.value || '';
+  t.min = f.value || '';
 }
 
 function renderSubtasks() {
@@ -235,13 +273,7 @@ function closeModal() {
   currentTask     = null;
   pendingSubtasks = [];
   form.reset();
-  // Explicitly clear date fields after reset — form.reset() can restore browser-cached values
-  doOnFromInput.value = '';
-  doOnToInput.value   = '';
-  doOnFromInput.removeAttribute('value');
-  doOnToInput.removeAttribute('value');
   subtaskList.innerHTML = '';
-  doOnToInput.min = '';
   syncClearBtn();
   setPriority('medium');
 }
@@ -258,8 +290,8 @@ form.addEventListener('submit', async e => {
   const title = titleInput.value.trim();
   if (!title) { titleInput.focus(); return; }
 
-  const doOnFrom = inputToTs(doOnFromInput.value);
-  const doOnTo   = inputToTs(doOnToInput.value) || doOnFrom;
+  const doOnFrom = inputToTs(getFromInput()?.value);
+  const doOnTo   = inputToTs(getToInput()?.value) || doOnFrom;
 
   const notesEl = document.getElementById('edit-notes');
   const notes = notesEl ? notesEl.value.trim() : '';
