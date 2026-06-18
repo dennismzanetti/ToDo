@@ -293,6 +293,9 @@ function render() {
       const catHtml  = catName
         ? `<span class="tasks-category-chip">${escHtml(catName)}</span>`
         : '';
+      const assignedHtml = task.assignedTo
+        ? `<span class="assigned-badge">${escHtml(task.assignedTo)}</span>`
+        : '';
 
       row.innerHTML = `
         <button class="task-check${task.completed ? ' checked' : ''}"
@@ -301,6 +304,7 @@ function render() {
         <span class="tasks-row-title${task.completed ? ' done' : ''}">${escHtml(task.title)}</span>
         <span class="tasks-row-meta">
           ${catHtml}
+          ${assignedHtml}
           ${dueDateStr ? `
             <span class="due-date-badge">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
