@@ -9,6 +9,7 @@ const priorityInput   = document.getElementById('edit-priority');
 const dueDateInput    = document.getElementById('edit-due-date');
 const clearDueDateBtn = document.getElementById('clear-due-date');
 const tagsInput       = document.getElementById('edit-tags');
+const assignedToInput = document.getElementById('edit-assigned-to');
 const subtaskList     = document.getElementById('subtask-list');
 const newSubtaskInput = document.getElementById('new-subtask-input');
 const addSubtaskBtn   = document.getElementById('add-subtask-btn');
@@ -209,9 +210,10 @@ export function openModal(task) {
   currentTask     = task;
   pendingSubtasks = JSON.parse(JSON.stringify(t.subtasks || []));
 
-  titleInput.value   = t.title || '';
-  tagsInput.value    = (t.tags || []).join(', ');
-  dueDateInput.value = tsToInputVal(t.dueDate);
+  titleInput.value      = t.title || '';
+  tagsInput.value       = (t.tags || []).join(', ');
+  dueDateInput.value    = tsToInputVal(t.dueDate);
+  if (assignedToInput) assignedToInput.value = t.assignedTo || '';
 
   // Set Do On proxies — hidden inputs are never auto-populated by Safari
   setDoOnProxies(
@@ -326,6 +328,7 @@ form.addEventListener('submit', async e => {
     title,
     priority:   priorityInput.value,
     categoryId: categoryId || null,
+    assignedTo: assignedToInput ? assignedToInput.value.trim() : '',
     doOnFrom,
     doOnTo,
     dueDate:  inputToTs(dueDateInput.value),
