@@ -5,7 +5,7 @@
    Imported by styles.css
    ============================================================================= */
 
-/* ── MODAL ──────────────────────────────────────────────────────────────────── */
+/* ── MODAL ───────────────────────────────────────────────────────────────────────── */
 .modal-overlay {
   position:fixed; inset:0;
   background: oklch(0 0 0 / .45);
@@ -48,7 +48,7 @@
 }
 .modal-actions-right { display:flex; align-items:center; gap:var(--space-2); margin-left:auto; }
 
-/* ── FORM ───────────────────────────────────────────────────────────────────── */
+/* ── FORM ─────────────────────────────────────────────────────────────────────────── */
 .form-group { display:flex; flex-direction:column; gap:var(--space-2); }
 .form-label { font-size:var(--text-sm); font-weight:600; color:var(--color-text); }
 .form-input,.form-textarea,.form-select {
@@ -66,7 +66,7 @@
 .form-textarea { min-height:80px; resize:vertical; }
 .form-row-2col { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4); }
 
-/* ── BUTTONS ────────────────────────────────────────────────────────────────── */
+/* ── BUTTONS ──────────────────────────────────────────────────────────────────────── */
 .btn {
   display:inline-flex; align-items:center; justify-content:center; gap:var(--space-2);
   padding: var(--space-2) var(--space-4);
@@ -88,7 +88,7 @@
 .btn-danger:hover { background:var(--color-error); color:#fff; border-color:var(--color-error); }
 .btn-danger:active { transform:scale(.98); }
 
-/* ── PRIORITY BADGE ─────────────────────────────────────────────────────────── */
+/* ── PRIORITY BADGE ───────────────────────────────────────────────────────────────────── */
 .priority-badge {
   display: inline-flex; align-items: center;
   padding: 1px var(--space-2); border-radius: var(--radius-full);
@@ -100,7 +100,17 @@
 .priority-badge.medium { background: oklch(from var(--priority-medium-color) l c h / .12); color: var(--priority-medium-color); }
 .priority-badge.low    { background: oklch(from var(--priority-low-color)    l c h / .12); color: var(--priority-low-color); }
 
-/* ── SUBTASK PROGRESS ───────────────────────────────────────────────────────── */
+/* ── ASSIGNED BADGE ───────────────────────────────────────────────────────────────────── */
+.assigned-badge {
+  display: inline-flex; align-items: center;
+  padding: 1px var(--space-2); border-radius: var(--radius-full);
+  font-size: 10px; font-weight: 600;
+  color: var(--color-blue);
+  background: oklch(from var(--color-blue) l c h / .12);
+  white-space: nowrap;
+}
+
+/* ── SUBTASK PROGRESS ──────────────────────────────────────────────────────────────────── */
 .subtask-progress {
   display: inline-flex; align-items: center;
   font-size: 10px; font-weight: 600;
@@ -109,7 +119,7 @@
 }
 .subtask-progress.done { color: var(--color-success); }
 
-/* ── INLINE ADD ─────────────────────────────────────────────────────────────── */
+/* ── INLINE ADD ──────────────────────────────────────────────────────────────────────── */
 .inline-add-form {
   display: flex; gap: var(--space-1); align-items: center;
   padding: var(--space-1) 0;
@@ -132,5 +142,5 @@
 .inline-confirm-btn:hover  { background: var(--color-primary-hover); }
 .inline-confirm-btn:active { background: var(--color-primary-active); transform: scale(.98); }
 
-/* ── SHARED ANIMATIONS ──────────────────────────────────────────────────────── */
+/* ── SHARED ANIMATIONS ─────────────────────────────────────────────────────────────────── */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
