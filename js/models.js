@@ -10,6 +10,7 @@ export function createTask(fields = {}) {
     dueDate:    fields.dueDate    || null,
     completed:  fields.completed  || false,
     categoryId: fields.categoryId || null,
+    assignedTo: fields.assignedTo || '',
     tags:       Array.isArray(fields.tags)     ? fields.tags     : [],
     subtasks:   Array.isArray(fields.subtasks) ? fields.subtasks.map(s => ({ ...s, completed: false })) : [],
     order:      typeof fields.order === 'number' ? fields.order : Date.now(),
