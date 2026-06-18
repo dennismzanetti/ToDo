@@ -571,7 +571,8 @@ function renderDesktopBoard(tasks) {
   const days     = getDays();
   const todayKey = toDateKey(new Date());
   const dayKeys  = days.map(toDateKey);
-  const allKeys  = ['no-date', ...dayKeys];
+  // Desktop board shows only the 7-day columns — no No Date column
+  const allKeys  = [...dayKeys];
 
   weekLabel.textContent =
     `${MONTHS[days[0].getMonth()]} ${days[0].getDate()} – ` +
@@ -583,7 +584,7 @@ function renderDesktopBoard(tasks) {
 
   tasks.forEach(t => {
     const keys = taskDisplayKeys(t);
-    if (keys[0] === 'no-date') { singleTasks['no-date'].push(t); return; }
+    if (keys[0] === 'no-date') return; // skip no-date tasks on desktop
     const visibleKeys = keys.filter(k => allKeys.includes(k));
     if (visibleKeys.length > 1) {
       spanTasks.push({ task: t, visibleKeys });
@@ -597,12 +598,6 @@ function renderDesktopBoard(tasks) {
   // ── Header row ───────────────────────────────────────────────────────────────
   const headerRow = document.createElement('div');
   headerRow.className = 'board-header-row';
-
-  const noDateHdr = document.createElement('div');
-  noDateHdr.className = 'column-header no-date-header';
-  noDateHdr.dataset.col = 'no-date';
-  noDateHdr.innerHTML = `<div class="col-day">No Date</div><div class="col-date">—</div>`;
-  headerRow.appendChild(noDateHdr);
 
   days.forEach(day => {
     const key = toDateKey(day);
@@ -629,21 +624,15 @@ function renderDesktopBoard(tasks) {
   spanRow.className = 'board-span-row';
 
   allKeys.forEach((key, colIndex) => {
-    let isWeekend = false;
-    let isToday = false;
-    let dayName = 'no-date';
-    if (key !== 'no-date') {
-      const day = days[colIndex - 1];
-      const dayIdx = day.getDay();
-      isWeekend = dayIdx === 0 || dayIdx === 6;
-      isToday   = key === todayKey;
-      dayName   = DAYS[dayIdx].toLowerCase();
-    }
+    const day = days[colIndex];
+    const dayIdx = day.getDay();
+    const isWeekend = dayIdx === 0 || dayIdx === 6;
+    const isToday   = key === todayKey;
+    const dayName   = DAYS[dayIdx].toLowerCase();
     const bg = document.createElement('div');
     bg.className = 'span-row-bg-cell' +
-      (key === 'no-date' ? ' no-date'    : '') +
-      (isWeekend         ? ' is-weekend' : '') +
-      (isToday           ? ' is-today'   : '');
+      (isWeekend ? ' is-weekend' : '') +
+      (isToday   ? ' is-today'   : '');
     bg.dataset.col = dayName;
     bg.style.gridColumn = `${colIndex + 1} / ${colIndex + 2}`;
     spanRow.appendChild(bg);
@@ -665,18 +654,12 @@ function renderDesktopBoard(tasks) {
 
   allKeys.forEach((key, colIndex) => {
     const col = document.createElement('div');
-    let dayName = 'no-date';
-    let isWeekend = false;
-    let isToday = false;
-    if (key !== 'no-date') {
-      const day = days[colIndex - 1];
-      const dayIdx = day.getDay();
-      isWeekend = dayIdx === 0 || dayIdx === 6;
-      isToday   = key === todayKey;
-      dayName   = DAYS[dayIdx].toLowerCase();
-    }
+    const day = days[colIndex];
+    const dayIdx = day.getDay();
+    const isWeekend = dayIdx === 0 || dayIdx === 6;
+    const isToday   = key === todayKey;
+    const dayName   = DAYS[dayIdx].toLowerCase();
     col.className = 'column-body-wrap' +
-      (key === 'no-date' ? ' no-date' : '') +
       (isWeekend ? ' is-weekend' : '') +
       (isToday   ? ' is-today'   : '');
     col.dataset.colKey = key;
@@ -686,16 +669,11 @@ function renderDesktopBoard(tasks) {
     body.className = 'column-body';
     col.appendChild(body);
 
-    (singleTasks[key] || []).sort((a, b) => {
-      if (key === 'no-date') {
-        const pa = PRIORITY_RANK[a.priority || 'medium'] ?? 2;
-        const pb = PRIORITY_RANK[b.priority || 'medium'] ?? 2;
-        if (pa !== pb) return pa - pb;
-      }
-      return (a.order || 0) - (b.order || 0);
-    }).forEach(task => {
-      body.appendChild(buildTaskCard(task));
-    });
+    (singleTasks[key] || [])
+      .sort((a, b) => (a.order || 0) - (b.order || 0))
+      .forEach(task => {
+        body.appendChild(buildTaskCard(task));
+      });
 
     const addArea = document.createElement('div');
     addArea.className = 'column-add';
