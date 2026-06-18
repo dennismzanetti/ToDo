@@ -83,6 +83,12 @@ function categoryChipHtml(task) {
   return `<span class="card-category-chip">${escHtml(cat.name)}</span>`;
 }
 
+// ── Assigned To badge helper ──────────────────────────────────────────────────
+function assignedHtml(task) {
+  if (!task.assignedTo) return '';
+  return `<span class="assigned-badge">${escHtml(task.assignedTo)}</span>`;
+}
+
 // ── Delete button helper ──────────────────────────────────────────────────────
 function buildDeleteBtn(task, card) {
   const btn = document.createElement('button');
@@ -409,6 +415,7 @@ function buildMobileTaskCard(task) {
       <div class="mobile-card-meta">
         <span class="priority-badge ${priority}">${priority}</span>
         ${categoryChipHtml(task)}
+        ${assignedHtml(task)}
         ${tagsHtml}${dueDateHtml}${progressHtml}
       </div>
     </div>
@@ -723,6 +730,7 @@ function buildTaskCard(task) {
     <div class="task-card-meta">
       <span class="priority-badge ${priority}">${priority}</span>
       ${categoryChipHtml(task)}
+      ${assignedHtml(task)}
       ${dueDateHtml}
       <span class="task-badges">${hoverBadgesHtml(task)}</span>
     </div>`;
@@ -765,6 +773,7 @@ function buildSpanCard(task, spanDays) {
       <span class="task-title">${escHtml(task.title)}</span>
       <span class="priority-badge ${priority}">${priority}</span>
       ${categoryChipHtml(task)}
+      ${assignedHtml(task)}
       ${dueDateHtml}
       ${hoverBadgesHtml(task)}
       ${notesIcon}
