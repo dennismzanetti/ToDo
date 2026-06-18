@@ -8,6 +8,9 @@ let currentTasks = [];
 let allCategories = [];
 let mobileDayOffset = 0;
 
+// Priority sort order: high → medium → low
+const PRIORITY_RANK = { high: 1, medium: 2, low: 3 };
+
 // Keep a live category map: id → name
 subscribeCategories(cats => {
   allCategories = cats;
@@ -322,7 +325,12 @@ function renderMobileBoard(tasks) {
     const ndList = document.createElement('div');
     ndList.className = 'mobile-task-list';
     noDateTasks
-      .sort((a, b) => (a.order || 0) - (b.order || 0))
+      .sort((a, b) => {
+        const pa = PRIORITY_RANK[a.priority || 'medium'] ?? 2;
+        const pb = PRIORITY_RANK[b.priority || 'medium'] ?? 2;
+        if (pa !== pb) return pa - pb;
+        return (a.order || 0) - (b.order || 0);
+      })
       .forEach(t => ndList.appendChild(buildMobileTaskCard(t)));
     ndSection.appendChild(ndList);
 
@@ -678,7 +686,14 @@ function renderDesktopBoard(tasks) {
     body.className = 'column-body';
     col.appendChild(body);
 
-    (singleTasks[key] || []).sort((a, b) => (a.order || 0) - (b.order || 0)).forEach(task => {
+    (singleTasks[key] || []).sort((a, b) => {
+      if (key === 'no-date') {
+        const pa = PRIORITY_RANK[a.priority || 'medium'] ?? 2;
+        const pb = PRIORITY_RANK[b.priority || 'medium'] ?? 2;
+        if (pa !== pb) return pa - pb;
+      }
+      return (a.order || 0) - (b.order || 0);
+    }).forEach(task => {
       body.appendChild(buildTaskCard(task));
     });
 
