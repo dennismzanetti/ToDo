@@ -20,6 +20,7 @@ let activeTab          = 'active';   // 'all' | 'active' | 'completed' | 'catego
 
 // Unified filter state
 const activeFilters = {
+  search     : '',   // free-text
   priority   : '',   // '' | 'high' | 'medium' | 'low'
   categoryId : '',   // '' | <id>
   assignedTo : '',   // '' | <name>
@@ -73,6 +74,7 @@ const pageTitleEl       = document.getElementById('tasks-page-title');
 const pageInnerEl       = document.querySelector('.tasks-page-inner');
 
 // Filter controls
+const filterSearchEl   = document.getElementById('filter-search');
 const filterPriorityEl = document.getElementById('filter-priority');
 const filterCategoryEl = document.getElementById('filter-category');
 const filterAssignedEl = document.getElementById('filter-assigned');
@@ -121,44 +123,62 @@ document.querySelectorAll('.tasks-subtab').forEach(btn => {
 // ── Filter bar wiring ──────────────────────────────────────────────────────────
 function updateClearBtn() {
   if (!filterClearEl) return;
-  const anyActive = activeFilters.priority || activeFilters.categoryId ||
+  const anyActive = activeFilters.search || activeFilters.priority || activeFilters.categoryId ||
                     activeFilters.assignedTo || activeFilters.due;
   filterClearEl.hidden = !anyActive;
 }
 
+// Debounced search handler
+let searchDebounceTimer = null;
+filterSearchEl?.addEventListener('input', () => {
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    activeFilters.search = filterSearchEl.value.trim().toLowerCase();
+    filterSearchEl.classList.toggle('is-active', !!activeFilters.search);
+    updateClearBtn();
+    render();
+  }, 200);
+});
+
 filterPriorityEl?.addEventListener('change', () => {
   activeFilters.priority = filterPriorityEl.value;
+  filterPriorityEl.classList.toggle('is-active', !!activeFilters.priority);
   updateClearBtn();
   render();
 });
 
 filterCategoryEl?.addEventListener('change', () => {
   activeFilters.categoryId = filterCategoryEl.value;
+  filterCategoryEl.classList.toggle('is-active', !!activeFilters.categoryId);
   updateClearBtn();
   render();
 });
 
 filterAssignedEl?.addEventListener('change', () => {
   activeFilters.assignedTo = filterAssignedEl.value;
+  filterAssignedEl.classList.toggle('is-active', !!activeFilters.assignedTo);
   updateClearBtn();
   render();
 });
 
 filterDueEl?.addEventListener('change', () => {
   activeFilters.due = filterDueEl.value;
+  filterDueEl.classList.toggle('is-active', !!activeFilters.due);
   updateClearBtn();
   render();
 });
 
 filterClearEl?.addEventListener('click', () => {
+  activeFilters.search     = '';
   activeFilters.priority   = '';
   activeFilters.categoryId = '';
   activeFilters.assignedTo = '';
   activeFilters.due        = '';
-  if (filterPriorityEl) filterPriorityEl.value = '';
-  if (filterCategoryEl) filterCategoryEl.value = '';
-  if (filterAssignedEl) filterAssignedEl.value = '';
-  if (filterDueEl)      filterDueEl.value      = '';
+  if (filterSearchEl)   { filterSearchEl.value = '';   filterSearchEl.classList.remove('is-active'); }
+  if (filterPriorityEl) { filterPriorityEl.value = ''; filterPriorityEl.classList.remove('is-active'); }
+  if (filterCategoryEl) { filterCategoryEl.value = ''; filterCategoryEl.classList.remove('is-active'); }
+  if (filterAssignedEl) { filterAssignedEl.value = ''; filterAssignedEl.classList.remove('is-active'); }
+  if (filterDueEl)      { filterDueEl.value = '';      filterDueEl.classList.remove('is-active'); }
   updateClearBtn();
   render();
 });
@@ -179,6 +199,7 @@ function syncFilterOptions(tasks) {
     if (currentCat && !allCategories.find(c => c.id === currentCat)) {
       activeFilters.categoryId = '';
       filterCategoryEl.value = '';
+      filterCategoryEl.classList.remove('is-active');
     }
   }
 
@@ -197,6 +218,7 @@ function syncFilterOptions(tasks) {
     if (currentAssigned && !names.includes(currentAssigned)) {
       activeFilters.assignedTo = '';
       filterAssignedEl.value = '';
+      filterAssignedEl.classList.remove('is-active');
     }
   }
 
@@ -317,6 +339,19 @@ function matchesDueFilter(task, dueSetting) {
   return true;
 }
 
+// ── Search filter helper ───────────────────────────────────────────────────────
+function matchesSearch(task, query) {
+  if (!query) return true;
+  const haystack = [
+    task.title || '',
+    task.notes || '',
+    task.assignedTo || '',
+    ...(task.tags || []),
+    ...(task.subtasks || []).map(s => s.title || ''),
+  ].join(' ').toLowerCase();
+  return haystack.includes(query);
+}
+
 // ── Render ─────────────────────────────────────────────────────────────────────
 function render() {
   const list    = document.getElementById('tasks-list');
@@ -325,10 +360,11 @@ function render() {
 
   const unscheduled = allTasks.filter(isUnscheduled);
 
-  // Stack filters: status → priority → category → assigned → due
+  // Stack filters: status → search → priority → category → assigned → due
   let filtered = unscheduled;
   if (activeFilter === 'active')         filtered = filtered.filter(t => !t.completed);
   if (activeFilter === 'completed')      filtered = filtered.filter(t =>  t.completed);
+  filtered = filtered.filter(t => matchesSearch(t, activeFilters.search));
   if (activeFilters.priority)            filtered = filtered.filter(t => t.priority === activeFilters.priority);
   if (activeFilters.categoryId)          filtered = filtered.filter(t => t.categoryId === activeFilters.categoryId);
   if (activeFilters.assignedTo)          filtered = filtered.filter(t => (t.assignedTo || '').trim() === activeFilters.assignedTo);
@@ -341,7 +377,7 @@ function render() {
   }
 
   if (filtered.length === 0) {
-    const hasActiveFilters = activeFilters.priority || activeFilters.categoryId ||
+    const hasActiveFilters = activeFilters.search || activeFilters.priority || activeFilters.categoryId ||
                              activeFilters.assignedTo || activeFilters.due;
     const messages = {
       completed : 'No completed tasks yet.',
@@ -357,7 +393,7 @@ function render() {
           <path d="M9 11l3 3L22 4"/>
           <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
         </svg>
-        <p>${messages[activeFilter] ?? messages.all}</p>
+        <p>${hasActiveFilters ? 'No tasks match the current filters.' : (messages[activeFilter] ?? messages.all)}</p>
       </div>`;
     return;
   }

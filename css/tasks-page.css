@@ -116,6 +116,57 @@
 }
 .tasks-filter-bar[hidden] { display: none; }
 
+/* Search input wrapper */
+.tasks-filter-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1 1 180px;
+  min-width: 140px;
+  max-width: 280px;
+}
+.tasks-filter-search-icon {
+  position: absolute;
+  left: var(--space-3);
+  color: var(--color-text-faint);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+.tasks-filter-search {
+  width: 100%;
+  height: 32px;
+  padding: 0 var(--space-3) 0 calc(var(--space-3) + 13px + var(--space-2));
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-offset);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  transition: border-color var(--transition-interactive),
+              background-color var(--transition-interactive),
+              box-shadow var(--transition-interactive);
+  /* hide native clear button — we use the filter Clear button */
+  -webkit-appearance: none;
+  appearance: none;
+}
+.tasks-filter-search::-webkit-search-cancel-button { display: none; }
+.tasks-filter-search::placeholder { color: var(--color-text-faint); }
+.tasks-filter-search:hover {
+  border-color: oklch(from var(--color-primary) l c h / .4);
+  background-color: var(--color-surface);
+}
+.tasks-filter-search:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  background-color: var(--color-surface);
+  box-shadow: 0 0 0 3px oklch(from var(--color-primary) l c h / .15);
+}
+/* Highlight when text is present */
+.tasks-filter-search.is-active {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-highlight);
+}
+
 .tasks-filter-select {
   height: 32px;
   padding: 0 calc(var(--space-3) + 18px) 0 var(--space-3);
@@ -571,6 +622,14 @@
   /* Filter bar wraps tightly on small screens */
   .tasks-filter-bar {
     gap: var(--space-2);
+  }
+  .tasks-filter-search-wrap {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+  .tasks-filter-search {
+    font-size: var(--text-xs);
+    height: 30px;
   }
   .tasks-filter-select {
     font-size: var(--text-xs);

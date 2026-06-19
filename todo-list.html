@@ -99,6 +99,16 @@
 
       <!-- Filter bar (visible only on task tabs) -->
       <div class="tasks-filter-bar" id="tasks-filter-bar" hidden>
+        <!-- Free-text search -->
+        <div class="tasks-filter-search-wrap">
+          <svg class="tasks-filter-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+               aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input class="tasks-filter-search" type="search" id="filter-search"
+                 placeholder="Search tasks…" aria-label="Search tasks" autocomplete="off" />
+        </div>
         <select class="tasks-filter-select" id="filter-priority" aria-label="Filter by priority">
           <option value="">Priority: All</option>
           <option value="high">High</option>
