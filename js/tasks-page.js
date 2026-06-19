@@ -15,8 +15,8 @@ import './theme.js';
 // ── State ──────────────────────────────────────────────────────────────────────
 let allTasks           = [];
 let allCategories      = [];
-let activeFilter       = 'all';   // 'all' | 'active' | 'completed'
-let activeTab          = 'all';   // 'all' | 'active' | 'completed' | 'categories'
+let activeFilter       = 'completed';   // 'all' | 'active' | 'completed'
+let activeTab          = 'completed';   // 'all' | 'active' | 'completed' | 'categories'
 
 // Unified filter state
 const activeFilters = {
@@ -474,6 +474,9 @@ subscribeCategories(cats => {
   syncFilterOptions(allTasks);
   render();
 });
+
+// ── Boot: set Completed as the default active tab ──────────────────────────────
+setTab('completed');
 
 // ── Service Worker ─────────────────────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
