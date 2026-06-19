@@ -17,7 +17,14 @@ let allTasks           = [];
 let allCategories      = [];
 let activeFilter       = 'all';   // 'all' | 'active' | 'completed'
 let activeTab          = 'all';   // 'all' | 'active' | 'completed' | 'categories'
-let activeCategoryId   = '';      // '' = all categories
+
+// Unified filter state
+const activeFilters = {
+  priority   : '',   // '' | 'high' | 'medium' | 'low'
+  categoryId : '',   // '' | <id>
+  assignedTo : '',   // '' | <name>
+  due        : '',   // '' | 'overdue' | 'today' | 'week' | 'none'
+};
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 function escHtml(str) {
@@ -28,15 +35,26 @@ function escHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-function tsToDateStr(ts) {
+function tsToDate(ts) {
   if (!ts) return null;
   const d = ts.toDate ? ts.toDate() : new Date(ts);
-  if (isNaN(d)) return null;
+  return isNaN(d) ? null : d;
+}
+
+function tsToDateStr(ts) {
+  const d = tsToDate(ts);
+  if (!d) return null;
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function isUnscheduled(task) {
   return !task.doOnFrom && !task.doOnTo;
+}
+
+function startOfDay(d) {
+  const c = new Date(d);
+  c.setHours(0, 0, 0, 0);
+  return c;
 }
 
 const PRIORITY_ORDER  = { high: 0, medium: 1, low: 2 };
@@ -50,9 +68,16 @@ const ICON_TRASH = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" 
 // ── DOM refs ───────────────────────────────────────────────────────────────────
 const taskListEl        = document.getElementById('tasks-list');
 const categoriesPanelEl = document.getElementById('categories-panel');
-const catFilterRowEl    = document.getElementById('tasks-cat-filter-row');
+const filterBarEl       = document.getElementById('tasks-filter-bar');
 const pageTitleEl       = document.getElementById('tasks-page-title');
 const pageInnerEl       = document.querySelector('.tasks-page-inner');
+
+// Filter controls
+const filterPriorityEl = document.getElementById('filter-priority');
+const filterCategoryEl = document.getElementById('filter-category');
+const filterAssignedEl = document.getElementById('filter-assigned');
+const filterDueEl      = document.getElementById('filter-due');
+const filterClearEl    = document.getElementById('filter-clear');
 
 // ── Sub-tab switching ──────────────────────────────────────────────────────────
 function setTab(tab) {
@@ -73,8 +98,8 @@ function setTab(tab) {
   // Float categories panel above the subtab strip when active
   pageInnerEl?.classList.toggle('tasks-page-inner--categories', isCatTab);
 
-  // Category filter row: only when on a task tab AND categories exist
-  catFilterRowEl.hidden = isCatTab || allCategories.length === 0;
+  // Filter bar: only on task tabs
+  if (filterBarEl) filterBarEl.hidden = isCatTab;
 
   // Page title
   const titles = { all: 'All Tasks', active: 'Active Tasks', completed: 'Completed Tasks', categories: 'Categories' };
@@ -93,32 +118,89 @@ document.querySelectorAll('.tasks-subtab').forEach(btn => {
   btn.addEventListener('click', () => setTab(btn.dataset.tab));
 });
 
-// ── Category filter dropdown ───────────────────────────────────────────────────
-const categoryFilterEl = document.getElementById('tasks-category-filter');
-categoryFilterEl?.addEventListener('change', () => {
-  activeCategoryId = categoryFilterEl.value;
+// ── Filter bar wiring ──────────────────────────────────────────────────────────
+function updateClearBtn() {
+  if (!filterClearEl) return;
+  const anyActive = activeFilters.priority || activeFilters.categoryId ||
+                    activeFilters.assignedTo || activeFilters.due;
+  filterClearEl.hidden = !anyActive;
+}
+
+filterPriorityEl?.addEventListener('change', () => {
+  activeFilters.priority = filterPriorityEl.value;
+  updateClearBtn();
   render();
 });
 
-function syncCategoryFilterOptions() {
-  if (!categoryFilterEl) return;
-  const current = categoryFilterEl.value;
-  categoryFilterEl.innerHTML =
-    '<option value="">All</option>' +
-    allCategories
-      .slice()
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .map(c => `<option value="${escHtml(c.id)}"${c.id === current ? ' selected' : ''}>${escHtml(c.name)}</option>`)
-      .join('');
-  // If current selection was deleted, reset
-  if (current && !allCategories.find(c => c.id === current)) {
-    activeCategoryId = '';
-    categoryFilterEl.value = '';
+filterCategoryEl?.addEventListener('change', () => {
+  activeFilters.categoryId = filterCategoryEl.value;
+  updateClearBtn();
+  render();
+});
+
+filterAssignedEl?.addEventListener('change', () => {
+  activeFilters.assignedTo = filterAssignedEl.value;
+  updateClearBtn();
+  render();
+});
+
+filterDueEl?.addEventListener('change', () => {
+  activeFilters.due = filterDueEl.value;
+  updateClearBtn();
+  render();
+});
+
+filterClearEl?.addEventListener('click', () => {
+  activeFilters.priority   = '';
+  activeFilters.categoryId = '';
+  activeFilters.assignedTo = '';
+  activeFilters.due        = '';
+  if (filterPriorityEl) filterPriorityEl.value = '';
+  if (filterCategoryEl) filterCategoryEl.value = '';
+  if (filterAssignedEl) filterAssignedEl.value = '';
+  if (filterDueEl)      filterDueEl.value      = '';
+  updateClearBtn();
+  render();
+});
+
+// ── Sync filter dropdowns from live task data ──────────────────────────────────
+function syncFilterOptions(tasks) {
+  // Category dropdown
+  if (filterCategoryEl) {
+    const currentCat = filterCategoryEl.value;
+    filterCategoryEl.innerHTML =
+      '<option value="">Category: All</option>' +
+      allCategories
+        .slice()
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map(c => `<option value="${escHtml(c.id)}"${c.id === currentCat ? ' selected' : ''}>${escHtml(c.name)}</option>`)
+        .join('');
+    // Reset if category was deleted
+    if (currentCat && !allCategories.find(c => c.id === currentCat)) {
+      activeFilters.categoryId = '';
+      filterCategoryEl.value = '';
+    }
   }
-  // Show/hide the filter row based on tab + whether categories exist
-  if (catFilterRowEl) {
-    catFilterRowEl.hidden = activeTab === 'categories' || allCategories.length === 0;
+
+  // Assigned-to dropdown — built from unique values in current unscheduled tasks
+  if (filterAssignedEl) {
+    const currentAssigned = filterAssignedEl.value;
+    const names = [...new Set(
+      tasks
+        .filter(t => isUnscheduled(t) && t.assignedTo && t.assignedTo.trim())
+        .map(t => t.assignedTo.trim())
+    )].sort();
+    filterAssignedEl.innerHTML =
+      '<option value="">Assigned: All</option>' +
+      names.map(n => `<option value="${escHtml(n)}"${n === currentAssigned ? ' selected' : ''}>${escHtml(n)}</option>`).join('');
+    // Reset if name no longer exists
+    if (currentAssigned && !names.includes(currentAssigned)) {
+      activeFilters.assignedTo = '';
+      filterAssignedEl.value = '';
+    }
   }
+
+  updateClearBtn();
 }
 
 // ── Add Task button ────────────────────────────────────────────────────────────
@@ -214,6 +296,27 @@ function showDeleteConfirm(row, taskId) {
   row.appendChild(confirm);
 }
 
+// ── Due-date filter helper ─────────────────────────────────────────────────────
+function matchesDueFilter(task, dueSetting) {
+  if (!dueSetting) return true;
+  const today = startOfDay(new Date());
+  const due   = tsToDate(task.dueDate);
+
+  if (dueSetting === 'none')    return !due;
+  if (!due) return false;
+
+  const dueDay = startOfDay(due);
+
+  if (dueSetting === 'overdue') return dueDay < today;
+  if (dueSetting === 'today')   return dueDay.getTime() === today.getTime();
+  if (dueSetting === 'week') {
+    const weekEnd = new Date(today);
+    weekEnd.setDate(weekEnd.getDate() + 7);
+    return dueDay >= today && dueDay < weekEnd;
+  }
+  return true;
+}
+
 // ── Render ─────────────────────────────────────────────────────────────────────
 function render() {
   const list    = document.getElementById('tasks-list');
@@ -222,11 +325,14 @@ function render() {
 
   const unscheduled = allTasks.filter(isUnscheduled);
 
-  // Stack filters: status then category
+  // Stack filters: status → priority → category → assigned → due
   let filtered = unscheduled;
-  if (activeFilter === 'active')    filtered = filtered.filter(t => !t.completed);
-  if (activeFilter === 'completed') filtered = filtered.filter(t =>  t.completed);
-  if (activeCategoryId)             filtered = filtered.filter(t => t.categoryId === activeCategoryId);
+  if (activeFilter === 'active')         filtered = filtered.filter(t => !t.completed);
+  if (activeFilter === 'completed')      filtered = filtered.filter(t =>  t.completed);
+  if (activeFilters.priority)            filtered = filtered.filter(t => t.priority === activeFilters.priority);
+  if (activeFilters.categoryId)          filtered = filtered.filter(t => t.categoryId === activeFilters.categoryId);
+  if (activeFilters.assignedTo)          filtered = filtered.filter(t => (t.assignedTo || '').trim() === activeFilters.assignedTo);
+  filtered = filtered.filter(t => matchesDueFilter(t, activeFilters.due));
 
   const total     = unscheduled.length;
   const completed = unscheduled.filter(t => t.completed).length;
@@ -235,11 +341,13 @@ function render() {
   }
 
   if (filtered.length === 0) {
+    const hasActiveFilters = activeFilters.priority || activeFilters.categoryId ||
+                             activeFilters.assignedTo || activeFilters.due;
     const messages = {
       completed : 'No completed tasks yet.',
       active    : 'No active tasks \u2014 all done!',
-      all       : activeCategoryId
-        ? 'No tasks in this category.'
+      all       : hasActiveFilters
+        ? 'No tasks match the current filters.'
         : 'No unscheduled tasks. Tasks with a \u201cDo On\u201d date appear on the board.',
     };
     list.innerHTML = `
@@ -249,7 +357,7 @@ function render() {
           <path d="M9 11l3 3L22 4"/>
           <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
         </svg>
-        <p>${messages[activeFilter]}</p>
+        <p>${messages[activeFilter] ?? messages.all}</p>
       </div>`;
     return;
   }
@@ -356,14 +464,14 @@ subscribe(tasks => {
     const pb = PRIORITY_ORDER[b.priority] ?? 3;
     return pa !== pb ? pa - pb : (a.order ?? 0) - (b.order ?? 0);
   });
+  syncFilterOptions(allTasks);
   render();
 });
 
 subscribeCategories(cats => {
   allCategories = cats.slice().sort((a, b) => a.name.localeCompare(b.name));
-  // If we're on the categories tab, re-render that panel
   if (activeTab === 'categories') renderCategories();
-  syncCategoryFilterOptions();
+  syncFilterOptions(allTasks);
   render();
 });
 

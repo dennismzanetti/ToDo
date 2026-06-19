@@ -107,49 +107,74 @@
   margin: 0 var(--space-1);
 }
 
-/* ── Category filter row (below tabs, above task list) ───────────────────────── */
-.tasks-cat-filter-row {
+/* ── Filter bar ──────────────────────────────────────────────────────────────── */
+.tasks-filter-bar {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: var(--space-2);
 }
-.tasks-cat-filter-label {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--color-text-faint);
-  text-transform: uppercase;
-  letter-spacing: .05em;
-  white-space: nowrap;
-}
+.tasks-filter-bar[hidden] { display: none; }
 
-/* ── Category filter dropdown ────────────────────────────────────────────────── */
-.tasks-category-filter {
+.tasks-filter-select {
   height: 32px;
-  padding: 0 var(--space-3);
+  padding: 0 calc(var(--space-3) + 18px) 0 var(--space-3);
   border-radius: var(--radius-full);
   border: 1px solid var(--color-border);
-  background: var(--color-surface-offset);
+  background-color: var(--color-surface-offset);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a7974' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-3) center;
   color: var(--color-text);
   font-size: var(--text-sm);
   font-weight: 500;
   cursor: pointer;
-  transition: border-color var(--transition-interactive),
-              background var(--transition-interactive);
   appearance: none;
   -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a7974' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right var(--space-3) center;
-  padding-right: calc(var(--space-3) + 18px);
+  transition: border-color var(--transition-interactive),
+              background-color var(--transition-interactive);
+  white-space: nowrap;
 }
-.tasks-category-filter:hover {
+.tasks-filter-select:hover {
   border-color: oklch(from var(--color-primary) l c h / .4);
   background-color: var(--color-surface);
 }
-.tasks-category-filter:focus-visible {
+.tasks-filter-select:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
+/* Highlight when a non-default value is selected */
+.tasks-filter-select.is-active {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-highlight);
+  color: var(--color-primary);
+}
+
+.tasks-filter-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: 32px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-full);
+  border: 1px solid oklch(from var(--color-error) l c h / .35);
+  background: var(--color-error-highlight);
+  color: var(--color-error);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-interactive),
+              border-color var(--transition-interactive),
+              color var(--transition-interactive);
+  white-space: nowrap;
+}
+.tasks-filter-clear[hidden] { display: none; }
+.tasks-filter-clear:hover {
+  background: var(--color-error);
+  color: #fff;
+  border-color: var(--color-error);
+}
+.tasks-filter-clear:active { transform: scale(.95); }
 
 /* ── Task list container ─────────────────────────────────────────────────────── */
 .tasks-list {
@@ -542,4 +567,14 @@
   /* On mobile, don't push Categories tab off-screen — let all tabs sit inline */
   .tasks-subtab--categories { margin-left: 0; }
   .tasks-subtabs-divider { display: none; }
+
+  /* Filter bar wraps tightly on small screens */
+  .tasks-filter-bar {
+    gap: var(--space-2);
+  }
+  .tasks-filter-select {
+    font-size: var(--text-xs);
+    height: 30px;
+    padding: 0 calc(var(--space-2) + 16px) 0 var(--space-2);
+  }
 }

@@ -97,12 +97,31 @@
         </button>
       </div>
 
-      <!-- Category filter (visible only on task tabs, when categories exist) -->
-      <div class="tasks-cat-filter-row" id="tasks-cat-filter-row" hidden>
-        <label class="tasks-cat-filter-label" for="tasks-category-filter">Category:</label>
-        <select class="tasks-category-filter" id="tasks-category-filter" aria-label="Filter by category">
-          <option value="">All</option>
+      <!-- Filter bar (visible only on task tabs) -->
+      <div class="tasks-filter-bar" id="tasks-filter-bar" hidden>
+        <select class="tasks-filter-select" id="filter-priority" aria-label="Filter by priority">
+          <option value="">Priority: All</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
         </select>
+        <select class="tasks-filter-select" id="filter-category" aria-label="Filter by category">
+          <option value="">Category: All</option>
+        </select>
+        <select class="tasks-filter-select" id="filter-assigned" aria-label="Filter by assigned to">
+          <option value="">Assigned: All</option>
+        </select>
+        <select class="tasks-filter-select" id="filter-due" aria-label="Filter by due date">
+          <option value="">Due: Any</option>
+          <option value="overdue">Overdue</option>
+          <option value="today">Due Today</option>
+          <option value="week">Due This Week</option>
+          <option value="none">No Due Date</option>
+        </select>
+        <button class="tasks-filter-clear" id="filter-clear" hidden aria-label="Clear all filters">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Clear
+        </button>
       </div>
 
       <!-- Task list -->
