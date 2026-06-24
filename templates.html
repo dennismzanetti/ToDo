@@ -141,6 +141,15 @@
               <input type="text" id="tmpl-tags" placeholder="e.g. work, urgent" />
             </label>
 
+            <!-- Carry Forward toggle — tasks spawned from this template inherit this setting -->
+            <div class="form-group form-group--inline full-width">
+              <label class="form-label form-label--checkbox" for="tmpl-carry-forward">
+                <input type="checkbox" id="tmpl-carry-forward" />
+                Carry Forward
+                <span class="form-hint">tasks from this template move to today if past due and incomplete</span>
+              </label>
+            </div>
+
             <label class="form-field full-width">
               <span>Notes</span>
               <textarea id="tmpl-notes" placeholder="Add any notes or details..."></textarea>
