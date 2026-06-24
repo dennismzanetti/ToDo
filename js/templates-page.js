@@ -1,24 +1,25 @@
 import { subscribeTemplates, addTemplate, saveTemplate, deleteTemplate } from './store.js';
 import { RECURRENCE_LABELS } from './models.js';
 
-const grid       = document.getElementById('templates-grid');
-const overlay    = document.getElementById('tmpl-modal-overlay');
-const modalTitle = document.getElementById('tmpl-modal-title');
-const form       = document.getElementById('tmpl-form');
-const editId     = document.getElementById('tmpl-edit-id');
-const titleInput = document.getElementById('tmpl-title');
-const prioritySel= document.getElementById('tmpl-priority');
-const recurrSel  = document.getElementById('tmpl-recurrence');
-const tagsInput  = document.getElementById('tmpl-tags');
-const notesInput = document.getElementById('tmpl-notes');
-const subtaskList= document.getElementById('tmpl-subtask-list');
-const newSubInput= document.getElementById('tmpl-new-subtask-input');
-const addSubBtn  = document.getElementById('tmpl-add-subtask-btn');
-const deleteBtn  = document.getElementById('tmpl-delete-btn');
+const grid             = document.getElementById('templates-grid');
+const overlay          = document.getElementById('tmpl-modal-overlay');
+const modalTitle       = document.getElementById('tmpl-modal-title');
+const form             = document.getElementById('tmpl-form');
+const editId           = document.getElementById('tmpl-edit-id');
+const titleInput       = document.getElementById('tmpl-title');
+const prioritySel      = document.getElementById('tmpl-priority');
+const recurrSel        = document.getElementById('tmpl-recurrence');
+const tagsInput        = document.getElementById('tmpl-tags');
+const notesInput       = document.getElementById('tmpl-notes');
+const subtaskList      = document.getElementById('tmpl-subtask-list');
+const newSubInput      = document.getElementById('tmpl-new-subtask-input');
+const addSubBtn        = document.getElementById('tmpl-add-subtask-btn');
+const deleteBtn        = document.getElementById('tmpl-delete-btn');
+const carryForwardInput= document.getElementById('tmpl-carry-forward');
 
 let _subtasks = [];
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────────────────
 
 function escHtml(str) {
   return String(str)
@@ -30,7 +31,7 @@ function parseTags(str) {
   return str.split(',').map(s => s.trim()).filter(Boolean);
 }
 
-// ── Subtask UI ────────────────────────────────────────────────────────────────
+// ── Subtask UI ──────────────────────────────────────────────────────────────────────────
 
 function renderSubtasks() {
   subtaskList.innerHTML = '';
@@ -64,17 +65,21 @@ newSubInput.addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); addSubtask(); }
 });
 
-// ── Modal open / close ────────────────────────────────────────────────────────
+// ── Modal open / close ────────────────────────────────────────────────────────────────
 
 function openModal(tmpl = null) {
-  editId.value       = tmpl ? tmpl.id : '';
-  modalTitle.textContent = tmpl ? 'Edit Template' : 'New Template';
-  titleInput.value   = tmpl ? tmpl.title    : '';
-  prioritySel.value  = tmpl ? (tmpl.priority   || 'medium') : 'medium';
-  recurrSel.value    = tmpl ? (tmpl.recurrence || 'daily')  : 'daily';
-  tagsInput.value    = tmpl ? (tmpl.tags || []).join(', ')  : '';
-  notesInput.value   = tmpl ? (tmpl.notes || '')            : '';
-  _subtasks          = tmpl ? [...(tmpl.subtasks || [])]    : [];
+  editId.value          = tmpl ? tmpl.id : '';
+  modalTitle.textContent= tmpl ? 'Edit Template' : 'New Template';
+  titleInput.value      = tmpl ? tmpl.title              : '';
+  prioritySel.value     = tmpl ? (tmpl.priority   || 'medium') : 'medium';
+  recurrSel.value       = tmpl ? (tmpl.recurrence || 'daily')  : 'daily';
+  tagsInput.value       = tmpl ? (tmpl.tags || []).join(', ')  : '';
+  notesInput.value      = tmpl ? (tmpl.notes || '')            : '';
+  _subtasks             = tmpl ? [...(tmpl.subtasks || [])]    : [];
+
+  // Carry Forward — read from template, default false
+  if (carryForwardInput) carryForwardInput.checked = !!(tmpl?.carryForward);
+
   renderSubtasks();
   deleteBtn.style.visibility = tmpl ? 'visible' : 'hidden';
   overlay.hidden = false;
@@ -86,6 +91,8 @@ function closeModal() {
   form.reset();
   _subtasks = [];
   subtaskList.innerHTML = '';
+  // Reset carry forward checkbox
+  if (carryForwardInput) carryForwardInput.checked = false;
 }
 
 document.getElementById('new-template-btn').addEventListener('click', () => openModal());
@@ -94,7 +101,7 @@ document.getElementById('tmpl-modal-cancel').addEventListener('click', closeModa
 overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !overlay.hidden) closeModal(); });
 
-// ── Form submit ───────────────────────────────────────────────────────────────
+// ── Form submit ─────────────────────────────────────────────────────────────────────────
 
 form.addEventListener('submit', async e => {
   e.preventDefault();
@@ -103,11 +110,12 @@ form.addEventListener('submit', async e => {
 
   const fields = {
     title,
-    priority:   prioritySel.value,
-    recurrence: recurrSel.value,
-    tags:       parseTags(tagsInput.value),
-    notes:      notesInput.value.trim(),
-    subtasks:   [..._subtasks]
+    priority:     prioritySel.value,
+    recurrence:   recurrSel.value,
+    tags:         parseTags(tagsInput.value),
+    notes:        notesInput.value.trim(),
+    subtasks:     [..._subtasks],
+    carryForward: carryForwardInput ? carryForwardInput.checked : false
   };
 
   const id = editId.value;
@@ -119,7 +127,7 @@ form.addEventListener('submit', async e => {
   closeModal();
 });
 
-// ── Delete ────────────────────────────────────────────────────────────────────
+// ── Delete ─────────────────────────────────────────────────────────────────────────────
 
 deleteBtn.addEventListener('click', async () => {
   const id = editId.value;
@@ -129,7 +137,7 @@ deleteBtn.addEventListener('click', async () => {
   closeModal();
 });
 
-// ── Render grid ───────────────────────────────────────────────────────────────
+// ── Render grid ──────────────────────────────────────────────────────────────────────────
 
 function renderGrid(templates) {
   if (!templates.length) {
@@ -157,6 +165,9 @@ function renderGrid(templates) {
       ? `<span class="subtask-progress">${subtaskCount} subtask${subtaskCount > 1 ? 's' : ''}</span>`
       : '';
     const priority = tmpl.priority || 'medium';
+    const carryBadge = tmpl.carryForward
+      ? `<span class="carry-forward-badge" title="Carry Forward enabled">↻ Carry Forward</span>`
+      : '';
 
     card.innerHTML = `
       <div class="template-card-info">
@@ -167,6 +178,7 @@ function renderGrid(templates) {
           <span class="priority-badge ${priority}">${priority}</span>
           ${tagsHtml}
           ${subtasksHtml}
+          ${carryBadge}
         </div>
       </div>
       <div class="template-card-actions">
@@ -185,7 +197,7 @@ function renderGrid(templates) {
   });
 }
 
-// ── Init ──────────────────────────────────────────────────────────────────────
+// ── Init ───────────────────────────────────────────────────────────────────────────────
 
 export function initTemplatesPage() {
   subscribeTemplates(templates => renderGrid(templates));
