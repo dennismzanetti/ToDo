@@ -35,6 +35,9 @@ const toDisplay    = document.getElementById('edit-do-on-to-display');
 const toProxy      = document.getElementById('edit-do-on-to');
 const toClearBtn   = document.getElementById('clear-do-on-to');
 
+// ── Carry Forward checkbox ────────────────────────────────────────────────────
+const carryForwardInput = document.getElementById('edit-carry-forward');
+
 // Format YYYY-MM-DD → MM/DD/YYYY for display
 function fmtDisplay(val) {
   if (!val) return '';
@@ -221,6 +224,9 @@ export function openModal(task) {
     task ? tsToInputVal(t.doOnTo || t.doOnFrom) : ''
   );
 
+  // Carry Forward — read from task, default false
+  if (carryForwardInput) carryForwardInput.checked = !!(t.carryForward);
+
   setPriority(t.priority || 'medium');
   populateCategorySelect(t.categoryId || '');
   syncClearBtn();
@@ -298,6 +304,8 @@ function closeModal() {
   form.reset();
   // Reset Do On proxies and displays
   setDoOnProxies('', '');
+  // Reset carry forward checkbox
+  if (carryForwardInput) carryForwardInput.checked = false;
   subtaskList.innerHTML = '';
   syncClearBtn();
   setPriority('medium');
@@ -324,17 +332,22 @@ form.addEventListener('submit', async e => {
   const categorySel = document.getElementById('edit-category');
   const categoryId  = categorySel?.value || null;
 
+  const carryForward = carryForwardInput ? carryForwardInput.checked : false;
+
   const fields = {
     title,
-    priority:   priorityInput.value,
-    categoryId: categoryId || null,
-    assignedTo: assignedToInput ? assignedToInput.value.trim() : '',
+    priority:     priorityInput.value,
+    categoryId:   categoryId || null,
+    assignedTo:   assignedToInput ? assignedToInput.value.trim() : '',
     doOnFrom,
     doOnTo,
-    dueDate:  inputToTs(dueDateInput.value),
-    tags:     tagsInput.value.split(',').map(t => t.trim()).filter(Boolean),
+    dueDate:      inputToTs(dueDateInput.value),
+    tags:         tagsInput.value.split(',').map(t => t.trim()).filter(Boolean),
     notes,
-    subtasks: pendingSubtasks
+    subtasks:     pendingSubtasks,
+    carryForward,
+    // Clear carriedDate if user unchecks Carry Forward
+    ...(carryForward ? {} : { carriedDate: null })
   };
 
   if (currentTask?.id) {
