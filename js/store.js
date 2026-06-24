@@ -47,7 +47,10 @@ export function initStore() {
   const q = query(tasksRef, orderBy('order'));
   onSnapshot(q, snap => {
     _tasks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    _tasksReady = true;
+    if (!_tasksReady) {
+      _tasksReady = true;
+      carryForwardTasks();
+    }
     notifyTasks();
   });
   onSnapshot(templatesRef, snap => {
@@ -60,6 +63,43 @@ export function initStore() {
     _categoriesReady = true;
     notifyCategories();
   });
+}
+
+export async function carryForwardTasks() {
+  const { Timestamp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayTs = Timestamp.fromDate(today);
+
+  const stale = _tasks.filter(t => {
+    if (!t.carryForward || t.completed) return false;
+    if (!t.doOnFrom) return false;
+    const from = t.doOnFrom.toDate ? t.doOnFrom.toDate() : new Date(t.doOnFrom);
+    from.setHours(0, 0, 0, 0);
+    return from < today;
+  });
+
+  if (!stale.length) return;
+
+  await Promise.all(stale.map(t => {
+    const from = t.doOnFrom.toDate ? t.doOnFrom.toDate() : new Date(t.doOnFrom);
+    const to   = t.doOnTo ? (t.doOnTo.toDate ? t.doOnTo.toDate() : new Date(t.doOnTo)) : from;
+    from.setHours(0, 0, 0, 0);
+    to.setHours(0, 0, 0, 0);
+    const spanDays = Math.round((to - from) / 86400000);
+
+    const newFrom = new Date(today);
+    const newTo   = new Date(today);
+    newTo.setDate(today.getDate() + spanDays);
+
+    return updateDoc(doc(db, 'tasks', t.id), {
+      doOnFrom:    Timestamp.fromDate(newFrom),
+      doOnTo:      Timestamp.fromDate(newTo),
+      carriedDate: todayTs,
+      updatedAt:   Timestamp.now()
+    });
+  }));
 }
 
 export async function addTask(fields) {
@@ -117,7 +157,6 @@ export async function addCategory(fields) {
 
 export async function deleteCategory(id) {
   const { Timestamp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
-  // Clear categoryId from any task that referenced this category
   const affected = _tasks.filter(t => t.categoryId === id);
   await Promise.all(affected.map(t =>
     updateDoc(doc(db, 'tasks', t.id), { categoryId: null, updatedAt: Timestamp.now() })
