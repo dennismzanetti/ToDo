@@ -26,14 +26,15 @@ const ICONS = {
   chevronRight: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>`,
   calendar: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
   note: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
-  trash: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`
+  trash: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`,
+  arrowRight: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`
 };
 
 function isMobile() {
   return window.innerWidth < 768;
 }
 
-// ── Tooltip singleton (desktop only) ─────────────────────────────────────────
+// ── Tooltip singleton (desktop only) ───────────────────────────────────────────────────
 const tooltip = document.createElement('div');
 tooltip.className = 'notes-tooltip';
 tooltip.setAttribute('role', 'tooltip');
@@ -75,7 +76,7 @@ function attachNoteTooltip(el, notes) {
   }
 }
 
-// ── Category chip helper ──────────────────────────────────────────────────────
+// ── Category chip helper ────────────────────────────────────────────────────────────────
 function categoryChipHtml(task) {
   if (!task.categoryId) return '';
   const cat = allCategories.find(c => c.id === task.categoryId);
@@ -83,19 +84,25 @@ function categoryChipHtml(task) {
   return `<span class="card-category-chip">${escHtml(cat.name)}</span>`;
 }
 
-// ── Assigned To badge helper ──────────────────────────────────────────────────
+// ── Assigned To badge helper ────────────────────────────────────────────────────────────────
 function assignedHtml(task) {
   if (!task.assignedTo) return '';
   return `<span class="assigned-badge">${escHtml(task.assignedTo)}</span>`;
 }
 
-// ── Carried Forward badge helper ──────────────────────────────────────────────
+// ── Carried Forward badge helper (shown when a task has already been carried) ────────
 function carriedBadgeHtml(task) {
   if (!task.carriedDate) return '';
   return `<span class="carried-badge" title="Carried forward from a previous day">↻ carried</span>`;
 }
 
-// ── Delete button helper ──────────────────────────────────────────────────────
+// ── Carry Forward indicator (shown on any task with carryForward: true) ──────────────
+function carryForwardIndicatorHtml(task) {
+  if (!task.carryForward) return '';
+  return `<span class="carry-forward-indicator" title="Carry Forward: this task moves to today if past due and incomplete">${ICONS.arrowRight}</span>`;
+}
+
+// ── Delete button helper ────────────────────────────────────────────────────────────────
 function buildDeleteBtn(task, card) {
   const btn = document.createElement('button');
   btn.className = 'task-delete-btn';
@@ -131,7 +138,7 @@ function buildDeleteBtn(task, card) {
   return btn;
 }
 
-// ── Week / date helpers ───────────────────────────────────────────────────────
+// ── Week / date helpers ─────────────────────────────────────────────────────────────────────────
 
 export function getDays() {
   const today = new Date();
@@ -154,7 +161,7 @@ function getMobileDays() {
   });
 }
 
-// ── Main render entry point ───────────────────────────────────────────────────
+// ── Main render entry point ───────────────────────────────────────────────────────────────────────
 
 export function renderBoard(tasks) {
   currentTasks = tasks;
@@ -171,7 +178,7 @@ window.addEventListener('resize', () => {
   _resizeTimer = setTimeout(() => renderBoard(currentTasks), 150);
 });
 
-// ── ResizeObserver: keep --board-header-h in sync ────────────────────────────
+// ── ResizeObserver: keep --board-header-h in sync ────────────────────────────────────────────
 let _headerObserver = null;
 
 function observeHeaderHeight(headerRow) {
@@ -187,7 +194,7 @@ function observeHeaderHeight(headerRow) {
   _headerObserver.observe(headerRow);
 }
 
-// ── Open modal for new task — Do On dates always start null ───────────────────
+// ── Open modal for new task — Do On dates always start null ─────────────────────────────────
 function openModalForDate() {
   openModal(null);
   // Do On From and Do On To are left blank; user sets them manually.
@@ -355,7 +362,7 @@ function renderMobileBoard(tasks) {
   attachMobileSwipe(board);
 }
 
-// ── Swipe handler ─────────────────────────────────────────────────────────────
+// ── Swipe handler ────────────────────────────────────────────────────────────────────────────
 let _swipeTouchStartX = 0;
 let _swipeTouchStartY = 0;
 let _swipeActive = false;
@@ -387,7 +394,7 @@ function attachMobileSwipe(el) {
   }, { passive: true });
 }
 
-// ── Mobile card builders ──────────────────────────────────────────────────────
+// ── Mobile card builders ───────────────────────────────────────────────────────────────────────
 
 function buildMobileTaskCard(task) {
   const card = document.createElement('div');
@@ -423,6 +430,7 @@ function buildMobileTaskCard(task) {
         ${categoryChipHtml(task)}
         ${assignedHtml(task)}
         ${carriedBadgeHtml(task)}
+        ${carryForwardIndicatorHtml(task)}
         ${tagsHtml}${dueDateHtml}${progressHtml}
       </div>
     </div>
@@ -483,6 +491,7 @@ function buildMobileSpanCard(task) {
         <span class="priority-badge ${priority}">${priority}</span>
         ${categoryChipHtml(task)}
         ${carriedBadgeHtml(task)}
+        ${carryForwardIndicatorHtml(task)}
         <span class="span-days-badge">${spanDays}d</span>
       </div>
     </div>
@@ -529,7 +538,7 @@ function applyCheckToggle(task, card, checkBtn) {
   toggleComplete(task.id, nowCompleted);
 }
 
-// ── Mobile inline add (kept for potential future use) ─────────────────────────
+// ── Mobile inline add (kept for potential future use) ───────────────────────────────────────
 
 function showMobileInlineAdd(taskList, addArea, colKey, addBtn) {
   addBtn.style.display = 'none';
@@ -604,7 +613,7 @@ function renderDesktopBoard(tasks) {
 
   board.innerHTML = '';
 
-  // ── Header row ───────────────────────────────────────────────────────────────
+  // ── Header row ────────────────────────────────────────────────────────────────────────────
   const headerRow = document.createElement('div');
   headerRow.className = 'board-header-row';
 
@@ -628,7 +637,7 @@ function renderDesktopBoard(tasks) {
 
   observeHeaderHeight(headerRow);
 
-  // ── Span row ───────────────────────────────────────────────────────────────
+  // ── Span row ─────────────────────────────────────────────────────────────────────────────
   const spanRow = document.createElement('div');
   spanRow.className = 'board-span-row';
 
@@ -657,7 +666,7 @@ function renderDesktopBoard(tasks) {
   });
   board.appendChild(spanRow);
 
-  // ── Body row ───────────────────────────────────────────────────────────────
+  // ── Body row ─────────────────────────────────────────────────────────────────────────────
   const bodyRow = document.createElement('div');
   bodyRow.className = 'board-body-row';
 
@@ -740,6 +749,7 @@ function buildTaskCard(task) {
       ${categoryChipHtml(task)}
       ${assignedHtml(task)}
       ${carriedBadgeHtml(task)}
+      ${carryForwardIndicatorHtml(task)}
       ${dueDateHtml}
       <span class="task-badges">${hoverBadgesHtml(task)}</span>
     </div>`;
@@ -784,6 +794,7 @@ function buildSpanCard(task, spanDays) {
       ${categoryChipHtml(task)}
       ${assignedHtml(task)}
       ${carriedBadgeHtml(task)}
+      ${carryForwardIndicatorHtml(task)}
       ${dueDateHtml}
       ${hoverBadgesHtml(task)}
       ${notesIcon}

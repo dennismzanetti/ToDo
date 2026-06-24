@@ -3,7 +3,7 @@
    Loaded by index.html alongside styles.css, modal.css, mobile.css.
    ============================================================================= */
 
-/* ── TASK CARDS ─────────────────────────────────────────────────────────────── */
+/* ── TASK CARDS ──────────────────────────────────────────────────────────────────────────── */
 .task-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -58,7 +58,7 @@
 }
 .desktop-meta-icon { display: inline-flex; align-items: center; color: var(--color-text-faint); }
 
-/* ── CATEGORY CHIP (on cards) ───────────────────────────────────────────────── */
+/* ── CATEGORY CHIP (on cards) ──────────────────────────────────────────────────────────────── */
 .card-category-chip {
   display: inline-flex; align-items: center;
   padding: 1px var(--space-2);
@@ -71,7 +71,7 @@
   overflow: hidden; text-overflow: ellipsis;
 }
 
-/* ── TASK CARD DELETE BUTTON ────────────────────────────────────────────────── */
+/* ── TASK CARD DELETE BUTTON ────────────────────────────────────────────────────────────────── */
 .task-delete-btn {
   position: static;
   flex-shrink: 0;
@@ -97,7 +97,7 @@
   .task-delete-btn { opacity: .4; }
 }
 
-/* ── TASK CARD DELETE CONFIRM ───────────────────────────────────────────────── */
+/* ── TASK CARD DELETE CONFIRM ───────────────────────────────────────────────────────────────── */
 .task-delete-confirm {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center; gap: var(--space-2);
@@ -128,7 +128,7 @@
 }
 .task-delete-no:hover { background: var(--color-surface-offset); color: var(--color-text); }
 
-/* ── SPAN CARD ──────────────────────────────────────────────────────────────── */
+/* ── SPAN CARD ───────────────────────────────────────────────────────────────────────────── */
 .span-card {
   align-self: center;
   margin: var(--space-1);
@@ -153,4 +153,21 @@
   font-size: var(--text-xs); font-weight: 700;
   background: var(--color-surface-offset); color: var(--color-text-muted);
   border: 1px solid var(--color-border); white-space: nowrap;
+}
+
+/* ── CARRY FORWARD INDICATOR ───────────────────────────────────────────────────────────────── */
+.carry-forward-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-full);
+  background: var(--color-warning-highlight);
+  color: var(--color-warning);
+  flex-shrink: 0;
+}
+[data-theme="dark"] .carry-forward-indicator {
+  background: oklch(from var(--color-warning) l c h / 0.15);
+  color: var(--color-warning);
 }
