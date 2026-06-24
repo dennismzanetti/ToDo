@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="To-Do" />
+  <meta name="theme-color" content="#5b3ebd" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#9b82f5" media="(prefers-color-scheme: dark)" />
+  <title>Settings – To-Do List</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@700,800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/styles.css" />
+  <link rel="stylesheet" href="./css/settings-page.css" />
+  <link rel="stylesheet" href="./css/mobile.css" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+</head>
+<body>
+  <a class="skip-link" href="#settings-content">Skip to content</a>
+
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 64 64" aria-label="To-Do List" role="img" class="logo" width="36" height="36">
+        <rect x="10" y="8" width="44" height="48" rx="10" stroke="currentColor" stroke-width="4" fill="none"/>
+        <path d="M20 24h24M20 34h24M20 44h14" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+        <path d="M15 24l3 3 6-7" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="brand-name">To-Do List</span>
+    </div>
+
+    <nav class="main-nav" aria-label="Main navigation">
+      <a class="nav-btn" href="index.html">
+        <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+          <rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        <span class="nav-label">Board</span>
+      </a>
+      <a class="nav-btn" href="todo-list.html">
+        <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="8" y1="6" x2="21" y2="6"/>
+          <line x1="8" y1="12" x2="21" y2="12"/>
+          <line x1="8" y1="18" x2="21" y2="18"/>
+          <polyline points="3 6 4 7 6 5"/>
+          <polyline points="3 12 4 13 6 11"/>
+          <polyline points="3 18 4 19 6 17"/>
+        </svg>
+        <span class="nav-label">Tasks</span>
+      </a>
+      <a class="nav-btn" href="templates.html">
+        <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <path d="M3 9h18M9 21V9"/>
+        </svg>
+        <span class="nav-label">Templates</span>
+      </a>
+      <a class="nav-btn active" href="settings.html" aria-current="page">
+        <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        <span class="nav-label">Settings</span>
+      </a>
+    </nav>
+
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+  </header>
+
+  <main id="settings-content" class="settings-page">
+    <div class="settings-inner">
+
+      <h1 class="settings-title">Settings</h1>
+
+      <!-- Anchor sub-navigation -->
+      <nav id="settingsAnchorNav" aria-label="Settings sections" class="settings-subnav">
+        <a href="#settings-account"  class="settings-subnav-btn active">Account</a>
+        <a href="#settings-display"  class="settings-subnav-btn">Display</a>
+        <a href="#settings-data"     class="settings-subnav-btn">Export &amp; Import</a>
+        <a href="#settings-about"    class="settings-subnav-btn">About</a>
+      </nav>
+
+      <!-- ── Account ─────────────────────────────────────────── -->
+      <div id="settings-account" class="settings-anchor"></div>
+      <div class="settings-card">
+        <h2 class="settings-card-title">Account</h2>
+        <div class="settings-account-row">
+          <!-- Avatar -->
+          <div class="settings-avatar-wrap">
+            <img id="settingsUserPhoto" src="" alt="" width="48" height="48"
+                 class="settings-avatar-photo" style="display:none;" />
+            <div id="settingsUserInitials" class="settings-avatar-initials" style="display:none;"></div>
+          </div>
+          <!-- Name / email -->
+          <div class="settings-account-info">
+            <p id="settingsUserName"  class="settings-account-name">—</p>
+            <p id="settingsUserEmail" class="settings-account-email">—</p>
+          </div>
+          <!-- Sign out -->
+          <button id="settingsSignOutBtn" class="btn btn-danger settings-signout-btn">Sign out</button>
+        </div>
+      </div>
+
+      <!-- ── Display ─────────────────────────────────────────── -->
+      <div id="settings-display" class="settings-anchor"></div>
+      <div class="settings-card">
+        <h2 class="settings-card-title">Display</h2>
+
+        <div class="settings-form-group">
+          <label class="settings-label" for="settingsThemeSelect">Theme</label>
+          <select id="settingsThemeSelect" class="settings-select">
+            <option value="system">System default</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </div>
+
+        <div class="settings-form-group">
+          <label class="settings-label" for="settingsDefaultViewSelect">Default view on open</label>
+          <select id="settingsDefaultViewSelect" class="settings-select">
+            <option value="index.html">Board</option>
+            <option value="todo-list.html">Tasks</option>
+            <option value="templates.html">Templates</option>
+          </select>
+        </div>
+
+        <button id="settingsSaveDisplayBtn" class="btn btn-primary">Save Display Settings</button>
+        <p id="settingsDisplayStatus" class="settings-status-msg" style="display:none;">&#10003; Saved</p>
+      </div>
+
+      <!-- ── Export & Import ─────────────────────────────────── -->
+      <div id="settings-data" class="settings-anchor"></div>
+      <div class="settings-card">
+        <h2 class="settings-card-title">Export &amp; Import Data</h2>
+        <p class="settings-card-desc">Download a full backup of all your tasks, or restore from a previous backup file.</p>
+
+        <div class="settings-data-btns">
+          <button id="exportDataBtn" class="btn btn-primary">&#8659; Export All Data</button>
+          <label class="btn settings-import-label">
+            &#8657; Import Backup
+            <input type="file" id="importFileInput" accept=".json" style="display:none;" />
+          </label>
+        </div>
+
+        <div id="importConfirmBox" class="settings-confirm-box" style="display:none;">
+          <p id="importConfirmMsg" class="settings-confirm-msg"></p>
+          <div class="settings-confirm-actions">
+            <button id="importConfirmBtn" class="btn btn-primary">Yes, import</button>
+            <button id="importCancelBtn"  class="btn btn-ghost">Cancel</button>
+          </div>
+        </div>
+
+        <p id="exportImportStatus" class="settings-status-msg" style="display:none;"></p>
+      </div>
+
+      <!-- ── About ───────────────────────────────────────────── -->
+      <div id="settings-about" class="settings-anchor"></div>
+      <div class="settings-card">
+        <h2 class="settings-card-title">About</h2>
+        <div id="settingsAboutContent">
+          <p class="text-muted" style="font-size:var(--text-sm);">Loading version info&hellip;</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Build footer -->
+  <footer class="build-footer" id="build-footer" aria-label="Build information">
+    <span id="build-badge">Loading build&hellip;</span>
+  </footer>
+
+  <script src="./js/version.js" defer></script>
+  <script type="module" src="./js/settings.js"></script>
+
+  <!-- Anchor nav scroll-spy -->
+  <script>
+  (function () {
+    function initSettingsAnchorNav() {
+      const nav = document.getElementById('settingsAnchorNav');
+      if (!nav) return;
+      const links = nav.querySelectorAll('.settings-subnav-btn');
+      const sectionIds = ['settings-account', 'settings-display', 'settings-data', 'settings-about'];
+
+      function setActive(id) {
+        links.forEach(link => {
+          link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+        });
+      }
+
+      if (sectionIds.length) setActive(sectionIds[0]);
+
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => { if (entry.isIntersecting) setActive(entry.target.id); });
+      }, { root: null, rootMargin: '-20% 0px -65% 0px', threshold: 0 });
+
+      sectionIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) observer.observe(el);
+      });
+
+      links.forEach(link => {
+        link.addEventListener('click', e => {
+          e.preventDefault();
+          const target = document.getElementById(link.getAttribute('href').slice(1));
+          if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initSettingsAnchorNav);
+    } else {
+      initSettingsAnchorNav();
+    }
+  })();
+  </script>
+
+</body>
+</html>

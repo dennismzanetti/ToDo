@@ -1,0 +1,285 @@
+/* ============================================================
+   SETTINGS PAGE
+   ============================================================ */
+
+.settings-page {
+  padding: var(--space-6) var(--space-4) var(--space-16);
+}
+
+.settings-inner {
+  max-width: 680px;
+  margin-inline: auto;
+}
+
+.settings-title {
+  font-family: var(--font-display, 'Cabinet Grotesk', sans-serif);
+  font-size: var(--text-xl);
+  font-weight: 800;
+  color: var(--color-text);
+  margin-bottom: var(--space-4);
+}
+
+/* ── Anchor sub-nav ─────────────────────────────────────── */
+
+.settings-subnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+  position: sticky;
+  top: calc(var(--topbar-height, 56px) + var(--space-2));
+  z-index: 10;
+  background: var(--color-bg);
+  padding-block: var(--space-2);
+}
+
+.settings-subnav-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  background: var(--color-surface-offset);
+  border: 1px solid transparent;
+  transition: color 150ms ease, background 150ms ease, border-color 150ms ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.settings-subnav-btn:hover {
+  color: var(--color-text);
+  background: var(--color-surface-dynamic);
+}
+
+.settings-subnav-btn.active {
+  color: var(--color-primary);
+  background: var(--color-primary-highlight);
+  border-color: color-mix(in oklab, var(--color-primary) 25%, transparent);
+}
+
+/* ── Scroll anchors ─────────────────────────────────────── */
+
+.settings-anchor {
+  scroll-margin-top: calc(var(--topbar-height, 56px) + var(--space-12));
+}
+
+/* ── Cards ──────────────────────────────────────────────── */
+
+.settings-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin-bottom: var(--space-4);
+}
+
+.settings-card-title {
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--space-4);
+}
+
+.settings-card-desc {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-4);
+}
+
+/* ── Account row ────────────────────────────────────────── */
+
+.settings-account-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.settings-avatar-wrap {
+  flex-shrink: 0;
+}
+
+.settings-avatar-photo {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.settings-avatar-initials {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: var(--text-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.settings-account-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-account-name {
+  font-weight: 600;
+  font-size: var(--text-base);
+  color: var(--color-text);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settings-account-email {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settings-signout-btn {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* ── Form groups ────────────────────────────────────────── */
+
+.settings-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+}
+
+.settings-label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.settings-select {
+  appearance: none;
+  background: var(--color-surface-offset);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-8) var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-3) center;
+  transition: border-color 150ms ease;
+  max-width: 320px;
+}
+
+.settings-select:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-color: var(--color-primary);
+}
+
+/* ── Status message ─────────────────────────────────────── */
+
+.settings-status-msg {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-success);
+}
+
+/* ── Data section ───────────────────────────────────────── */
+
+.settings-data-btns {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+}
+
+.settings-import-label {
+  background: var(--color-surface-offset);
+  color: var(--color-text);
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+}
+
+.settings-import-label:hover {
+  background: var(--color-surface-dynamic);
+}
+
+.settings-confirm-box {
+  background: var(--color-surface-offset);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.settings-confirm-msg {
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  margin-bottom: var(--space-3);
+}
+
+.settings-confirm-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* ── About section ──────────────────────────────────────── */
+
+#settingsAboutContent p {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+#settingsAboutContent .about-version {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--space-1);
+}
+
+#settingsAboutContent .about-build {
+  font-size: var(--text-xs);
+  color: var(--color-text-faint);
+  font-family: monospace;
+}
+
+/* ── Mobile ─────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .settings-subnav {
+    position: static;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: var(--space-1);
+    scrollbar-width: none;
+  }
+  .settings-subnav::-webkit-scrollbar { display: none; }
+
+  .settings-account-row {
+    align-items: flex-start;
+  }
+
+  .settings-signout-btn {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .settings-select {
+    max-width: 100%;
+  }
+}
