@@ -360,6 +360,48 @@
 }
 .modal-clear-btn:hover { background: var(--color-surface-offset); color: var(--color-error); }
 
+/* ── Carry Forward inline toggle ── */
+.form-group--inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 0;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface-offset);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-interactive), background var(--transition-interactive);
+}
+.form-group--inline:has(input:checked) {
+  border-color: oklch(from var(--color-primary) l c h / .4);
+  background: var(--color-primary-highlight);
+}
+[data-theme="dark"] .form-group--inline:has(input:checked) {
+  background: oklch(from var(--color-primary) .18 .06 h);
+  border-color: oklch(from var(--color-primary) l c h / .35);
+}
+.form-label--checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  width: 100%;
+  font-weight: 600;
+  font-size: var(--text-sm);
+  user-select: none;
+  -webkit-user-select: none;
+}
+.form-label--checkbox input[type="checkbox"] {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+.form-label--checkbox .form-hint {
+  margin-left: auto;
+  text-align: right;
+}
+
 /* ── Subtask list ── */
 .subtask-list {
   display: flex; flex-direction: column; gap: var(--space-1);
@@ -489,5 +531,16 @@
   .modal-today-btn {
     width: 100%;
     justify-content: center;
+  }
+
+  /* On mobile, stack the hint below the label text */
+  .form-label--checkbox .form-hint {
+    margin-left: 0;
+    text-align: left;
+    display: block;
+    margin-top: var(--space-1);
+  }
+  .form-label--checkbox {
+    flex-wrap: wrap;
   }
 }
