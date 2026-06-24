@@ -89,6 +89,12 @@ function assignedHtml(task) {
   return `<span class="assigned-badge">${escHtml(task.assignedTo)}</span>`;
 }
 
+// ── Carried Forward badge helper ──────────────────────────────────────────────
+function carriedBadgeHtml(task) {
+  if (!task.carriedDate) return '';
+  return `<span class="carried-badge" title="Carried forward from a previous day">↻ carried</span>`;
+}
+
 // ── Delete button helper ──────────────────────────────────────────────────────
 function buildDeleteBtn(task, card) {
   const btn = document.createElement('button');
@@ -416,6 +422,7 @@ function buildMobileTaskCard(task) {
         <span class="priority-badge ${priority}">${priority}</span>
         ${categoryChipHtml(task)}
         ${assignedHtml(task)}
+        ${carriedBadgeHtml(task)}
         ${tagsHtml}${dueDateHtml}${progressHtml}
       </div>
     </div>
@@ -475,6 +482,7 @@ function buildMobileSpanCard(task) {
       <div class="mobile-card-meta">
         <span class="priority-badge ${priority}">${priority}</span>
         ${categoryChipHtml(task)}
+        ${carriedBadgeHtml(task)}
         <span class="span-days-badge">${spanDays}d</span>
       </div>
     </div>
@@ -731,6 +739,7 @@ function buildTaskCard(task) {
       <span class="priority-badge ${priority}">${priority}</span>
       ${categoryChipHtml(task)}
       ${assignedHtml(task)}
+      ${carriedBadgeHtml(task)}
       ${dueDateHtml}
       <span class="task-badges">${hoverBadgesHtml(task)}</span>
     </div>`;
@@ -774,6 +783,7 @@ function buildSpanCard(task, spanDays) {
       <span class="priority-badge ${priority}">${priority}</span>
       ${categoryChipHtml(task)}
       ${assignedHtml(task)}
+      ${carriedBadgeHtml(task)}
       ${dueDateHtml}
       ${hoverBadgesHtml(task)}
       ${notesIcon}
