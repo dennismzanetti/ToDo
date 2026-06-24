@@ -2,21 +2,23 @@ import { Timestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-f
 
 export function createTask(fields = {}) {
   return {
-    title:      fields.title      || '',
-    priority:   fields.priority   || 'medium',
-    notes:      fields.notes      || '',
-    doOnFrom:   fields.doOnFrom   || null,
-    doOnTo:     fields.doOnTo     || null,
-    dueDate:    fields.dueDate    || null,
-    completed:  fields.completed  || false,
-    categoryId: fields.categoryId || null,
-    assignedTo: fields.assignedTo || '',
-    tags:       Array.isArray(fields.tags)     ? fields.tags     : [],
-    subtasks:   Array.isArray(fields.subtasks) ? fields.subtasks.map(s => ({ ...s, completed: false })) : [],
-    order:      typeof fields.order === 'number' ? fields.order : Date.now(),
-    templateId: fields.templateId || null,
-    createdAt:  fields.createdAt  || Timestamp.now(),
-    updatedAt:  Timestamp.now()
+    title:       fields.title       || '',
+    priority:    fields.priority    || 'medium',
+    notes:       fields.notes       || '',
+    doOnFrom:    fields.doOnFrom    || null,
+    doOnTo:      fields.doOnTo      || null,
+    dueDate:     fields.dueDate     || null,
+    completed:   fields.completed   || false,
+    categoryId:  fields.categoryId  || null,
+    assignedTo:  fields.assignedTo  || '',
+    tags:        Array.isArray(fields.tags)     ? fields.tags     : [],
+    subtasks:    Array.isArray(fields.subtasks) ? fields.subtasks.map(s => ({ ...s, completed: false })) : [],
+    order:       typeof fields.order === 'number' ? fields.order : Date.now(),
+    templateId:  fields.templateId  || null,
+    carryForward: fields.carryForward || false,
+    carriedDate: fields.carriedDate  || null,
+    createdAt:   fields.createdAt   || Timestamp.now(),
+    updatedAt:   Timestamp.now()
   };
 }
 
@@ -26,13 +28,14 @@ export function createSubtask(title) {
 
 export function createTemplate(fields = {}) {
   return {
-    title:      fields.title      || '',
-    priority:   fields.priority   || 'medium',
-    recurrence: fields.recurrence || 'daily',
-    tags:       Array.isArray(fields.tags)     ? fields.tags     : [],
-    subtasks:   Array.isArray(fields.subtasks) ? fields.subtasks : [],
-    createdAt:  fields.createdAt  || Timestamp.now(),
-    updatedAt:  Timestamp.now()
+    title:       fields.title       || '',
+    priority:    fields.priority    || 'medium',
+    recurrence:  fields.recurrence  || 'daily',
+    tags:        Array.isArray(fields.tags)     ? fields.tags     : [],
+    subtasks:    Array.isArray(fields.subtasks) ? fields.subtasks : [],
+    carryForward: fields.carryForward || false,
+    createdAt:   fields.createdAt   || Timestamp.now(),
+    updatedAt:   Timestamp.now()
   };
 }
 
