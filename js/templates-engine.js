@@ -26,15 +26,16 @@ export async function applyTemplates() {
       const ts = Timestamp.fromDate(day);
       taskPromises.push(
         addTask({
-          title:     tmpl.title,
-          priority:  tmpl.priority,
-          doOnFrom:  ts,
-          doOnTo:    ts,
-          dueDate:   null,
-          tags:      tmpl.tags || [],
-          subtasks:  (tmpl.subtasks || []).map(s => ({ ...s, completed: false })),
-          order:     Date.now() + i,
-          templateId: tmpl.id
+          title:        tmpl.title,
+          priority:     tmpl.priority,
+          doOnFrom:     ts,
+          doOnTo:       ts,
+          dueDate:      null,
+          tags:         tmpl.tags || [],
+          subtasks:     (tmpl.subtasks || []).map(s => ({ ...s, completed: false })),
+          order:        Date.now() + i,
+          templateId:   tmpl.id,
+          carryForward: tmpl.carryForward || false
         })
       );
 
